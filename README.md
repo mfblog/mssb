@@ -1,9 +1,12 @@
 
-# Mosdns + Singbox 虚拟机分流代理项目
+# Mosdns + Singbox 虚拟机分流代理项目 纯自用版本
 
 ## 项目简介
+自用项目目前没有适配新版本singbox
 
 封装 `mosdns` 和 `singbox` 两个服务，实现高效的分流代理。同时，结合 `filebrowser` 用于配置文件的可视化管理，并使用 `MetaCubeXD` 作为 `singbox` 的前端显示界面。
+
+完全参考 https://github.com/herozmy/StoreHouse/tree/latest 主要是想有个界面修改配置以及监听重启
 
 ---
 
