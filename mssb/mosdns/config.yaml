@@ -32,7 +32,7 @@ plugins:
         #- addr: tcp://192.168.20.5:6666  # TCP协议的本地DNS服务器地址ipv4
         - addr: tcp://8.8.8.8
 
-  # 转发至sb，拿fake ip
+  # 转发至sb/mihomo，拿fake ip
   - tag: forward_fake
     type: forward
     args:

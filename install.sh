@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# 定义全局颜色变量
+green_text="\033[32m"
+yellow="\033[33m"
+reset="\033[0m"
+red='\033[1;31m'
+
 # 日志输出函数
 log() {
     echo "[$(date)] $1"
@@ -31,29 +37,30 @@ set_timezone() {
 }
 
 # 检测系统架构
+# 检测系统 CPU 架构，并返回标准格式（适用于多数构建/下载脚本）
 detect_architecture() {
-    ARCH="amd64"
     case "$(uname -m)" in
-        "aarch64")
-            ARCH="arm64"
-            log "检测到 CPU 架构为 arm64。"
-            ;;
-        "x86_64")
-            ARCH="amd64"
-            log "检测到 CPU 架构为 amd64。"
-            ;;
+        x86_64)     echo "amd64" ;;    # 64 位 x86 架构
+        aarch64)    echo "arm64" ;;    # 64 位 ARM 架构
+        armv7l)     echo "armv7" ;;    # 32 位 ARM 架构（常见于树莓派）
+        armhf)      echo "armhf" ;;    # ARM 硬浮点
+        s390x)      echo "s390x" ;;    # IBM 架构
+        i386|i686)  echo "386" ;;      # 32 位 x86 架构
         *)
-            log "无法识别的 CPU 架构：$(uname -m)。脚本退出。"
+            echo -e "${yellow}不支持的CPU架构: $(uname -m)${reset}"
             exit 1
             ;;
     esac
 }
 
+
 install_mosdns() {
   # 下载并安装 MosDNS
   log "开始下载 MosDNS..."
+  arch=$(detect_architecture)
+  log "系统架构是：$arch"
   LATEST_MOSDNS_VERSION=$(curl -sL -o /dev/null -w %{url_effective} https://github.com/IrineSistiana/mosdns/releases/latest | awk -F '/' '{print $NF}')
-  MOSDNS_URL="https://github.com/IrineSistiana/mosdns/releases/download/${LATEST_MOSDNS_VERSION}/mosdns-linux-${ARCH}.zip"
+  MOSDNS_URL="https://github.com/IrineSistiana/mosdns/releases/download/${LATEST_MOSDNS_VERSION}/mosdns-linux-$arch.zip"
 
   log "从 $MOSDNS_URL 下载 MosDNS..."
   if curl -L -o /tmp/mosdns.zip "$MOSDNS_URL"; then
@@ -83,8 +90,10 @@ install_mosdns() {
 install_filebrower() {
   # 下载并安装 Filebrowser
     log "开始下载 Filebrowser..."
+    arch=$(detect_architecture)
+    log "系统架构是：$arch"
     LATEST_FILEBROWSER_VERSION=$(curl -sL -o /dev/null -w %{url_effective} https://github.com/filebrowser/filebrowser/releases/latest | awk -F '/' '{print $NF}')
-    FILEBROWSER_URL="https://github.com/filebrowser/filebrowser/releases/download/${LATEST_FILEBROWSER_VERSION}/linux-${ARCH}-filebrowser.tar.gz"
+    FILEBROWSER_URL="https://github.com/filebrowser/filebrowser/releases/download/${LATEST_FILEBROWSER_VERSION}/linux-$arch-filebrowser.tar.gz"
 
     log "从 $FILEBROWSER_URL 下载 Filebrowser..."
     if curl -L --fail -o /tmp/filebrowser.tar.gz "$FILEBROWSER_URL"; then
@@ -114,28 +123,21 @@ install_filebrower() {
 # 安装 Sing-Box
 install_singbox() {
     log "开始安装 Sing-Box"
-
-    # 检查 ARCH 并设置 SB_ARCH
-    if [ "$ARCH" == "arm64" ]; then
-        SB_ARCH="arm64"
-    else
-        SB_ARCH="$ARCH"  # 默认使用 ARCH 的值
-    fi
-
+    arch=$(detect_architecture)
+    log "系统架构是：$arch"
     # 定义下载 URL
-    # SING_BOX_URL="https://raw.githubusercontent.com/herozmy/herozmy-private/main/sing-box-puernya/sing-box-linux-$SB_ARCH.tar.gz"
-    SING_BOX_URL=""https://github.com/herozmy/StoreHouse/releases/download/sing-box/sing-box-puernya-linux-$SB_ARCH.tar.gz""
+    SING_BOX_URL="https://github.com/herozmy/StoreHouse/releases/download/sing-box/sing-box-puernya-linux-$arch.tar.gz"
 
     # 下载文件
     log "正在下载 Sing-Box: $SING_BOX_URL"
-    wget -O "sing-box-linux-$SB_ARCH.tar.gz" "$SING_BOX_URL"
+    wget -O "sing-box-linux-$arch.tar.gz" "$SING_BOX_URL"
     if [ $? -ne 0 ]; then
         log "Sing-Box 下载失败！退出脚本。"
         exit 1
     fi
 
     # 解压文件
-    tar -zxvf "sing-box-linux-$SB_ARCH.tar.gz"
+    tar -zxvf "sing-box-linux-$arch.tar.gz"
     if [ $? -ne 0 ]; then
         log "解压失败，请检查文件完整性！退出脚本。"
         exit 1
@@ -157,13 +159,21 @@ install_singbox() {
         log "Sing-Box 安装完成"
     fi
 
+    log "设置 sing-box 可执行权限..."
+      if chmod +x /usr/local/bin/sing-box; then
+          log "设置权限成功。"
+      else
+          log "设置权限失败，请检查文件路径和权限设置。"
+          exit 1
+      fi
+
     # 清理临时文件
-    rm -f "sing-box-linux-$SB_ARCH.tar.gz"
+    rm -f "sing-box-linux-$arch.tar.gz"
     log "临时文件已清理"
 }
 
 # 用户自定义设置
-customize_settings() {
+singbox_customize_settings() {
     echo "是否选择生成配置（更新安装请选择n）？(y/n)"
     echo "生成配置文件需要添加机场订阅，如自建vps请选择n"
     read choice
@@ -199,8 +209,8 @@ customize_settings() {
     fi
 }
 
-# UI 源码安装
-install_ui() {
+# singbox UI 源码安装
+singbox_install_ui() {
     echo "是否更新 UI 源码？(y/n)"
     read choice
     if [ "$choice" = "y" ]; then
@@ -213,8 +223,30 @@ install_ui() {
     fi
 }
 
+# 安装mihomo
+mihomo_install() {
+    arch=$(detect_architecture)
+    download_url="https://github.com/herozmy/StoreHouse/releases/download/mihomo/mihomo-meta-linux-${arch}.tar.gz"
+    log "开始下载 Mihomo 核心..."
+
+    if ! wget -O /tmp/mihomo.tar.gz "$download_url"; then
+        log "Mihomo 下载失败，请检查网络连接"
+        exit 1
+    fi
+
+    log "Mihomo 下载完成，开始安装"
+    tar -zxvf /tmp/mihomo.tar.gz -C /usr/local/bin > /dev/null 2>&1 || {
+        log "解压 Mihomo 失败，请检查压缩包完整性"
+        exit 1
+    }
+
+    chmod +x /usr/local/bin/mihomo || log "警告：未能设置 Mihomo 执行权限"
+    rm -f /tmp/mihomo.tar.gz
+    log "Mihomo 安装完成，临时文件已清理"
+}
+
 ################################安装tproxy################################
-install_tproxy() {
+singbox_install_tproxy() {
 if [ -f /etc/os-release ]; then
     . /etc/os-release
     if [ "$ID" = "debian" ]; then
@@ -350,14 +382,11 @@ EOF
     echo "新规则生效"
     sleep 1
     nft -f /etc/nftables.conf
-    install_over
-}
-################################sing-box安装结束################################
-install_over() {
     echo "启用相关服务"
     systemctl enable --now nftables
     systemctl enable --now sing-box-router
 }
+################################sing-box安装结束################################
 
 # 网卡检测
 check_interfaces() {
@@ -383,7 +412,7 @@ check_interfaces() {
 }
 
 # 配置文件和脚本设置
-configure_files() {
+singbox_configure_files() {
     log "检查是否存在 /mssb/sing-box/config.json ..."
     CONFIG_JSON="/mssb/sing-box/config.json"
     BACKUP_JSON="/tmp/config_backup.json"
@@ -459,31 +488,47 @@ reload_service() {
 
 
 
-# 定义定时任务的表达式和任务脚本的路径
-cron_jobs=(
-    # 每周一凌晨 4:00 执行更新 MosDNS 的脚本
-    "0 4 * * 1 /watch/update_mosdns.sh"
 
-    # 每周一凌晨 4:10 执行更新 Sing-Box 的脚本
-    "10 4 * * 1 /watch/update_sb.sh"
-
-    # 每周一凌晨 4:15 执行更新中国节点的脚本
-    "15 4 * * 1 /watch/update_cn.sh"
-)
 
 # 函数：将任务添加到 crontab 中
-
 # 添加任务到 crontab
-add_cron_jobs() {
-    # 先删除现有的重复任务（如果存在）
+singbox_add_cron_jobs() {
+    cron_jobs=(
+        "0 4 * * 1 /watch/update_mosdns.sh # update_mosdns"
+        "10 4 * * 1 /watch/update_sb.sh    # update_sb"
+        "15 4 * * 1 /watch/update_cn.sh    # update_cn"
+    )
+
+    # 过滤掉我们添加的三种任务（带注释标识），防止重复添加
     (crontab -l | grep -v -e "# update_mosdns" -e "# update_sb" -e "# update_cn") | crontab -
 
     for job in "${cron_jobs[@]}"; do
-        # 检查任务是否已存在
+        # 检查是否已存在
         if (crontab -l | grep -q -F "$job"); then
             log "定时任务已存在：$job"
         else
-            # 将新的任务添加到 crontab 中
+            (crontab -l; echo "$job") | crontab -
+            log "定时任务已成功添加：$job"
+        fi
+    done
+}
+
+
+mihomo_add_cron_jobs() {
+    cron_jobs=(
+        "0 4 * * 1 /watch/update_mosdns.sh # update_mosdns"
+        "10 4 * * 1 /watch/update_mihomo.sh   # update_mihomo"
+        "15 4 * * 1 /watch/update_cn.sh    # update_cn"
+    )
+
+    # 过滤掉我们添加的三种任务（带注释标识），防止重复添加
+    (crontab -l | grep -v -e "# update_mosdns" -e "# update_mihomo" -e "# update_cn") | crontab -
+
+    for job in "${cron_jobs[@]}"; do
+        # 检查是否已存在
+        if (crontab -l | grep -q -F "$job"); then
+            log "定时任务已存在：$job"
+        else
             (crontab -l; echo "$job") | crontab -
             log "定时任务已成功添加：$job"
         fi
@@ -493,19 +538,51 @@ add_cron_jobs() {
 
 # 主函数
 main() {
-    update_system
-    set_timezone
-    detect_architecture
-    install_filebrower
-    install_mosdns
-    install_singbox
-    configure_files
-    customize_settings
-    install_ui
-    install_tproxy
-    reload_service
-    add_cron_jobs
+    echo "-------------------------------------------------"
+    echo -e "${green_text}Fake-ip 网关代理方案：sing-box/mihomo + MosDNS${reset}"
+    echo "---仅支持 debian/armdebian，其他系统未测试。安装前请确保系统未安装其他代理软件---"
+    echo "-------------------------------------------------"
+    echo
+    echo "请选择安装方案："
+    echo "1) 方案1：Sing-box P核心 + MosDNS"
+    echo "2) 方案2：Mihomo + MosDNS"
+    read -p "请输入选项 (1/2): " choice
+
+    case "$choice" in
+        1)
+            log "你选择了方案1：Sing-box + MosDNS"
+            update_system
+            set_timezone
+            install_filebrower
+            install_mosdns
+            install_singbox
+            singbox_configure_files
+            singbox_customize_settings
+            singbox_install_ui
+            singbox_install_tproxy
+            reload_service
+            singbox_add_cron_jobs
+            ;;
+        2)
+            log "你选择了方案2：Mihomo + MosDNS"
+            update_system
+            set_timezone
+            install_filebrower
+            install_mosdns
+            mihomo_install
+            mihomo_configure_files
+            mihomo_customize_settings
+            mihomo_install_ui
+            mihomo_install_tproxy
+            reload_service
+            mihomo_add_cron_jobs
+            ;;
+        *)
+            log "无效选项，退出安装。"
+            exit 1
+            ;;
+    esac
+
     log "脚本执行完成。"
 }
 
-main
