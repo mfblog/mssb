@@ -117,13 +117,14 @@ install_singbox() {
 
     # 检查 ARCH 并设置 SB_ARCH
     if [ "$ARCH" == "arm64" ]; then
-        SB_ARCH="armv8"
+        SB_ARCH="arm64"
     else
         SB_ARCH="$ARCH"  # 默认使用 ARCH 的值
     fi
 
     # 定义下载 URL
-    SING_BOX_URL="https://raw.githubusercontent.com/herozmy/herozmy-private/main/sing-box-puernya/sing-box-linux-$SB_ARCH.tar.gz"
+    # SING_BOX_URL="https://raw.githubusercontent.com/herozmy/herozmy-private/main/sing-box-puernya/sing-box-linux-$SB_ARCH.tar.gz"
+    SING_BOX_URL=""https://github.com/herozmy/StoreHouse/releases/download/sing-box/sing-box-puernya-linux-$SB_ARCH.tar.gz""
 
     # 下载文件
     log "正在下载 Sing-Box: $SING_BOX_URL"
@@ -284,7 +285,7 @@ echo "" > "/etc/nftables.conf"
 cat <<EOF > "/etc/nftables.conf"
 #!/usr/sbin/nft -f
 flush ruleset
-table inet singbox {
+table inet sing-box {
   set local_ipv4 {
     type ipv4_addr
     flags interval
@@ -315,7 +316,7 @@ table inet singbox {
     }
   }
 
-  chain singbox-tproxy {
+  chain sing-box-tproxy {
     fib daddr type { unspec, local, anycast, multicast } return
     ip daddr @local_ipv4 return
     ip6 daddr @local_ipv6 return
@@ -323,7 +324,7 @@ table inet singbox {
     meta l4proto { tcp, udp } meta mark set 1 tproxy to :7896 accept
   }
 
-  chain singbox-mark {
+  chain sing-box-mark {
     fib daddr type { unspec, local, anycast, multicast } return
     ip daddr @local_ipv4 return
     ip6 daddr @local_ipv6 return
@@ -333,12 +334,12 @@ table inet singbox {
 
   chain mangle-output {
     type route hook output priority mangle; policy accept;
-    meta l4proto { tcp, udp } skgid != 1 ct direction original goto singbox-mark
+    meta l4proto { tcp, udp } skgid != 1 ct direction original goto sing-box-mark
   }
 
   chain mangle-prerouting {
     type filter hook prerouting priority mangle; policy accept;
-    iifname { wg0, lo, $selected_interface } meta l4proto { tcp, udp } ct direction original goto singbox-tproxy
+    iifname { wg0, lo, $selected_interface } meta l4proto { tcp, udp } ct direction original goto sing-box-tproxy
   }
 }
 EOF

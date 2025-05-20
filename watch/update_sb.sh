@@ -5,7 +5,7 @@ echo "[$(date)] 开始更新 Sing-box..."
 
 # 判断 CPU 架构
 if [[ $(uname -m) == "aarch64" ]]; then
-    TARGETARCH="armv8"
+    TARGETARCH="arm64"
     echo "[$(date)] 检测到 CPU 架构为 armv8。"
 elif [[ $(uname -m) == "x86_64" ]]; then
     TARGETARCH="amd64"
@@ -16,7 +16,7 @@ else
     exit 1  # 退出状态为 1，表示错误退出
 fi
 
-SING_BOX_URL="https://raw.githubusercontent.com/herozmy/herozmy-private/main/sing-box-puernya/sing-box-linux-${TARGETARCH}.tar.gz"
+SING_BOX_URL=""https://github.com/herozmy/StoreHouse/releases/download/sing-box/sing-box-puernya-linux-${TARGETARCH}.tar.gz""
 
 # 下载最新的 sing-box
 echo "[$(date)] 正在从 $SING_BOX_URL 下载 Sing-box..."
