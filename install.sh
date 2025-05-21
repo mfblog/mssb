@@ -253,37 +253,40 @@ install_singbox() {
 # singbox用户自定义设置
 singbox_customize_settings() {
     echo "是否选择生成配置（更新安装请选择n）？(y/n)"
-    echo "生成配置文件需要添加机场订阅，如自建vps请选择n"
+    echo "生成配置文件需要添加机场订阅，如自建 VPS 请选择 n"
     read choice
     if [ "$choice" = "y" ]; then
         while true; do
-            read -p "输入订阅连接（可以输入多个，以空格分隔）：" suburls
-            valid=true
+            read -p "输入订阅连接（多个用空格分隔，输入 q 退出）： " suburls
 
-            # 遍历每个输入的链接，验证是否符合格式要求
+            if [[ "$suburls" == "q" ]]; then
+                log "已取消自动生成配置，请手动编辑 /mssb/sing-box/config.json"
+                break
+            fi
+
+            valid=true
             for url in $suburls; do
                 if [[ $url != http* ]]; then
-                    echo "无效的订阅连接：$url，请以 http 开头。"
+                    echo "❌ 无效的订阅连接：$url（应以 http 开头）"
                     valid=false
                     break
                 fi
             done
 
-            # 如果所有链接都有效，将它们一次性传递给 Python 脚本
             if [ "$valid" = true ]; then
-                echo "已设置订阅连接地址：$suburls"
-                # 调用 Python 脚本，并将所有链接作为一个参数传递
+                echo "✅ 已设置订阅连接地址：$suburls"
                 python3 update_sub.py -v "$suburls"
-                log "订阅连接地址设置完成。"
+                log "订阅连接处理完成。"
                 break
             else
-                log "部分订阅连接无效，请重新输入。"
+                log "部分订阅链接不符合要求，请重新输入。"
             fi
         done
     elif [ "$choice" = "n" ]; then
-        log "请手动配置 /mssb/sing-box/config.json."
+        log "你选择了手动配置，请编辑 /mssb/sing-box/config.json"
     else
         log "无效选择，请输入 y 或 n。"
+        singbox_customize_settings  # 递归重新执行
     fi
 }
 # 安装mihomo
@@ -314,14 +317,23 @@ mihomo_customize_settings() {
     read choice
     if [ "$choice" = "y" ]; then
         while true; do
-            read -p "输入订阅连接（mihomo模式暂时只支持单个，多个需手动进行修改yaml文件）：" suburl
-            sed -i "s|url: '机场订阅'|url: '$suburl'|" /mssb/mihomo/config.yaml
-#            sed -i "s|interface-name: eth0|interface-name: $interface_name|" /etc/mihomo/config.yaml
+            read -p "输入订阅连接（mihomo模式暂时只支持单个，多个需手动修改yaml文件），输入 q 返回上一步: " suburl
+            if [[ "$suburl" == "q" ]]; then
+                log "已取消自动生成配置，请手动编辑 /mssb/mihomo/config.yaml"
+                break
+            elif [[ -n "$suburl" ]]; then
+                sed -i "s|url: '机场订阅'|url: '$suburl'|" /mssb/mihomo/config.yaml
+                log "订阅链接已写入。"
+                break
+            else
+                echo "订阅链接不能为空，请重新输入或输入 q 退出。"
+            fi
         done
     elif [ "$choice" = "n" ]; then
-        log "请手动配置 /mssb/mihomo/config.yaml."
+        log "你选择了手动配置 /mssb/mihomo/config.yaml。"
     else
         log "无效选择，请输入 y 或 n。"
+        mihomo_customize_settings  # 重新询问
     fi
 }
 
@@ -345,10 +357,10 @@ check_ui() {
 }
 # 下载UI源码
 git_ui(){
-    if git clone https://github.com/Zephyruso/zashboard.git -b gh-pages /etc/${filename}/ui; then
+    if git clone https://github.com/Zephyruso/zashboard.git -b gh-pages /mssb/${core_name}/ui; then
         echo -e "UI 源码拉取${green_text}成功${reset}。"
     else
-        echo "拉取源码失败，请手动下载源码并解压至 /etc/${filename}/ui."
+        echo "拉取源码失败，请手动下载源码并解压至 /mssb/${core_name}/ui."
         echo "地址: https://github.com/Zephyruso/zashboard.git"
     fi
 }
@@ -699,14 +711,14 @@ main() {
     echo -e "${green_text}Fake-ip 网关代理方案：sing-box P核/mihomo + MosDNS${reset}"
     echo "---支持 debian，其他系统未测试。理论上支持debian/ubuntu 安装前请确保系统未安装其他代理软件---"
     echo "---完全参考 https://github.com/herozmy/StoreHouse/tree/latest 主要是想有个界面修改配置以及监听重启---"
+    echo -e "当前机器地址:${green_text}${local_ip}${reset}"
+    check_installed
+    check_core_status
+    echo "-------------------------------------------------"
     echo
     echo "请选择安装方案："
     echo "1) 方案1：Sing-box P核(支持订阅) + MosDNS"
     echo "2) 方案2：Mihomo + MosDNS"
-    echo "-------------------------------------------------"
-    echo -e "当前机器地址:${green_text}${local_ip}${reset}"
-    check_installed
-    check_core_status
     echo "-------------------------------------------------"
     read -p "请输入选项 (1/2): " choice
     case "$choice" in
