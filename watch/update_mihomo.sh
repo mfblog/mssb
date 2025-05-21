@@ -1,49 +1,46 @@
 #!/bin/bash
 
 # 记录当前时间
-echo "[$(date)] 开始更新 Sing-box..."
+echo "[$(date)] 开始更新 mihomo..."
 
 # 判断 CPU 架构
-if [[ $(uname -m) == "aarch64" ]]; then
-    TARGETARCH="arm64"
-    echo "[$(date)] 检测到 CPU 架构为 armv8。"
-elif [[ $(uname -m) == "x86_64" ]]; then
-    TARGETARCH="amd64"
-    echo "[$(date)] 检测到 CPU 架构为 amd64。"
-else
-    TARGETARCH="未知"
-    echo "[$(date)] 无法识别的 CPU 架构：$(uname -m)，脚本退出。"
-    exit 1  # 退出状态为 1，表示错误退出
-fi
+# 检测系统 CPU 架构，并返回标准格式（适用于多数构建/下载脚本）
+detect_architecture() {
+    case "$(uname -m)" in
+        x86_64)     echo "amd64" ;;    # 64 位 x86 架构
+        aarch64)    echo "arm64" ;;    # 64 位 ARM 架构
+        armv7l)     echo "armv7" ;;    # 32 位 ARM 架构（常见于树莓派）
+        armhf)      echo "armhf" ;;    # ARM 硬浮点
+        s390x)      echo "s390x" ;;    # IBM 架构
+        i386|i686)  echo "386" ;;      # 32 位 x86 架构
+        *)
+            echo -e "${yellow}不支持的CPU架构: $(uname -m)${reset}"
+            exit 1
+            ;;
+    esac
+}
 
-SING_BOX_URL=""https://github.com/herozmy/StoreHouse/releases/download/sing-box/sing-box-puernya-linux-${TARGETARCH}.tar.gz""
+# 安装mihomo
+mihomo_install() {
+    arch=$(detect_architecture)
+    download_url="https://github.com/herozmy/StoreHouse/releases/download/mihomo/mihomo-meta-linux-${arch}.tar.gz"
+    log "开始下载 Mihomo 核心..."
 
-# 下载最新的 sing-box
-echo "[$(date)] 正在从 $SING_BOX_URL 下载 Sing-box..."
-if wget -O /tmp/sing-box.tar.gz $SING_BOX_URL; then
-    echo "[$(date)] Sing-box 下载成功。"
-else
-    echo "[$(date)] Sing-box 下载失败，请检查网络连接或 URL 是否正确。"
-    exit 1
-fi
+    if ! wget -O /tmp/mihomo.tar.gz "$download_url"; then
+        log "Mihomo 下载失败，请检查网络连接"
+        exit 1
+    fi
 
-# 解压并安装 sing-box
-echo "[$(date)] 正在解压 Sing-box..."
-if tar -zxvf /tmp/sing-box.tar.gz -C /usr/local/bin; then
-    echo "[$(date)] Sing-box 解压成功。"
-else
-    echo "[$(date)] Sing-box 解压失败，请检查压缩包是否正确。"
-    exit 1
-fi
+    log "Mihomo 下载完成，开始安装"
+    tar -zxvf /tmp/mihomo.tar.gz -C /usr/local/bin > /dev/null 2>&1 || {
+        log "解压 Mihomo 失败，请检查压缩包完整性"
+        exit 1
+    }
 
-# 设置执行权限
-echo "[$(date)] 正在设置 Sing-box 可执行权限..."
-if chmod +x /usr/local/bin/sing-box; then
-    echo "[$(date)] 设置执行权限成功。"
-else
-    echo "[$(date)] 设置执行权限失败，请检查文件路径和权限设置。"
-    exit 1
-fi
+    chmod +x /usr/local/bin/mihomo || log "警告：未能设置 Mihomo 执行权限"
+    rm -f /tmp/mihomo.tar.gz
+    log "Mihomo 安装完成，临时文件已清理"
+}
 
 # 追加 Git 克隆命令，更新 UI 文件
 echo "[$(date)] 正在从 GitHub 克隆最新的 UI 文件..."
