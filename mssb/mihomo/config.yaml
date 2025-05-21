@@ -302,10 +302,9 @@ dns:
     - 'www.torrent.eu.org'
   default-nameserver:
     - 223.5.5.5
+  nameserver:
+    - 223.5.5.5
     - 223.6.6.6
-    nameserver:
-      - https://doh.pub/dns-query
-      - https://dns.alidns.com/dns-query
   fallback:
     - 1.1.1.1
     - 8.8.8.8
