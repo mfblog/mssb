@@ -8,6 +8,8 @@ global-ua: clash.meta
 mode: rule
 log-level: info
 allow-lan: true
+bind-address: "*"
+routing-mark: 1
 #统一延迟
 unified-delay: false
 #TCP 并发
@@ -18,13 +20,17 @@ redir-port: 7892
 mixed-port: 7893
 tproxy-port: 7894
 ipv6: false
+udp: true
+
 # 储存策略组选择和fakeip缓存
-profile: {store-selected: true, store-fake-ip: true}
+profile:
+  store-selected: true
+  store-fake-ip: true
 
 # 控制面板
 external-controller: 0.0.0.0:9090
 secret: "mssb123.."
-external-ui: ui
+external-ui: /mssb/mihomo/ui
 external-ui-url: "https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip"
   
 geodata-mode: false
@@ -66,16 +72,16 @@ sniffer:
     - "+.apple.com"
 
 #代理模式
-tun:
-  enable: true
-  stack: mixed
-  mtu: 9000
-  dns-hijack:
-    - "any:53"
-    - "tcp://any:53"
-  auto-route: true
-  auto-redirect: true
-  auto-detect-interface: true
+#tun:
+#  enable: true
+#  stack: mixed
+#  mtu: 9000
+#  dns-hijack:
+#    - "any:53"
+#    - "tcp://any:53"
+#  auto-route: true
+#  auto-redirect: true
+#  auto-detect-interface: true
   
 # DNS模块
 dns:
@@ -296,8 +302,10 @@ dns:
     - 'www.torrent.eu.org'
   default-nameserver:
     - 223.5.5.5
-  nameserver:
-    - 223.5.5.5
+    - 223.6.6.6
+    nameserver:
+      - https://doh.pub/dns-query
+      - https://dns.alidns.com/dns-query
   fallback:
     - 1.1.1.1
     - 8.8.8.8
