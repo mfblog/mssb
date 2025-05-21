@@ -705,6 +705,58 @@ add_cron_jobs() {
 # 主函数
 main() {
     echo "------------------------注意请使用root用户安装！！！-------------------------"
+    echo "请选择操作："
+    echo "1) 安装/更新代理转发服务"
+    echo "2) 停止所有转发服务"
+    echo "3) 停止所有服务并卸载 + 删除所有相关文件"
+    echo "-------------------------------------------------"
+    read -p "请输入选项 (1/2/3): " main_choice
+
+    case "$main_choice" in
+        2)
+            echo "⛔ 正在停止所有转发相关服务..."
+            supervisorctl stop all || echo "supervisorctl 未安装或未配置"
+            systemctl stop sing-box-router.service 2>/dev/null
+            systemctl stop mihomo-router.service 2>/dev/null
+            systemctl stop nftables.service 2>/dev/null
+            log "所有相关服务已停止。"
+            exit 0
+            ;;
+        3)
+            echo "⚠️ 正在停止并卸载所有服务..."
+            supervisorctl stop all || echo "supervisorctl 未安装或未配置"
+            systemctl stop sing-box-router.service 2>/dev/null
+            systemctl stop mihomo-router.service 2>/dev/null
+            systemctl stop nftables.service 2>/dev/null
+
+            # 卸载服务
+            systemctl disable sing-box-router.service 2>/dev/null
+            systemctl disable mihomo-router.service 2>/dev/null
+            systemctl disable nftables.service 2>/dev/null
+
+            # 删除文件夹
+            rm -rf /mssb
+            rm -rf /etc/systemd/system/sing-box-router.service
+            rm -rf /etc/systemd/system/mihomo-router.service
+            rm -rf /etc/nftables.conf
+            rm -rf /usr/local/bin/mosdns
+            # 删除 supervisor 配置文件，并卸载软件包
+            rm -f /etc/supervisor/supervisord.conf
+            apt-get remove -y supervisor >/dev/null 2>&1
+            apt-get purge -y supervisor >/dev/null 2>&1
+            # 重新加载 systemd 配置
+            systemctl daemon-reload
+            log "✅ 所有服务已停止，配置与文件已删除，supervisor 已卸载。"
+            exit 0
+            ;;
+        1)
+            echo "✅ 继续安装/更新代理服务..."
+            ;;
+        *)
+            log "无效选项，退出脚本。"
+            exit 1
+            ;;
+    esac
     update_system
     set_timezone
     echo "-------------------------------------------------"
