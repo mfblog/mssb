@@ -323,7 +323,7 @@ mihomo_customize_settings() {
                 break
             elif [[ -n "$suburl" ]]; then
                 sed -i "s|url: '机场订阅'|url: '$suburl'|" /mssb/mihomo/config.yaml
-                sed -i "s|interface-name: eth0|interface-name: $selected_interface|" /etc/mihomo/config.yaml
+                sed -i "s|interface-name: eth0|interface-name: $selected_interface|" /mssb/mihomo/config.yaml
                 log "订阅链接已写入。"
                 break
             else
