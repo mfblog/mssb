@@ -758,12 +758,29 @@ main() {
             ;;
         4)
             echo -e "${green_text}✅ 正在启动所有转发相关服务...${reset}"
-            systemctl daemon-reexec
-            systemctl start sing-box-router.service 2>/dev/null
-            systemctl start mihomo-router.service 2>/dev/null
-            systemctl start nftables.service 2>/dev/null
-            supervisorctl start all || echo "supervisorctl 未安装或未配置"
-            log "所有相关服务已启动。"
+            # 启动 sing-box-router
+            systemctl start sing-box-router.service 2>/dev/null || echo "❌ sing-box-router 启动失败"
+            # 启动 mihomo-router
+            systemctl start mihomo-router.service 2>/dev/null || echo "❌ mihomo-router 启动失败"
+            # 清空 nftables 前备份，防止错误导致无规则运行
+            cp /etc/nftables.conf /etc/nftables.conf.bak
+            # 语法检查 nft 配置，避免意外
+            if nft -c -f /etc/nftables.conf; then
+                nft flush ruleset
+                sleep 1
+                nft -f /etc/nftables.conf
+                systemctl start nftables.service 2>/dev/null || echo "❌ nftables 服务启动失败"
+            else
+                echo "⚠️ /etc/nftables.conf 有语法错误，已取消加载。"
+            fi
+            # 判断 supervisor 是否安装
+            if command -v supervisorctl &>/dev/null; then
+                supervisorctl start all || echo "❌ supervisorctl 执行失败"
+            else
+                echo "⚠️ supervisorctl 未安装"
+            fi
+
+            log "✅ 所有相关服务已启动完成。"
             exit 0
             ;;
         1)
