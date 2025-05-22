@@ -21,10 +21,9 @@ ipv6: true
 udp: true
 
 # 控制面板
-external-controller: 0.0.0.0:9090
-secret: "mssb123.."
+external-controller: :9090
 external-ui: /mssb/mihomo/ui
-external-ui-url: "https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip"
+external-ui-url: 'https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip'
 
 geox-url:
   # geoip: 'https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geoip.dat'

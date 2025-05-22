@@ -323,6 +323,7 @@ mihomo_customize_settings() {
                 break
             elif [[ -n "$suburl" ]]; then
                 sed -i "s|url: '机场订阅'|url: '$suburl'|" /mssb/mihomo/config.yaml
+                sed -i "s|interface-name: eth0|interface-name: $selected_interface|" /etc/mihomo/config.yaml
                 log "订阅链接已写入。"
                 break
             else
@@ -516,10 +517,12 @@ EOF
     if [ "$core_name" = "sing-box" ]; then
       # 启用 sing-box-router，禁用 mihomo-router
       systemctl disable --now mihomo-router &>/dev/null
+      rm -f /etc/systemd/system/mihomo-router.service
       systemctl enable --now sing-box-router || { log "启用相关服务 失败！退出脚本。"; exit 1; }
     elif [ "$core_name" = "mihomo" ]; then
       # 启用 mihomo-router，禁用 sing-box-router
       systemctl disable --now sing-box-router &>/dev/null
+      rm -f /etc/systemd/system/sing-box-router.service
       systemctl enable --now mihomo-router || { log "启用相关服务 失败！退出脚本。"; exit 1; }
     else
       log "未识别的 core_name: $core_name，跳过 启用相关服务。"
@@ -672,8 +675,8 @@ add_cron_jobs() {
     if [ "$core_name" = "sing-box" ]; then
         cron_jobs=(
             "0 4 * * 1 /watch/update_mosdns.sh # update_mosdns"
-            "10 4 * * 1 /watch/update_sb.sh    # update_sb"
             "15 4 * * 1 /watch/update_cn.sh    # update_cn"
+            "10 4 * * 1 /watch/update_sb.sh    # update_sb"
         )
 
         # 清除旧的 sing-box 相关任务
@@ -681,6 +684,7 @@ add_cron_jobs() {
     elif [ "$core_name" = "mihomo" ]; then
         cron_jobs=(
             "0 4 * * 1 /watch/update_mosdns.sh # update_mosdns"
+            "15 4 * * 1 /watch/update_cn.sh    # update_cn"
             "10 4 * * 1 /watch/update_mihomo.sh   # update_mihomo"
         )
 
@@ -704,17 +708,22 @@ add_cron_jobs() {
 
 # 主函数
 main() {
-    echo "------------------------注意请使用root用户安装！！！-------------------------"
-    echo "请选择操作："
-    echo "1) 安装/更新代理转发服务"
-    echo "2) 停止所有转发服务"
-    echo "3) 停止所有服务并卸载 + 删除所有相关文件"
-    echo "-------------------------------------------------"
-    read -p "请输入选项 (1/2/3): " main_choice
+    green_text="\e[32m"
+    red_text="\e[31m"
+    reset="\e[0m"
+
+    echo -e "${green_text}------------------------注意：请使用 root 用户安装！！！-------------------------${reset}"
+    echo -e "${green_text}请选择操作：${reset}"
+    echo -e "${green_text}1) 安装/更新代理转发服务${reset}"
+    echo -e "${red_text}2) 停止所有转发服务${reset}"
+    echo -e "${red_text}3) 停止所有服务并卸载 + 删除所有相关文件${reset}"
+    echo -e "${green_text}4) 启用所有服务${reset}"
+    echo -e "${green_text}-------------------------------------------------${reset}"
+    read -p "请输入选项 (1/2/3/4): " main_choice
 
     case "$main_choice" in
         2)
-            echo "⛔ 正在停止所有转发相关服务..."
+            echo -e "${red_text}⛔ 正在停止所有转发相关服务...${reset}"
             supervisorctl stop all || echo "supervisorctl 未安装或未配置"
             systemctl stop sing-box-router.service 2>/dev/null
             systemctl stop mihomo-router.service 2>/dev/null
@@ -723,55 +732,65 @@ main() {
             exit 0
             ;;
         3)
-            echo "⚠️ 正在停止并卸载所有服务..."
+            echo -e "${red_text}⚠️ 正在停止并卸载所有服务...${reset}"
             supervisorctl stop all || echo "supervisorctl 未安装或未配置"
             systemctl stop sing-box-router.service 2>/dev/null
             systemctl stop mihomo-router.service 2>/dev/null
             systemctl stop nftables.service 2>/dev/null
 
-            # 卸载服务
             systemctl disable sing-box-router.service 2>/dev/null
             systemctl disable mihomo-router.service 2>/dev/null
             systemctl disable nftables.service 2>/dev/null
 
-            # 删除文件夹
             rm -rf /mssb
             rm -rf /etc/systemd/system/sing-box-router.service
             rm -rf /etc/systemd/system/mihomo-router.service
             rm -rf /etc/nftables.conf
             rm -rf /usr/local/bin/mosdns
-            # 删除 supervisor 配置文件，并卸载软件包
             rm -f /etc/supervisor/supervisord.conf
             apt-get remove -y supervisor >/dev/null 2>&1
             apt-get purge -y supervisor >/dev/null 2>&1
-            # 重新加载 systemd 配置
             systemctl daemon-reload
+
             log "✅ 所有服务已停止，配置与文件已删除，supervisor 已卸载。"
             exit 0
             ;;
+        4)
+            echo -e "${green_text}✅ 正在启动所有转发相关服务...${reset}"
+            systemctl daemon-reexec
+            systemctl start sing-box-router.service 2>/dev/null
+            systemctl start mihomo-router.service 2>/dev/null
+            systemctl start nftables.service 2>/dev/null
+            supervisorctl start all || echo "supervisorctl 未安装或未配置"
+            log "所有相关服务已启动。"
+            exit 0
+            ;;
         1)
-            echo "✅ 继续安装/更新代理服务..."
+            echo -e "${green_text}✅ 继续安装/更新代理服务...${reset}"
             ;;
         *)
             log "无效选项，退出脚本。"
             exit 1
             ;;
     esac
+
     update_system
     set_timezone
-    echo "-------------------------------------------------"
+
+    echo -e "${green_text}-------------------------------------------------${reset}"
     echo -e "${green_text}Fake-ip 网关代理方案：sing-box P核/mihomo + MosDNS${reset}"
     echo "---支持 debian，其他系统未测试。理论上支持debian/ubuntu 安装前请确保系统未安装其他代理软件---"
-    echo "---完全参考 https://github.com/herozmy/StoreHouse/tree/latest 主要是想有个界面修改配置以及监听重启---"
+    echo "---完全参考 https://github.com/herozmy/StoreHouse/tree/latest ---"
     echo -e "当前机器地址:${green_text}${local_ip}${reset}"
     check_installed
     check_core_status
-    echo "-------------------------------------------------"
+    echo -e "${green_text}-------------------------------------------------${reset}"
     echo
-    echo "请选择安装方案："
+
+    echo -e "${green_text}请选择安装方案：${reset}"
     echo "1) 方案1：Sing-box P核(支持订阅) + MosDNS"
     echo "2) 方案2：Mihomo + MosDNS"
-    echo "-------------------------------------------------"
+    echo -e "${green_text}-------------------------------------------------${reset}"
     read -p "请输入选项 (1/2): " choice
     case "$choice" in
         1)
@@ -795,10 +814,10 @@ main() {
             install_mihomo
             cp_config_files
             mihomo_configure_files
-            mihomo_customize_settings
             check_ui
             mihomo_install_ui
             install_tproxy
+            mihomo_customize_settings
             reload_service
             ;;
         *)
@@ -808,7 +827,7 @@ main() {
     esac
 
     echo
-    echo "-------------------------------------------------"
+    echo -e "${green_text}-------------------------------------------------${reset}"
     echo "是否添加以下定时更新任务？每周一凌晨执行："
     echo "- 4:00 更新 MosDNS"
     if [ "$core_name" = "sing-box" ]; then
@@ -817,7 +836,7 @@ main() {
     else
         echo "- 4:10 更新 Mihomo"
     fi
-    echo "-------------------------------------------------"
+    echo -e "${green_text}-------------------------------------------------${reset}"
     read -p "是否添加定时任务？(y/n): " enable_cron
     if [[ "$enable_cron" == "y" || "$enable_cron" == "Y" ]]; then
         add_cron_jobs
@@ -827,5 +846,6 @@ main() {
 
     log "脚本执行完成。"
 }
+
 
 main
