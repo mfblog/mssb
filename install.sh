@@ -17,7 +17,7 @@ log() {
 # 系统更新和安装必要软件
 update_system() {
     log "开始更新系统..."
-    if ! apt update && apt -y upgrade; then
+    if ! apt update; then
         log "${red}系统更新失败，退出！${reset}"
         exit 1
     fi
