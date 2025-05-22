@@ -322,7 +322,8 @@ mihomo_customize_settings() {
                 log "已取消自动生成配置，请手动编辑 /mssb/mihomo/config.yaml"
                 break
             elif [[ -n "$suburl" ]]; then
-                sed -i "s|url: '机场订阅'|url: '$suburl'|" /mssb/mihomo/config.yaml
+                escaped_url=$(printf '%s\n' "$suburl" | sed 's/[&/\]/\\&/g')
+                sed -i "s|url: '机场订阅'|url: '$escaped_url'|" /mssb/mihomo/config.yaml
                 sed -i "s|interface-name: eth0|interface-name: $selected_interface|" /mssb/mihomo/config.yaml
                 log "订阅链接已写入。"
                 break
