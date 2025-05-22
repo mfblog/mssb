@@ -844,6 +844,21 @@ main() {
         log "用户选择不添加定时任务。"
     fi
 
+    echo -e "${green_text}-------------------------------------------------${reset}"
+    echo -e "${green_text}🎉 安装成功！以下是服务信息：${reset}"
+    echo -e "📦 Supervisor 管理界面：${green_text}http://${local_ip}:9001${reset}"
+    echo -e "   - 用户名：mssb"
+    echo -e "   - 密码：mssb123.."
+    echo
+    echo -e "🗂️  文件管理服务 Filebrowser：${green_text}http://${local_ip}:8088${reset}"
+    echo -e "   - 用户名：admin"
+    echo -e "   - 密码：admin"
+    echo
+    echo -e "🕸️  Sing-box/Mihomo 面板 UI：${green_text}http://${local_ip}:9090${reset}"
+    echo -e "   - 密码：mssb123.."
+    echo -e "${green_text}-------------------------------------------------${reset}"
+
+
     log "脚本执行完成。"
 }
 
