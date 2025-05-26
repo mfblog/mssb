@@ -47,7 +47,11 @@
 仅适用于 Debian 12 环境：
 
 ```bash
-git clone https://github.com/baozaodetudou/mssb.git -b mihomo && cd mssb && bash install.sh
+# 执行需要代理如果机器没有代理可以通过执行命令export其他机器上的代理比如我mac电脑有surge或者win有mihomo允许局域网
+# 就可以类似这样来实现临时代理加速
+export https_proxy=http://192.168.12.239:6152;export http_proxy=http://192.168.12.239:6152;export all_proxy=socks5://192.168.12.239:6153
+# 拉取脚本执行安装；安装，卸载停止启动都是这个脚本
+git clone --depth=1 https://github.com/baozaodetudou/mssb.git && cd mssb && bash install.sh
 ```
 
 ---
