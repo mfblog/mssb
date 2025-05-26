@@ -445,8 +445,9 @@ EOF
     fi
     ################################写入nftables################################
     check_interfaces
-    echo "" > "/etc/nftables.conf"
-    cat <<EOF > "/etc/nftables.conf"
+    if [ "$core_name" = "sing-box" ]; then
+          echo "" > "/etc/nftables.conf"
+              cat <<EOF > "/etc/nftables.conf"
 #!/usr/sbin/nft -f
 flush ruleset
 table inet $core_name {
@@ -507,6 +508,75 @@ table inet $core_name {
   }
 }
 EOF
+        elif [ "$core_name" = "mihomo" ]; then
+          echo "" > "/etc/nftables.conf"
+              cat <<EOF > "/etc/nftables.conf"
+#!/usr/sbin/nft -f
+flush ruleset
+table inet $core_name {
+  set local_ipv4 {
+    type ipv4_addr
+    flags interval
+    elements = {
+      10.0.0.0/8,
+      127.0.0.0/8,
+      169.254.0.0/16,
+      172.16.0.0/12,
+      192.168.0.0/16,
+      240.0.0.0/4
+    }
+  }
+
+  set local_ipv6 {
+    type ipv6_addr
+    flags interval
+    elements = {
+      ::ffff:0.0.0.0/96,
+      64:ff9b::/96,
+      100::/64,
+      2001::/32,
+      2001:10::/28,
+      2001:20::/28,
+      2001:db8::/32,
+      2002::/16,
+      fc00::/7,
+      fe80::/10
+    }
+  }
+
+  chain ${core_name}-tproxy {
+    fib daddr type { unspec, local, anycast, multicast } return
+    ip daddr @local_ipv4 return
+    ip6 daddr @local_ipv6 return
+    udp dport { 123 } return
+    udp dport { 53 } accept
+    meta l4proto { tcp, udp } meta mark set 1 tproxy to :7896 accept
+  }
+
+  chain ${core_name}-mark {
+    fib daddr type { unspec, local, anycast, multicast } return
+    ip daddr @local_ipv4 return
+    ip6 daddr @local_ipv6 return
+    udp dport { 123 } return
+    udp dport { 53 } accept
+    meta mark set 1
+  }
+
+  chain mangle-output {
+    type route hook output priority mangle; policy accept;
+    meta l4proto { tcp, udp } skgid != 1 ct direction original goto ${core_name}-mark
+  }
+
+  chain mangle-prerouting {
+    type filter hook prerouting priority mangle; policy accept;
+    iifname { wg0, lo, $selected_interface } meta l4proto { tcp, udp } ct direction original goto ${core_name}-tproxy
+  }
+}
+EOF
+        else
+          log "未识别的 core_name: $core_name，跳过 启用相关服务。"
+        fi
+
     echo -e "${green_text}nftables规则写入完成${reset}"
     sleep 1
     echo "清空 nftalbes 规则"
