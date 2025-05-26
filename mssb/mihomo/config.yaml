@@ -236,8 +236,8 @@ rules:
   - DOMAIN-SUFFIX,youtube.com,🚀 手动切换
   - DOMAIN-SUFFIX,mytvsuper.com,🚀 手动切换
 
-  - RULE-SET,Local_Direct,⛔ 禁止代理
-  - RULE-SET,Custom_Direct,⛔ 禁止代理
+#  - RULE-SET,Local_Direct,⛔ 禁止代理
+#  - RULE-SET,Custom_Direct,⛔ 禁止代理
   #- RULE-SET,Tailscale-Derp,⛔ 禁止代理
   - RULE-SET,Private,🔒 私有网络
   - RULE-SET,Direct,🎯 全球直连
