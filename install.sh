@@ -139,8 +139,10 @@ install_mosdns() {
   log "开始下载 MosDNS..."
   arch=$(detect_architecture)
   log "系统架构是：$arch"
-  LATEST_MOSDNS_VERSION=$(curl -sL -o /dev/null -w %{url_effective} https://github.com/IrineSistiana/mosdns/releases/latest | awk -F '/' '{print $NF}')
-  MOSDNS_URL="https://github.com/IrineSistiana/mosdns/releases/download/${LATEST_MOSDNS_VERSION}/mosdns-linux-$arch.zip"
+#  LATEST_MOSDNS_VERSION=$(curl -sL -o /dev/null -w %{url_effective} https://github.com/IrineSistiana/mosdns/releases/latest | awk -F '/' '{print $NF}')
+#  MOSDNS_URL="https://github.com/IrineSistiana/mosdns/releases/download/${LATEST_MOSDNS_VERSION}/mosdns-linux-$arch.zip"
+  MOSDNS_URL="https://github.com/herozmy/StoreHouse/releases/download/mosdns/mosdns-linux-$arch.zip"
+
 
   log "从 $MOSDNS_URL 下载 MosDNS..."
   if curl -L -o /tmp/mosdns.zip "$MOSDNS_URL"; then
@@ -359,7 +361,7 @@ check_ui() {
 }
 # 下载UI源码
 git_ui(){
-    if git clone https://github.com/Zephyruso/zashboard.git -b gh-pages /mssb/${core_name}/ui; then
+    if git clone --depth=1 https://github.com/Zephyruso/zashboard.git -b gh-pages /mssb/${core_name}/ui; then
         echo -e "UI 源码拉取${green_text}成功${reset}。"
     else
         echo "拉取源码失败，请手动下载源码并解压至 /mssb/${core_name}/ui."

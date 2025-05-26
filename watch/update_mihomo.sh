@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# 定义颜色变量
+yellow="\033[33m"
+reset="\033[0m"
+
 # 记录当前时间
 echo "[$(date)] 开始更新 mihomo..."
 
@@ -44,7 +48,7 @@ mihomo_install() {
 
 # 追加 Git 克隆命令，更新 UI 文件
 echo "[$(date)] 正在从 GitHub 克隆最新的 UI 文件..."
-if git clone --depth=1 https://github.com/metacubex/metacubexd.git -b gh-pages /tmp/ui; then
+if git clone --depth=1 https://github.com/Zephyruso/zashboard.git -b gh-pages -b gh-pages /tmp/ui; then
     cp -r /tmp/ui/* /mssb/sing-box/ui/
     echo "[$(date)] UI 文件克隆成功。"
 else

@@ -3,20 +3,28 @@
 # 记录当前时间
 echo "[$(date)] 开始更新 Sing-box..."
 
-# 判断 CPU 架构
-if [[ $(uname -m) == "aarch64" ]]; then
-    TARGETARCH="arm64"
-    echo "[$(date)] 检测到 CPU 架构为 armv8。"
-elif [[ $(uname -m) == "x86_64" ]]; then
-    TARGETARCH="amd64"
-    echo "[$(date)] 检测到 CPU 架构为 amd64。"
-else
-    TARGETARCH="未知"
-    echo "[$(date)] 无法识别的 CPU 架构：$(uname -m)，脚本退出。"
-    exit 1  # 退出状态为 1，表示错误退出
-fi
+# 定义颜色变量
+yellow="\033[33m"
+reset="\033[0m"
 
-SING_BOX_URL=""https://github.com/herozmy/StoreHouse/releases/download/sing-box/sing-box-puernya-linux-${TARGETARCH}.tar.gz""
+# 获取系统架构
+# 检测系统 CPU 架构，并返回标准格式（适用于多数构建/下载脚本）
+detect_architecture() {
+    case "$(uname -m)" in
+        x86_64)     echo "amd64" ;;    # 64 位 x86 架构
+        aarch64)    echo "arm64" ;;    # 64 位 ARM 架构
+        armv7l)     echo "armv7" ;;    # 32 位 ARM 架构（常见于树莓派）
+        armhf)      echo "armhf" ;;    # ARM 硬浮点
+        s390x)      echo "s390x" ;;    # IBM 架构
+        i386|i686)  echo "386" ;;      # 32 位 x86 架构
+        *)
+            echo -e "${yellow}不支持的CPU架构: $(uname -m)${reset}"
+            exit 1
+            ;;
+    esac
+}
+arch=$(detect_architecture)
+SING_BOX_URL=""https://github.com/herozmy/StoreHouse/releases/download/sing-box/sing-box-puernya-linux-${arch}.tar.gz""
 
 # 下载最新的 sing-box
 echo "[$(date)] 正在从 $SING_BOX_URL 下载 Sing-box..."
@@ -47,7 +55,7 @@ fi
 
 # 追加 Git 克隆命令，更新 UI 文件
 echo "[$(date)] 正在从 GitHub 克隆最新的 UI 文件..."
-if git clone --depth=1 https://github.com/metacubex/metacubexd.git -b gh-pages /tmp/ui; then
+if git clone --depth=1 https://github.com/Zephyruso/zashboard.git -b gh-pages /tmp/ui; then
     cp -r /tmp/ui/* /mssb/sing-box/ui/
     echo "[$(date)] UI 文件克隆成功。"
 else

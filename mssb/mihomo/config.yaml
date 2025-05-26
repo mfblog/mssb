@@ -1,24 +1,56 @@
-port: 7890
-socks-port: 7891
-mixed-port: 7892
-redir-port: 7893
-tproxy-port: 7896
-unified-delay: true
-geodata-mode: false
-geodata-loader: standard
-geo-auto-update: true
-geo-update-interval: 24
-tcp-concurrent: true
-find-process-mode: strict
-global-client-fingerprint: chrome
-bind-address: "*"
-allow-lan: true
-routing-mark: 1
-interface-name: eth0
+## ----全局配置------
+
+#运行模式
 mode: rule
+# 日志级别
 log-level: info
+#统一延迟
+unified-delay: true
+#TCP 并发
+tcp-concurrent: true
+# 网口指定，不要删除，脚本会自动修改
+interface-name: eth0
+# v6设置
 ipv6: true
+# udp设置
 udp: true
+# 端口相关设置
+# HTTP 代理端口 用于传统的 HTTP 代理
+port: 7890
+# SOCKS5 代理端口
+socks-port: 7891
+# 混合端口（HTTP + SOCKS5）
+#启用后，这个端口同时支持 HTTP 和 SOCKS5 协议
+mixed-port: 7892
+# Redirect 模式端口（用于 Linux 下 iptables 的 TUN/透明代理
+redir-port: 7893
+# TPROXY 模式端口（Transparent Proxy）不要修改脚本需要通过这个端口进行转发
+#也用于透明代理，但相比 redir-port，TPROXY 可以保留原始源地址
+tproxy-port: 7896
+# 是否启用 新一代 GEO 数据（geoip、geosite）模式
+geodata-mode: false
+# GEO 数据加载方式：
+#
+#standard：使用官方推荐的稳定数据格式（配合 geosite.dat, geoip.dat）
+#
+#lite：更轻量，数据更小（裁剪版）
+#
+#mmdb：兼容传统 Clash 的 Country.mmdb
+geodata-loader: standard
+# 是否自动更新 geo 数据
+geo-auto-update: true
+# 每 24 小时更新一次
+geo-update-interval: 24
+# 匹配进程 always/strict/off 流量进程识别
+find-process-mode: strict
+# 指纹伪装
+global-client-fingerprint: chrome
+# "*" 表示监听所有网卡（包括外网 IP、局域网 IP）
+bind-address: "*"
+# 是否允许 LAN 内其他设备连接代理
+allow-lan: true
+#  高级路由标记
+routing-mark: 1
 
 # 控制面板
 external-controller: :9090
@@ -28,6 +60,8 @@ external-ui-url: 'https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-p
 geox-url:
   # geoip: 'https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geoip.dat'
   # geosite: 'https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite.dat'
+  geoip: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
+  geosite: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
   mmdb: 'https://gitlab.com/Masaiki/GeoIP2-CN/-/raw/release/Country.mmdb'
   asn: 'https://gitlab.com/Loon0x00/loon_data/-/raw/main/geo/GeoLite2-ASN.mmdb'
 
@@ -36,29 +70,19 @@ profile:
   store-fake-ip: true
 
 sniffer:
-  enable: true
-  force-dns-mapping: true
-  parse-pure-ip: true
-  override-destination: true
-  sniff:
-    HTTP:
-      ports: [80, 8080-8880]
-      override-destination: true
-    TLS:
-      ports: [443, 8443]
-    QUIC:
-      ports: [443, 8443]
-  force-domain:
-    - +.v2ex.com
-
-  skip-domain:
-    - Mijia Cloud
+  # 搭配mosdns要关闭不能打开不然转发失败
+  enable: false
+tun:
+  # 搭配mosdns要关闭不能打开不然转发失败
+  enable: false
 
 dns:
   enable: true
+  # 默认端口也不能修改
   listen: 0.0.0.0:6666
   ipv6: true
   enhanced-mode: fake-ip
+  # 这个也不能修改和mosdns联动的
   fake-ip-range: 28.0.0.1/8
   fake-ip-filter:
     - "*"
@@ -79,9 +103,6 @@ proxy-providers:
     url: '机场订阅'
     <<: *NodeParam
     path: './proxy_providers/sub.yaml'
-    override:
-      additional-prefix: "[sub] "
-
 
 # 锚点 - 节点筛选组
 FilterHK: &FilterHK '^(?=.*((?i)🇭🇰|香港|(\b(HK|Hong)\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
@@ -108,199 +129,149 @@ RuleProviders: &RuleProviders {type: http, behavior: classical, interval: 86400,
 
 # 策略组
 proxy-groups:
-  - {name: 游戏选择, type: select, include-all-providers: true, filter: *FilterGame, proxies: [DIRECT, 全球选择]}
-  - {name: 全球选择, type: select, include-all-providers: true, filter: *FilterAll}
-  - {name: 境外下载, type: select, include-all-providers: true, filter: *FilterAll, proxies: [DIRECT]}
-  - {name: AI, type: select, include-all-providers: true, filter: *FilterAll}
-  - {name: TikTok, type: select, include-all-providers: true, filter: *FilterAll}
-  - {name: Telegram, type: select, proxies: [香港策略, 台湾策略, 日本策略, 韩国策略, 新国策略, 美国策略, 英国策略, 法国策略, 德国策略]}
-  - {name: App Store, type: select, proxies: [DIRECT, 香港策略, 台湾策略, 日本策略, 韩国策略, 新国策略, 美国策略, 英国策略, 法国策略, 德国策略]}
-  - {name: Apple ID, type: select, proxies: [DIRECT, 香港策略, 台湾策略, 日本策略, 韩国策略, 新国策略, 美国策略, 英国策略, 法国策略, 德国策略]}
-  - {name: TestFlight, type: select, proxies: [DIRECT, 香港策略, 台湾策略, 日本策略, 韩国策略, 新国策略, 美国策略, 英国策略, 法国策略, 德国策略]}
-  - {name: 1Password, type: select, proxies: [DIRECT, 香港策略, 台湾策略, 日本策略, 韩国策略, 新国策略, 美国策略, 英国策略, 法国策略, 德国策略]}
-  - {name: Microsoft, type: select, proxies: [DIRECT, 香港策略, 台湾策略, 日本策略, 韩国策略, 新国策略, 美国策略, 英国策略, 法国策略, 德国策略]}
-  - {name: Netflix, type: select, proxies: [香港策略, 台湾策略, 日本策略, 韩国策略, 新国策略, 美国策略, 英国策略, 法国策略, 德国策略]}
-  - {name: Emby, type: select, proxies: [DIRECT, 香港策略, 台湾策略, 日本策略, 韩国策略, 新国策略, 美国策略, 英国策略, 法国策略, 德国策略]}
-  - {name: 兜底策略, type: select, proxies: [香港策略, 台湾策略, 日本策略, 韩国策略, 新国策略, 美国策略, 英国策略, 法国策略, 德国策略, DIRECT]}
+  - {name: ✈️ 节点选择, type: select, proxies: [自建节点, 🚀 手动切换, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点, 📺 省流节点, 👍 高级节点, 🎯 全球直连]}
+  - {name: 自建节点, type: fallback, include-all-providers: true, filter: "(?i)zj|us-bwg01|hk-claw|clawjp2|akhk|haka-hk|dimm"}
+  - {name: 🐟 漏网之鱼, type: select, proxies: [🎯 全球直连, ✈️ 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点, 📺 省流节点, 👍 高级节点, 🚀 手动切换]}
+  - {name: 📈 网络测试, type: select, proxies: [🎯 全球直连, ✈️ 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇰🇷 韩国节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点]}
+  - {name: 🚀 手动切换, type: select, include-all-providers: true}
+  - {name: 🎮 游戏平台, type: select, proxies: [🎯 全球直连, ✈️ 节点选择, 👍 高级节点]}
+  #  - {name: 🎥 奈飞视频, type: select, proxies: [🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
+  #  - {name: 📽️ 迪士尼+, type: select, proxies: [🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
+  - {name: 🎞️ 国外媒体, type: select, proxies: [🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
+  #  - {name: 📹 油管视频, type: select, proxies: [✈️ 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
+  - {name: 🎵 TikTok, type: select, proxies: [🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
+  #  - {name: 📺 哔哩哔哩, type: select, proxies: [🎯 全球直连, ✈️ 节点选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点]}
+  - {name: 🤖 人工智能, type: select, proxies: [ 🇺🇸 美国节点, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点,✈️ 节点选择]}
+  - {name: 🎬 国内媒体, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
+  - {name: Ⓜ️ 微软云盘, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
+  - {name: Ⓜ️ 微软服务, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
+  - {name: 🛒 亚马逊, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
+  #  - {name: 📢 谷歌中国, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
+  - {name: 🍎 苹果服务, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
+  #  - {name: ☁️ Cloudflare, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
+  - {name: 📲 Telegram, type: select, proxies: [✈️ 节点选择]}
+  #  - {name: 🖥️ 直连软件, type: select, proxies: [🎯 全球直连]}
+  - {name: 🔒 私有网络, type: select, proxies: [🎯 全球直连]}
+  - {name: 🎯 全球直连, type: select, proxies: [DIRECT]}
+  - {name: ⛔ 禁止代理, type: select, proxies: [🎯 全球直连]}
+  - {name: ✅ 允许代理, type: select, proxies: [✈️ 节点选择]}
+  - {name: 📺 省流节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(0.[1-5]|低倍率|省流|大流量)"}
+  - {name: 👍 高级节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(专线|专用|高级|直连|急速|高倍率|游戏|game|Game|GAME|IEPL|IPLC|AIA|CTM|CC|iepl|iplc|aia|ctm|cc|AC)"}
+  - {name: 🇭🇰 香港节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)港|hk|hongkong|hong kong"}
+  - {name: 🇹🇼 台湾节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)台|tw|taiwan"}
+  - {name: 🇯🇵 日本节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)日本|jp|japan"}
+  - {name: 🇸🇬 新加坡节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)新|sg|singapore"}
+  - {name: 🇺🇸 美国节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)美|us|unitedstates|united states"}
+  - {name: 🇰🇷 韩国节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)韩|kr|korea"}
+  # - {name: 🇹🇭 泰国节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)泰|th|thailand"}
+  # - {name: 🇩🇪 德国节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)德|de|germany"}
+  # - {name: 🇬🇧 英国节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)英|uk|united kingdom"}
+  # - {name: 🇨🇦 加拿大节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)加拿大|ca|canada"}
+  # - {name: 🇦🇺 澳大利亚节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)澳大利亚|au|australia"}
+  # - {name: 🇲🇾 马来西亚节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)马来西亚|my|malaysia"}
+  # - {name: 🇮🇳 印度节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)印度|in|india"}
+  # - {name: 🇹🇷 土耳其节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)土耳其|tr|turkey"}
+  # - {name: 🇦🇷 阿根廷节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)阿根廷|ar|argentina"}
 
-  - {name: 香港策略, type: select, proxies: [⏱香港时延优选策略组, 🚥香港故障转移策略组, 🎛香港负载均衡策略组]}
-  - {name: 台湾策略, type: select, proxies: [⏱台湾时延优选策略组, 🚥台湾故障转移策略组, 🎛台湾负载均衡策略组]}
-  - {name: 日本策略, type: select, proxies: [⏱日本时延优选策略组, 🚥日本故障转移策略组, 🎛日本负载均衡策略组]}
-  - {name: 韩国策略, type: select, proxies: [⏱韩国时延优选策略组, 🚥韩国故障转移策略组, 🎛韩国负载均衡策略组]}
-  - {name: 新国策略, type: select, proxies: [⏱新国时延优选策略组, 🚥新国故障转移策略组, 🎛新国负载均衡策略组]}
-  - {name: 美国策略, type: select, proxies: [⏱美国时延优选策略组, 🚥美国故障转移策略组, 🎛美国负载均衡策略组]}
-  - {name: 英国策略, type: select, proxies: [⏱英国时延优选策略组, 🚥英国故障转移策略组, 🎛英国负载均衡策略组]}
-  - {name: 法国策略, type: select, proxies: [⏱法国时延优选策略组, 🚥法国故障转移策略组, 🎛法国负载均衡策略组]}
-  - {name: 德国策略, type: select, proxies: [⏱德国时延优选策略组, 🚥德国故障转移策略组, 🎛德国负载均衡策略组]}
-
-  # 时延优选策略组
-  - {name: ⏱香港时延优选策略组, <<: *UrlTest, filter: *FilterHK}
-  - {name: ⏱台湾时延优选策略组, <<: *UrlTest, filter: *FilterTW}
-  - {name: ⏱日本时延优选策略组, <<: *UrlTest, filter: *FilterJP}
-  - {name: ⏱韩国时延优选策略组, <<: *UrlTest, filter: *FilterKR}
-  - {name: ⏱新国时延优选策略组, <<: *UrlTest, filter: *FilterSG}
-  - {name: ⏱美国时延优选策略组, <<: *UrlTest, filter: *FilterUS}
-  - {name: ⏱英国时延优选策略组, <<: *UrlTest, filter: *FilterUK}
-  - {name: ⏱法国时延优选策略组, <<: *UrlTest, filter: *FilterFR}
-  - {name: ⏱德国时延优选策略组, <<: *UrlTest, filter: *FilterDE}
-
-  # 故障转移策略组
-  - {name: 🚥香港故障转移策略组, <<: *FallBack, filter: *FilterHK}
-  - {name: 🚥台湾故障转移策略组, <<: *FallBack, filter: *FilterTW}
-  - {name: 🚥日本故障转移策略组, <<: *FallBack, filter: *FilterJP}
-  - {name: 🚥韩国故障转移策略组, <<: *FallBack, filter: *FilterKR}
-  - {name: 🚥新国故障转移策略组, <<: *FallBack, filter: *FilterSG}
-  - {name: 🚥美国故障转移策略组, <<: *FallBack, filter: *FilterUS}
-  - {name: 🚥英国故障转移策略组, <<: *FallBack, filter: *FilterUK}
-  - {name: 🚥法国故障转移策略组, <<: *FallBack, filter: *FilterFR}
-  - {name: 🚥德国故障转移策略组, <<: *FallBack, filter: *FilterDE}
-
-  # 负载均衡策略组
-  - {name: 🎛香港负载均衡策略组, <<: *LoadBalance, filter: *FilterHK}
-  - {name: 🎛台湾负载均衡策略组, <<: *LoadBalance, filter: *FilterTW}
-  - {name: 🎛日本负载均衡策略组, <<: *LoadBalance, filter: *FilterJP}
-  - {name: 🎛韩国负载均衡策略组, <<: *LoadBalance, filter: *FilterKR}
-  - {name: 🎛新国负载均衡策略组, <<: *LoadBalance, filter: *FilterSG}
-  - {name: 🎛美国负载均衡策略组, <<: *LoadBalance, filter: *FilterUS}
-  - {name: 🎛英国负载均衡策略组, <<: *LoadBalance, filter: *FilterUK}
-  - {name: 🎛法国负载均衡策略组, <<: *LoadBalance, filter: *FilterFR}
-  - {name: 🎛德国负载均衡策略组, <<: *LoadBalance, filter: *FilterDE}
-
-# 订阅规则
 rule-providers:
-  Lan:
-    <<: *RuleProviders
-    path: './rules/Lan.yaml'
-    url: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Lan/Lan.yaml'
+  fakeip-filter: {type: http, behavior: domain, format: mrs, path: ./RuleSet/fakeip-filter.mrs, url: "https://docker.lzdrc.cf/https://raw.githubusercontent.com/DustinWin/ruleset_geodata/refs/heads/mihomo-ruleset/fakeip-filter.mrs", interval: 86400}
+  Custom_Direct: {type: http, behavior: classical, format: text, path: ./RuleSet/Custom_Direct.list, url: "https://raw.githubusercontent.com/sunbroke555/mihomo/refs/heads/main/RuleSet/Custom_Direct.list", interval: 86400}
+  #Tailscale-Derp: {type: http, behavior: classical, format: text, path: ./RuleSet/Tailscale-Derp.list, url: "**自定义", interval: 86400}
+  Custom_Proxy: {type: http, behavior: classical, format: text, path: ./RuleSet/Custom_Proxy.list, url: "https://raw.githubusercontent.com/sunbroke555/mihomo/refs/heads/main/RuleSet/Custom_Proxy.list", interval: 86400}
+  Private: {type: http, behavior: classical, format: text, path: ./RuleSet/Lan.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Lan/Lan.list", interval: 86400}
+  Direct: {type: http, behavior: classical, format: text, path: ./RuleSet/Direct.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Direct/Direct.list", interval: 86400}
+  # Applications: {type: http, behavior: classical, format: text, path: ./RuleSet/Applications.list, url: "https://cdn.jsdelivr.net/gh/DustinWin/ruleset_geodata@clash-ruleset/applications.list", interval: 86400}
+  Networktest: {type: http, behavior: classical, format: text, path: ./RuleSet/Networktest.list, url: "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/refs/heads/mihomo-ruleset/networktest.list", interval: 86400}
+  Apple: {type: http, behavior: classical, format: text, path: ./RuleSet/Apple.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.list", interval: 86400}
+  OpenAI: {type: http, behavior: classical, format: text, path: ./RuleSet/OpenAI.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/OpenAI/OpenAI.list", interval: 86400}
+  Bing: {type: http, behavior: classical, format: text, path: ./RuleSet/Bing.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Bing/Bing.list", interval: 86400}
+  Gemini: {type: http, behavior: classical, format: text, path: ./RuleSet/Gemini.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Gemini/Gemini.list", interval: 86400}
+  Claude: {type: http, behavior: classical, format: text, path: ./RuleSet/Claude.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Claude/Claude.list", interval: 86400}
+  Copilot: {type: http, behavior: classical, format: text, path: ./RuleSet/Copilot.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/Copilot/Copilot.list", interval: 86400}
+  AmazonCN: {type: http, behavior: classical, format: text, path: ./RuleSet/AmazonCN.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AmazonCN/AmazonCN.list", interval: 86400}
+  #  Cloudflarecn: {type: http, behavior: classical, format: text, path: ./RuleSet/Cloudflarecn.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Cloudflarecn/Cloudflarecn.list", interval: 86400}
+  #  GoogleCN: {type: http, behavior: classical, format: text, path: ./RuleSet/GoogleCN.list, url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/GoogleCN.list", interval: 86400}
+  OneDrive: {type: http, behavior: classical, format: text, path: ./RuleSet/OneDrive.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/OneDrive/OneDrive.list", interval: 86400}
+  Microsoft: {type: http, behavior: classical, format: text, path: ./RuleSet/Microsoft.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.list", interval: 86400}
+  Amazon: {type: http, behavior: classical, format: text, path: ./RuleSet/Amazon.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Amazon/Amazon.list", interval: 86400}
+  Telegram: {type: http, behavior: classical, format: text, path: ./RuleSet/Telegram.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.list", interval: 86400}
+  Epic: {type: http, behavior: classical, format: text, path: ./RuleSet/Epic.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Epic/Epic.list", interval: 86400}
+  Sony: {type: http, behavior: classical, format: text, path: ./RuleSet/Sony.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Sony/Sony.list", interval: 86400}
+  Steam: {type: http, behavior: classical, format: text, path: ./RuleSet/Steam.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Steam/Steam.list", interval: 86400}
+  Nintendo: {type: http, behavior: classical, format: text, path: ./RuleSet/Nintendo.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Nintendo/Nintendo.list", interval: 86400}
+  #  Cloudflare: {type: http, behavior: classical, format: text, path: ./RuleSet/Cloudflare.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Cloudflare/Cloudflare.list", interval: 86400}
+  #  YouTube: {type: http, behavior: classical, format: text, path: ./RuleSet/YouTube.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/YouTube/YouTube.list", interval: 86400}
+  #  Netflix: {type: http, behavior: classical, format: text, path: ./RuleSet/Netflix.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Netflix/Netflix.list", interval: 86400}
+  #  Disney: {type: http, behavior: classical, format: text, path: ./RuleSet/Disney.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Disney/Disney.list", interval: 86400}
+  #  BiliBili: {type: http, behavior: classical, format: text, path: ./RuleSet/BiliBili.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/BiliBili/BiliBili.list", interval: 86400}
+  ChinaMedia: {type: http, behavior: classical, format: text, path: ./RuleSet/ChinaMedia.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMedia/ChinaMedia.list", interval: 86400}
+  TikTok: {type: http, behavior: classical, format: text, path: ./RuleSet/TikTok.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TikTok/TikTok.list", interval: 86400}
+  GlobalMedia: {type: http, behavior: classical, format: text, path: ./RuleSet/GlobalMedia.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GlobalMedia/GlobalMedia.list", interval: 86400}
+  Docker: {type: http, behavior: classical, format: text, path: ./RuleSet/Docker.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Docker/Docker.list", interval: 86400}
+  GitHub: {type: http, behavior: classical, format: text, path: ./RuleSet/GitHub.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GitHub/GitHub.list", interval: 86400}
+  Proxy: {type: http, behavior: classical, format: text, path: ./RuleSet/Proxy.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.list", interval: 86400}
+  ChinaMaxNoIP: {type: http, behavior: classical, format: text, path: ./RuleSet/ChinaMax.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMaxNoIP/ChinaMaxNoIP.list", interval: 86400}
+#  ChinaASN: {type: http, behavior: classical, format: text, path: ./RuleSet/ChinaASN.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/ChinaASN/ChinaASN_Resolve.list", interval: 86400}
 
-  Direct:
-    <<: *RuleProviders
-    path: './rules/Direct.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/Direct.yaml'
-
-  Proxy:
-    <<: *RuleProviders
-    path: './rules/Proxy.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/Proxy.yaml'
-
-  ChinaDownloadCDN:
-    <<: *RuleProviders
-    path: './rules/ChinaDownloadCDN.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/ChinaDownloadCDN.yaml'
-
-  InternationalDownloadCDN:
-    <<: *RuleProviders
-    path: './rules/InternationalDownloadCDN.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/InternationalDownloadCDN.yaml'
-
-  AI:
-    <<: *RuleProviders
-    path: './rules/AI.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/AI.yaml'
-
-  TikTok:
-    <<: *RuleProviders
-    path: './rules/TikTok.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/TikTok.yaml'
-
-  Game:
-    <<: *RuleProviders
-    path: './rules/Game.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/Game.yaml'
-
-  1Password:
-    <<: *RuleProviders
-    path: './rules/1PasswordUS.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/1PasswordUS.yaml'
-
-  Steam:
-    <<: *RuleProviders
-    path: './rules/Steam.yaml'
-    url: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Steam/Steam.yaml'
-
-  Netflix:
-    <<: *RuleProviders
-    path: './rules/Netflix.yaml'
-    url: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Netflix/Netflix.yaml'
-
-  Emby:
-    <<: *RuleProviders
-    path: './rules/Emby.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/EmbyServer.yaml'
-
-  iCloudChina:
-    <<: *RuleProviders
-    path: './rules/iCloudChina.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/iCloudChina.yaml'
-
-  ApplePushNotificationService:
-    <<: *RuleProviders
-    path: './rules/ApplePushNotificationService.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/ApplePushNotificationService.yaml'
-
-  AppleSoftwareUpdates:
-    <<: *RuleProviders
-    path: './rules/AppleSoftwareUpdates.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/AppleSoftwareUpdates.yaml'
-
-  AppleID:
-    <<: *RuleProviders
-    path: './rules/AppleID.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/AppleID.yaml'
-
-  AppStore:
-    <<: *RuleProviders
-    path: './rules/AppStore.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/AppStore.yaml'
-
-  TestFlight:
-    <<: *RuleProviders
-    path: './rules/TestFlight.yaml'
-    url: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TestFlight/TestFlight.yaml'
-
-  Microsoft:
-    <<: *RuleProviders
-    path: './rules/Microsoft.yaml'
-    url: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.yaml'
-
-  Google:
-    <<: *RuleProviders
-    path: './rules/Google.yaml'
-    url: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.yaml'
-
-  Telegram:
-    <<: *RuleProviders
-    path: './rules/Telegram.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/Telegram.yaml'
-
-  ESET_China:
-    <<: *RuleProviders
-    path: './rules/ESET_China.yaml'
-    url: 'https://raw.githubusercontent.com/luestr/ProxyResource/main/Tool/Clash/Rule/ESET_China.yaml'
-
-# 规则指向
 rules:
-  - RULE-SET, Lan, DIRECT
-  - RULE-SET, Direct, DIRECT
-  - RULE-SET, Proxy, 兜底策略
-  - RULE-SET, ChinaDownloadCDN, DIRECT
-  - RULE-SET, InternationalDownloadCDN, 境外下载
-  - RULE-SET, AI, AI
-  - RULE-SET, TikTok, TikTok
-  - RULE-SET, Steam, 兜底策略
-  - RULE-SET, Game, 游戏选择
-  - RULE-SET, Netflix, Netflix
-  - RULE-SET, Emby, Emby
-  - RULE-SET, TestFlight, TestFlight
-  - RULE-SET, iCloudChina, DIRECT
-  - RULE-SET, ApplePushNotificationService, DIRECT
-  - RULE-SET, AppleSoftwareUpdates, DIRECT
-  - RULE-SET, AppleID, Apple ID
-  - RULE-SET, AppStore, App Store
-  - RULE-SET, 1Password, 1Password
-  - RULE-SET, Microsoft, Microsoft
-  - RULE-SET, Google, 兜底策略
-  - RULE-SET, Telegram, Telegram
-  - RULE-SET, ESET_China, DIRECT
-  - GEOIP, CN, DIRECT
-  - MATCH, 兜底策略
+  - DOMAIN-SUFFIX,dnsany.com,⛔ 禁止代理
+  - DOMAIN-SUFFIX,cmvideo.cn,⛔ 禁止代理
+  - DOMAIN-SUFFIX,chinamobile.com,⛔ 禁止代理
+  - DOMAIN-SUFFIX,mobaibox.com,⛔ 禁止代理
+  - DOMAIN-SUFFIX,gitv.tv,⛔ 禁止代理
+  - DOMAIN-SUFFIX,cctv.cn,⛔ 禁止代理
+  - DOMAIN-SUFFIX,yangshipin.cn,⛔ 禁止代理
+  - IP-CIDR,183.206.0.0/15,⛔ 禁止代理,no-resolve
+
+  # 自行测试当地是否能够直连，不能直连删掉下面这行
+  - DOMAIN,beesport.livednow.com,⛔ 禁止代理
+
+  # 海外
+  - DOMAIN-SUFFIX,livednow.com,🚀 手动切换
+  - DOMAIN-SUFFIX,orz-7.com,🚀 手动切换
+  - DOMAIN-SUFFIX,4gtv.tv,🚀 手动切换
+  - DOMAIN-SUFFIX,hinet.net,🚀 手动切换
+  - DOMAIN-SUFFIX,ofiii.com,🚀 手动切换
+  - DOMAIN-SUFFIX,googlevideo.com,🚀 手动切换
+  - DOMAIN-SUFFIX,youtube.com,🚀 手动切换
+  - DOMAIN-SUFFIX,mytvsuper.com,🚀 手动切换
+
+  - RULE-SET,Local_Direct,⛔ 禁止代理
+  - RULE-SET,Custom_Direct,⛔ 禁止代理
+  #- RULE-SET,Tailscale-Derp,⛔ 禁止代理
+  - RULE-SET,Private,🔒 私有网络
+  - RULE-SET,Direct,🎯 全球直连
+  # - RULE-SET,Applications,🖥️ 直连软件
+  - RULE-SET,Networktest,📈 网络测试
+  - RULE-SET,Apple,🍎 苹果服务
+  - RULE-SET,OpenAI,🤖 人工智能
+  - RULE-SET,Bing,🤖 人工智能
+  - RULE-SET,Gemini,🤖 人工智能
+  - RULE-SET,Claude,🤖 人工智能
+  - RULE-SET,Copilot,🤖 人工智能
+  - RULE-SET,AmazonCN,🎯 全球直连
+  #  - RULE-SET,Cloudflarecn,🎯 全球直连
+  #  - RULE-SET,GoogleCN,📢 谷歌中国
+  - RULE-SET,OneDrive,Ⓜ️ 微软云盘
+  - RULE-SET,Microsoft,Ⓜ️ 微软服务
+  - RULE-SET,Amazon,🛒 亚马逊
+  - RULE-SET,Telegram,📲 Telegram
+  - RULE-SET,Epic,🎮 游戏平台
+  - RULE-SET,Sony,🎮 游戏平台
+  - RULE-SET,Steam,🎮 游戏平台
+  - RULE-SET,Nintendo,🎮 游戏平台
+  #  - RULE-SET,Cloudflare,☁️ Cloudflare
+  #  - RULE-SET,YouTube,📹 油管视频
+  # - RULE-SET,Netflix,🎥 奈飞视频
+  #  - RULE-SET,Disney,📽️ 迪士尼+
+  # - RULE-SET,BiliBili,📺 哔哩哔哩
+  - RULE-SET,ChinaMedia,🎬 国内媒体
+  - RULE-SET,TikTok,🎵 TikTok
+  - RULE-SET,GlobalMedia,🎞️ 国外媒体
+  - RULE-SET,Docker,✈️ 节点选择
+  - RULE-SET,GitHub,✈️ 节点选择
+  - RULE-SET,Proxy,✈️ 节点选择
+  - RULE-SET,ChinaMaxNoIP,🎯 全球直连
+  #  - RULE-SET,ChinaASN,🎯 全球直连
+  - GEOIP,CN,🎯 全球直连
+  - MATCH,🐟 漏网之鱼

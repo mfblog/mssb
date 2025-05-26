@@ -1,26 +1,33 @@
 #!/bin/bash
+# 定义颜色变量
+yellow="\033[33m"
+reset="\033[0m"
 
 # 记录当前时间
 echo "[$(date)] 开始更新 MosDNS..."
 
 # 获取系统架构
-TARGETARCH=$(uname -m)
-# 判断 CPU 架构
-if [[ $(uname -m) == "aarch64" ]]; then
-    TARGETARCH="arm64"
-    echo "[$(date)] 检测到 CPU 架构为 arm64。"
-elif [[ $(uname -m) == "x86_64" ]]; then
-    TARGETARCH="amd64"
-    echo "[$(date)] 检测到 CPU 架构为 amd64。"
-else
-    TARGETARCH="未知"
-    echo "[$(date)] 无法识别的 CPU 架构：$(uname -m)，脚本退出。"
-    exit 1  # 退出状态为 1，表示错误退出
-fi
+# 检测系统 CPU 架构，并返回标准格式（适用于多数构建/下载脚本）
+detect_architecture() {
+    case "$(uname -m)" in
+        x86_64)     echo "amd64" ;;    # 64 位 x86 架构
+        aarch64)    echo "arm64" ;;    # 64 位 ARM 架构
+        armv7l)     echo "armv7" ;;    # 32 位 ARM 架构（常见于树莓派）
+        armhf)      echo "armhf" ;;    # ARM 硬浮点
+        s390x)      echo "s390x" ;;    # IBM 架构
+        i386|i686)  echo "386" ;;      # 32 位 x86 架构
+        *)
+            echo -e "${yellow}不支持的CPU架构: $(uname -m)${reset}"
+            exit 1
+            ;;
+    esac
+}
 
-LATEST_RELEASE_URL="https://github.com/IrineSistiana/mosdns/releases/latest"
-LATEST_VERSION=$(curl -sL -o /dev/null -w %{url_effective} $LATEST_RELEASE_URL | awk -F '/' '{print $NF}')
-MOSDNS_URL="https://github.com/IrineSistiana/mosdns/releases/download/${LATEST_VERSION}/mosdns-linux-${TARGETARCH}.zip"
+#LATEST_RELEASE_URL="https://github.com/IrineSistiana/mosdns/releases/latest"
+#LATEST_VERSION=$(curl -sL -o /dev/null -w %{url_effective} $LATEST_RELEASE_URL | awk -F '/' '{print $NF}')
+#MOSDNS_URL="https://github.com/IrineSistiana/mosdns/releases/download/${LATEST_VERSION}/mosdns-linux-${TARGETARCH}.zip"
+arch=$(detect_architecture)
+MOSDNS_URL="https://github.com/herozmy/StoreHouse/releases/download/mosdns/mosdns-linux-${arch}.zip"
 
 # 下载最新的 MosDNS
 echo "[$(date)] 正在从 $MOSDNS_URL 下载 MosDNS..."
