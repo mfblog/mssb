@@ -127,13 +127,11 @@ LoadBalance: &LoadBalance {type: load-balance, interval: 6, lazy: true, url: 'ht
 # 锚点 - 规则参数 [每天更新一次订阅规则，更新规则时使用香港策略，]
 RuleProviders: &RuleProviders {type: http, behavior: classical, interval: 86400, format: yaml, proxy: 香港策略}
 
-# 策略组
 proxy-groups:
-  - {name: ✈️ 节点选择, type: select, proxies: [自建节点, 🚀 手动切换, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点, 📺 省流节点, 👍 高级节点, 🎯 全球直连]}
-  - {name: 自建节点, type: fallback, include-all-providers: true, filter: "(?i)zj|us-bwg01|hk-claw|clawjp2|akhk|haka-hk|dimm"}
+  - {name: ✈️ 节点选择, type: select, proxies: [🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点, 📺 省流节点, 👍 高级节点, 🚀 手动切换, 🎯 全球直连]}
   - {name: 🐟 漏网之鱼, type: select, proxies: [🎯 全球直连, ✈️ 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点, 📺 省流节点, 👍 高级节点, 🚀 手动切换]}
   - {name: 📈 网络测试, type: select, proxies: [🎯 全球直连, ✈️ 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇰🇷 韩国节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点]}
-  - {name: 🚀 手动切换, type: select, include-all-providers: true}
+  - {name: 🚀 手动切换, type: select, include-all-providers: true, proxies: [🎯 全球直连, ✈️ 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点, 📺 省流节点, 👍 高级节点]}
   - {name: 🎮 游戏平台, type: select, proxies: [🎯 全球直连, ✈️ 节点选择, 👍 高级节点]}
   #  - {name: 🎥 奈飞视频, type: select, proxies: [🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
   #  - {name: 📽️ 迪士尼+, type: select, proxies: [🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
@@ -174,14 +172,13 @@ proxy-groups:
   # - {name: 🇦🇷 阿根廷节点, type: url-test, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)阿根廷|ar|argentina"}
 
 rule-providers:
-  fakeip-filter: {type: http, behavior: domain, format: mrs, path: ./RuleSet/fakeip-filter.mrs, url: "https://docker.lzdrc.cf/https://raw.githubusercontent.com/DustinWin/ruleset_geodata/refs/heads/mihomo-ruleset/fakeip-filter.mrs", interval: 86400}
-  Custom_Direct: {type: http, behavior: classical, format: text, path: ./RuleSet/Custom_Direct.list, url: "https://raw.githubusercontent.com/sunbroke555/mihomo/refs/heads/main/RuleSet/Custom_Direct.list", interval: 86400}
+  Custom_Direct: {type: http, behavior: classical, format: text, path: ./RuleSet/Custom_Direct.list, url: "自定义直连链接地址", interval: 86400}
   #Tailscale-Derp: {type: http, behavior: classical, format: text, path: ./RuleSet/Tailscale-Derp.list, url: "**自定义", interval: 86400}
-  Custom_Proxy: {type: http, behavior: classical, format: text, path: ./RuleSet/Custom_Proxy.list, url: "https://raw.githubusercontent.com/sunbroke555/mihomo/refs/heads/main/RuleSet/Custom_Proxy.list", interval: 86400}
+  Custom_Proxy: {type: http, behavior: classical, format: text, path: ./RuleSet/Custom_Proxy.list, url: "自定义代理链接地址", interval: 86400}
   Private: {type: http, behavior: classical, format: text, path: ./RuleSet/Lan.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Lan/Lan.list", interval: 86400}
   Direct: {type: http, behavior: classical, format: text, path: ./RuleSet/Direct.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Direct/Direct.list", interval: 86400}
   # Applications: {type: http, behavior: classical, format: text, path: ./RuleSet/Applications.list, url: "https://cdn.jsdelivr.net/gh/DustinWin/ruleset_geodata@clash-ruleset/applications.list", interval: 86400}
-  Networktest: {type: http, behavior: classical, format: text, path: ./RuleSet/Networktest.list, url: "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/refs/heads/mihomo-ruleset/networktest.list", interval: 86400}
+  Networktest: {type: http, behavior: classical, format: text, path: ./RuleSet/Networktest.list, url: "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/clash-ruleset/networktest.list", interval: 86400}
   Apple: {type: http, behavior: classical, format: text, path: ./RuleSet/Apple.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.list", interval: 86400}
   OpenAI: {type: http, behavior: classical, format: text, path: ./RuleSet/OpenAI.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/OpenAI/OpenAI.list", interval: 86400}
   Bing: {type: http, behavior: classical, format: text, path: ./RuleSet/Bing.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Bing/Bing.list", interval: 86400}
@@ -236,9 +233,9 @@ rules:
   - DOMAIN-SUFFIX,youtube.com,🚀 手动切换
   - DOMAIN-SUFFIX,mytvsuper.com,🚀 手动切换
 
-#  - RULE-SET,Local_Direct,⛔ 禁止代理
-#  - RULE-SET,Custom_Direct,⛔ 禁止代理
+  - RULE-SET,Custom_Direct,⛔ 禁止代理
   #- RULE-SET,Tailscale-Derp,⛔ 禁止代理
+  - RULE-SET,Custom_Proxy,✅ 允许代理
   - RULE-SET,Private,🔒 私有网络
   - RULE-SET,Direct,🎯 全球直连
   # - RULE-SET,Applications,🖥️ 直连软件
