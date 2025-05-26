@@ -944,7 +944,7 @@ main() {
     echo -e "   - 用户名：admin"
     echo -e "   - 密码：admin"
     echo
-    echo -e "🕸️  Sing-box/Mihomo 面板 UI：${green_text}http://${local_ip}:9090${reset}"
+    echo -e "🕸️  Sing-box/Mihomo 面板 UI：${green_text}http://${local_ip}:9090/ui${reset}"
     echo -e "   - 密码：mssb123.."
     echo -e "${green_text}-------------------------------------------------${reset}"
 
