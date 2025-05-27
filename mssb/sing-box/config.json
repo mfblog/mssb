@@ -29,7 +29,7 @@
       {"outbound": "direct", "server": "localDns"},
       {"outbound": "any", "server": "nodedns", "disable_cache": false}
     ],
-    "fakeip": {"enabled": true, "inet4_range": "28.0.0.0/8"},
+    "fakeip": {"enabled": true, "inet4_range": "28.0.0.0/8", "inet6_range": "f2b0::/18"},
     "independent_cache": true,
     "lazy_cache": true,
     "disable_expire": false,
