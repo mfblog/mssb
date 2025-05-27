@@ -4,9 +4,12 @@
 ## 项目简介
 仅自用会存在bug见谅
 
-封装 `mosdns` 和 `singbox` 两个服务，实现高效的分流代理。同时，结合 `filebrowser` 用于配置文件的可视化管理，并使用 `zashboard` 作为 `singbox/mihomo` 的前端显示界面。
+封装 `mosdns` 和 `singbox` 两个服务，实现高效的分流代理。
+同时，结合 `filebrowser` 用于配置文件的可视化管理，并使用 `zashboard` 作为 `singbox/mihomo` 的前端显示界面。
 
 完全参考 https://github.com/herozmy/StoreHouse/tree/latest 主要是想有个界面修改配置以及监听重启
+
+mosdns 配置来自Ph佬的配置增加了统计页面和缓存加速
 
 ---
 
@@ -83,11 +86,15 @@ tail -f /var/log/supervisor/*.log
     - 默认用户：`mssb`
     - 默认密码：`mssb123..`
 
-3. **服务功能**
+3. **Mosdns 统计界面**
+   - http://{ip}:9099/graphic
+
+4. **服务功能**
     - `mosdns` 提供 DNS 解析功能
     - `singbox` 实现代理服务，支持 SOCKS5 和透明代理模式
     - `zashboard` 提供用户友好的 Web 界面
-4. **使用方法**
+
+5. **使用方法**
    - 安装完成后只需要把你主路由的dns设置成debain主机的ip
    - 支持分流设置,可以把你需要科学上网的设备ip写入/mssb/mosdns/proxy-device-list.txt 这个文件,只有ip在这个文件里的设备会走singbox代理，不在的只会走mosdns的加速功能
 
