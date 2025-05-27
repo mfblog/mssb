@@ -72,31 +72,25 @@ check_core_status() {
         if supervisorctl status | grep -qE "^${program}\s+RUNNING"; then
             case "$program" in
                 "sing-box"|"mihomo")
-                    echo -e "  类型: 路由服务"
-                    echo -e "  状态: ${green_text}运行中 ✅${reset}"
+                    echo -e "  类型: 路由服务 状态: ${green_text}运行中 ✅${reset}"
                     ;;
                 "mosdns")
-                    echo -e "  类型: DNS服务"
-                    echo -e "  状态: ${green_text}运行中 ✅${reset}"
+                    echo -e "  类型: DNS服务 状态: ${green_text}运行中 ✅${reset}"
                     ;;
                 *)
-                    echo -e "  类型: 未知"
-                    echo -e "  状态: ${green_text}运行中 ✅${reset}"
+                    echo -e "  类型: 未知 ${green_text}运行中 ✅${reset}"
                     ;;
             esac
         else
             case "$program" in
                 "sing-box"|"mihomo")
-                    echo -e "  类型: 路由服务"
-                    echo -e "  状态: ${red_text}未运行 ❌${reset}"
+                    echo -e "  类型: 路由服务 ${red_text}未运行 ❌${reset}"
                     ;;
                 "mosdns")
-                    echo -e "  类型: DNS服务"
-                    echo -e "  状态: ${red_text}未运行 ❌${reset}"
+                    echo -e "  类型: DNS服务 ${red_text}未运行 ❌${reset}"
                     ;;
                 *)
-                    echo -e "  类型: 未知"
-                    echo -e "  状态: ${red_text}未运行 ❌${reset}"
+                    echo -e "  类型: 未知 ${red_text}未运行 ❌${reset}"
                     ;;
             esac
         fi
@@ -107,11 +101,9 @@ check_core_status() {
         echo -e "\n服务名称: ${watch}"
 
         if supervisorctl status | grep -qE "^${watch}\s+RUNNING"; then
-            echo -e "  类型: 看门狗服务"
-            echo -e "  状态: ${green_text}运行中 ✅${reset}"
+            echo -e "  类型: 监听服务 状态: ${green_text}运行中 ✅${reset}"
         else
-            echo -e "  类型: 看门狗服务"
-            echo -e "  状态: ${red_text}未运行 ❌${reset}"
+            echo -e "  类型: 监听服务 状态: ${red_text}未运行 ❌${reset}"
         fi
     done
 
@@ -936,6 +928,8 @@ main() {
 
     echo -e "${green_text}-------------------------------------------------${reset}"
     echo -e "${green_text}🎉 安装成功！以下是服务信息：${reset}"
+    echo -e "🌐 Mosdns 统计界面：${green_text}http://${local_ip}:9099/graphic${reset}"
+    echo
     echo -e "📦 Supervisor 管理界面：${green_text}http://${local_ip}:9001${reset}"
     echo -e "   - 用户名：mssb"
     echo -e "   - 密码：mssb123.."
