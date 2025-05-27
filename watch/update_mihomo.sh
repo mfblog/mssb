@@ -49,7 +49,7 @@ mihomo_install() {
 # 追加 Git 克隆命令，更新 UI 文件
 echo "[$(date)] 正在从 GitHub 克隆最新的 UI 文件..."
 if git clone --depth=1 https://github.com/Zephyruso/zashboard.git -b gh-pages -b gh-pages /tmp/ui; then
-    cp -r /tmp/ui/* /mssb/sing-box/ui/
+    cp -r /tmp/ui/* /mssb/mihomo/ui/
     echo "[$(date)] UI 文件克隆成功。"
 else
     echo "[$(date)] UI 文件克隆失败，请检查 GitHub URL 或网络连接。"
@@ -57,17 +57,17 @@ else
 fi
 
 # 更新完成日志
-echo "[$(date)] Sing-box 更新并重启成功，UI 文件已更新。"
+echo "[$(date)] mihomo 更新并重启成功，UI 文件已更新。"
 
 # 清理临时文件
 rm -rf /tmp/*
 
-# 重启 sing-box 服务
-echo "[$(date)] 正在通过 Supervisor 重启 Sing-box 服务..."
-if supervisorctl restart sing-box && systemctl restart sing-box-router; then
-    echo "[$(date)] Sing-box 服务重启成功。"
+# 重启 mihomo 服务
+echo "[$(date)] 正在通过 Supervisor 重启 mihomo 服务..."
+if supervisorctl restart mihomo && systemctl restart mihomo-router; then
+    echo "[$(date)] mihomo 服务重启成功。"
 else
-    echo "[$(date)] Sing-box 服务重启失败，请检查 Supervisor 配置。"
+    echo "[$(date)] mihomo 服务重启失败，请检查 Supervisor 配置。"
     exit 1
 fi
 
