@@ -850,6 +850,7 @@ main() {
         echo "- 4:15 更新 CN 域名数据"
     else
         echo "- 4:10 更新 Mihomo"
+        echo "- 4:15 更新 CN 域名数据"
     fi
     echo -e "${green_text}-------------------------------------------------${reset}"
     read -p "是否添加定时任务？(y/n): " enable_cron
