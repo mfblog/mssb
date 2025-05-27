@@ -564,21 +564,60 @@ check_and_copy_folder() {
 cp_config_files() {
   log "复制 mssb/fb 目录..."
   check_and_copy_folder "fb"
+
+  # ===============================
+  # 备份 proxy-device-list.txt
+  # ===============================
+  if [ -f "/mssb/mosdns/proxy-device-list.txt" ]; then
+      log "备份 /mssb/mosdns/proxy-device-list.txt 到 /tmp/ 目录..."
+      cp "/mssb/mosdns/proxy-device-list.txt" /tmp/proxy-device-list.txt.bak || {
+          log "备份 proxy-device-list.txt 失败，退出脚本。"
+          exit 1
+      }
+  fi
+
   log "复制 mssb/mosdns 目录..."
   check_and_copy_folder "mosdns"
-  log "复制supervisor配置文件..."
-  # 根据 core_name 重启 systemd 服务
-  if [ "$core_name" = "sing-box" ]; then
-      cp run_mssb/supervisord.conf /etc/supervisor/ || { log "复制 supervisord.conf 失败！退出脚本。"; exit 1; }
-  elif [ "$core_name" = "mihomo" ]; then
-      cp run_msmo/supervisord.conf /etc/supervisor/ || { log "复制 supervisord.conf 失败！退出脚本。"; exit 1; }
-  else
-      log "未识别的 core_name: $core_name，跳过 复制supervisor配置文件。"
+
+  # ===============================
+  # 恢复 proxy-device-list.txt
+  # ===============================
+  if [ -f "/tmp/proxy-device-list.txt.bak" ]; then
+      log "恢复 proxy-device-list.txt 到 /mssb/mosdns/..."
+      cp /tmp/proxy-device-list.txt.bak /mssb/mosdns/proxy-device-list.txt || {
+          log "恢复 proxy-device-list.txt 失败，退出脚本。"
+          exit 1
+      }
+      rm -f /tmp/proxy-device-list.txt.bak
   fi
-  cp -r watch / || { log "复制 watch 目录失败！退出脚本。"; exit 1; }
+
+  log "复制supervisor配置文件..."
+  if [ "$core_name" = "sing-box" ]; then
+      cp run_mssb/supervisord.conf /etc/supervisor/ || {
+          log "复制 supervisord.conf 失败！退出脚本。"
+          exit 1
+      }
+  elif [ "$core_name" = "mihomo" ]; then
+      cp run_msmo/supervisord.conf /etc/supervisor/ || {
+          log "复制 supervisord.conf 失败！退出脚本。"
+          exit 1
+      }
+  else
+      log "未识别的 core_name: $core_name，跳过复制 supervisor 配置文件。"
+  fi
+
+  cp -r watch / || {
+      log "复制 watch 目录失败！退出脚本。"
+      exit 1
+  }
+
   log "设置脚本可执行权限..."
-  chmod +x /watch/*.sh || { log "设置 /watch/*.sh 权限失败！退出脚本。"; exit 1; }
+  chmod +x /watch/*.sh || {
+      log "设置 /watch/*.sh 权限失败！退出脚本。"
+      exit 1
+  }
 }
+
 
 # singbox配置文件复制
 singbox_configure_files() {
