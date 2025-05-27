@@ -140,10 +140,10 @@ proxy-groups:
   #  - {name: ☁️ Cloudflare, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
   - {name: 📲 Telegram, type: select, proxies: [🇭🇰 香港节点, ✈️ 节点选择, 🇨🇳 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
   #  - {name: 🖥️ 直连软件, type: select, proxies: [🎯 全球直连]}
-  - {name: 🔒 私有网络, type: select, proxies: [🎯 全球直连]}
+  #  - {name: 🔒 私有网络, type: select, proxies: [🎯 全球直连]}
   - {name: 🎯 全球直连, type: select, proxies: [DIRECT]}
-  - {name: ⛔ 禁止代理, type: select, proxies: [🎯 全球直连]}
-  - {name: ✅ 允许代理, type: select, proxies: [✈️ 节点选择]}
+  #  - {name: ⛔ 禁止代理, type: select, proxies: [🎯 全球直连]}
+  #  - {name: ✅ 允许代理, type: select, proxies: [✈️ 节点选择]}
   - {name: 📺 省流节点, <<: *UrlTest, filter: "(0.[1-5]|低倍率|省流|大流量)"}
   - {name: 👍 高级节点, <<: *UrlTest, filter: "(专线|专用|高级|直连|急速|高倍率|游戏|game|Game|GAME|IEPL|IPLC|AIA|CTM|CC|iepl|iplc|aia|ctm|cc|AC)"}
   - {name: 🎮 游戏节点, <<: *UrlTest, filter: "^(?=.*((?i)游戏|🎮|(\b(GAME)\b)))(?!.*((?i)回国|校园)).*$"}
@@ -202,20 +202,20 @@ rule-providers:
   GitHub: {type: http, behavior: classical, format: text, path: ./RuleSet/GitHub.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GitHub/GitHub.list", interval: 86400}
   Proxy: {type: http, behavior: classical, format: text, path: ./RuleSet/Proxy.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.list", interval: 86400}
   ChinaMaxNoIP: {type: http, behavior: classical, format: text, path: ./RuleSet/ChinaMax.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMaxNoIP/ChinaMaxNoIP.list", interval: 86400}
-#  ChinaASN: {type: http, behavior: classical, format: text, path: ./RuleSet/ChinaASN.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/ChinaASN/ChinaASN_Resolve.list", interval: 86400}
+  #  ChinaASN: {type: http, behavior: classical, format: text, path: ./RuleSet/ChinaASN.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/ChinaASN/ChinaASN_Resolve.list", interval: 86400}
 
 rules:
-  - DOMAIN-SUFFIX,dnsany.com,⛔ 禁止代理
-  - DOMAIN-SUFFIX,cmvideo.cn,⛔ 禁止代理
-  - DOMAIN-SUFFIX,chinamobile.com,⛔ 禁止代理
-  - DOMAIN-SUFFIX,mobaibox.com,⛔ 禁止代理
-  - DOMAIN-SUFFIX,gitv.tv,⛔ 禁止代理
-  - DOMAIN-SUFFIX,cctv.cn,⛔ 禁止代理
-  - DOMAIN-SUFFIX,yangshipin.cn,⛔ 禁止代理
-  - IP-CIDR,183.206.0.0/15,⛔ 禁止代理,no-resolve
+  - DOMAIN-SUFFIX,dnsany.com,🎯 全球直连
+  - DOMAIN-SUFFIX,cmvideo.cn,🎯 全球直连
+  - DOMAIN-SUFFIX,chinamobile.com,🎯 全球直连
+  - DOMAIN-SUFFIX,mobaibox.com,🎯 全球直连
+  - DOMAIN-SUFFIX,gitv.tv,🎯 全球直连
+  - DOMAIN-SUFFIX,cctv.cn,🎯 全球直连
+  - DOMAIN-SUFFIX,yangshipin.cn,🎯 全球直连
+  - IP-CIDR,183.206.0.0/15,🎯 全球直连,no-resolve
 
   # 自行测试当地是否能够直连，不能直连删掉下面这行
-  - DOMAIN,beesport.livednow.com,⛔ 禁止代理
+  - DOMAIN,beesport.livednow.com,🎯 全球直连
 
   # 海外
   - DOMAIN-SUFFIX,livednow.com,🚀 手动切换
@@ -227,10 +227,9 @@ rules:
   - DOMAIN-SUFFIX,youtube.com,🚀 手动切换
   - DOMAIN-SUFFIX,mytvsuper.com,🚀 手动切换
 
-  - RULE-SET,Custom_Direct,⛔ 禁止代理
-  #- RULE-SET,Tailscale-Derp,⛔ 禁止代理
-  - RULE-SET,Custom_Proxy,✅ 允许代理
-  - RULE-SET,Private,🔒 私有网络
+  - RULE-SET,Custom_Direct,🎯 全球直连
+  - RULE-SET,Custom_Proxy,✈️ 节点选择
+  - RULE-SET,Private,🎯 全球直连
   - RULE-SET,Direct,🎯 全球直连
   - RULE-SET,PT,🧲 PT下载
   # - RULE-SET,Applications,🖥️ 直连软件
