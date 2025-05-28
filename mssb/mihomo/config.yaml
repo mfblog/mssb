@@ -28,7 +28,7 @@ redir-port: 7893
 # 也用于透明代理，但相比 redir-port，TPROXY 可以保留原始源地址
 tproxy-port: 7896
 # 是否启用 新一代 GEO 数据 geoip、geosite 模式
-geodata-mode: false
+geodata-mode: true
 # GEO 数据加载方式：
 #
 # standard 使用官方推荐的稳定数据格式 配合 geosite.dat, geoip.dat
