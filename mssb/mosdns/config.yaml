@@ -670,17 +670,17 @@ plugins:
       listen: ":2222"
 
 #国外
-#  - tag: udp_google
-#    type: udp_server
-#    args:
-#      entry: sequence_google_in
-#      listen: ":3333"
-#
-#  - tag: tcp_google
-#    type: tcp_server
-#    args:
-#      entry: sequence_google_in
-#      listen: ":3333"
+  - tag: udp_google
+    type: udp_server
+    args:
+      entry: sequence_google_in
+      listen: ":3333"
+
+  - tag: tcp_google
+    type: tcp_server
+    args:
+      entry: sequence_google_in
+      listen: ":3333"
 
 #主分流服务器
   - tag: udp_main

@@ -276,6 +276,8 @@ rules:
   - DOMAIN-SUFFIX,cctv.cn,🎯 全球直连
   - DOMAIN-SUFFIX,yangshipin.cn,🎯 全球直连
   - IP-CIDR,183.206.0.0/15,🎯 全球直连,no-resolve
+  - IP-CIDR,8.8.8.8/32,✈️ 节点选择
+  - IP-CIDR,1.1.1.1/32,✈️ 节点选择
   - RULE-SET,SteamCN,🎯 全球直连
   #   自行测试当地是否能够直连，不能直连删掉下面这行
   #  - DOMAIN,beesport.livednow.com,🎯 全球直连
