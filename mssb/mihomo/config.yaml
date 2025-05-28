@@ -1,12 +1,12 @@
 ## ----全局配置------
 
-#运行模式
+# 运行模式
 mode: rule
 # 日志级别
 log-level: info
-#统一延迟
+# 统一延迟
 unified-delay: true
-#TCP 并发
+# TCP 并发
 tcp-concurrent: true
 # 网口指定，不要删除，脚本会自动修改
 interface-name: eth0
@@ -20,22 +20,22 @@ port: 7890
 # SOCKS5 代理端口
 socks-port: 7891
 # 混合端口（HTTP + SOCKS5）
-#启用后，这个端口同时支持 HTTP 和 SOCKS5 协议
+# 启用后，这个端口同时支持 HTTP 和 SOCKS5 协议
 mixed-port: 7892
 # Redirect 模式端口（用于 Linux 下 iptables 的 TUN/透明代理
 redir-port: 7893
 # TPROXY 模式端口（Transparent Proxy）不要修改脚本需要通过这个端口进行转发
-#也用于透明代理，但相比 redir-port，TPROXY 可以保留原始源地址
+# 也用于透明代理，但相比 redir-port，TPROXY 可以保留原始源地址
 tproxy-port: 7896
 # 是否启用 新一代 GEO 数据（geoip、geosite）模式
 geodata-mode: false
 # GEO 数据加载方式：
 #
-#standard：使用官方推荐的稳定数据格式（配合 geosite.dat, geoip.dat）
+# standard：使用官方推荐的稳定数据格式（配合 geosite.dat, geoip.dat）
 #
-#lite：更轻量，数据更小（裁剪版）
+# lite：更轻量，数据更小（裁剪版）
 #
-#mmdb：兼容传统 Clash 的 Country.mmdb
+# mmdb：兼容传统 Clash 的 Country.mmdb
 geodata-loader: standard
 # 是否自动更新 geo 数据
 geo-auto-update: true
@@ -49,7 +49,7 @@ global-client-fingerprint: chrome
 bind-address: "*"
 # 是否允许 LAN 内其他设备连接代理
 allow-lan: true
-#  高级路由标记
+# 高级路由标记
 routing-mark: 1
 
 # 控制面板
@@ -58,8 +58,6 @@ external-ui: /mssb/mihomo/ui
 external-ui-url: 'https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip'
 
 geox-url:
-  # geoip: 'https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geoip.dat'
-  # geosite: 'https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite.dat'
   geoip: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
   geosite: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
   mmdb: 'https://gitlab.com/Masaiki/GeoIP2-CN/-/raw/release/Country.mmdb'
@@ -131,23 +129,22 @@ proxy-groups:
   - {name: 📈 网络测试, type: select, proxies: [🎯 全球直连, ✈️ 节点选择, 🇭🇰 香港节点, 🇨🇳 台湾节点, 🇯🇵 日本节点, 🇰🇷 韩国节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点]}
   - {name: 📲 Telegram, type: select, proxies: [ 🇭🇰 香港节点, ✈️ 节点选择, 🇨🇳 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点 ] }
   - {name: 🚀 手动切换, type: select, proxies: [🇨🇳 台湾节点, 🇭🇰 香港节点, 🎯 全球直连, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点, 📺 省流节点, 👍 高级节点, 🎮 游戏节点, ✈️ 机场节点]}
-  #  - {name: 🎥 奈飞视频, type: select, proxies: [🇭🇰 香港节点, 🇨🇳 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
-  #  - {name: 📽️ 迪士尼+, type: select, proxies: [🇭🇰 香港节点, 🇨🇳 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
-  #  - {name: 📹 油管视频, type: select, proxies: [✈️ 节点选择, 🇭🇰 香港节点, 🇨🇳 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
-
-  #  - {name: 📺 哔哩哔哩, type: select, proxies: [🎯 全球直连, ✈️ 节点选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点]}
+#  - {name: 🎥 奈飞视频, type: select, proxies: [🇭🇰 香港节点, 🇨🇳 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
+#  - {name: 📽️ 迪士尼+, type: select, proxies: [🇭🇰 香港节点, 🇨🇳 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
+#  - {name: 📹 油管视频, type: select, proxies: [✈️ 节点选择, 🇭🇰 香港节点, 🇨🇳 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 🇰🇷 韩国节点]}
+#  - {name: 📺 哔哩哔哩, type: select, proxies: [🎯 全球直连, ✈️ 节点选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点]}
   - {name: 🤖 人工智能, type: select, proxies: [🇨🇳 台湾节点, 🇺🇸 美国节点, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, ✈️ 节点选择]}
   - {name: 🧲 PT下载, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
-#   - {name: Ⓜ️ 微软云盘, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
+#  - {name: Ⓜ️ 微软云盘, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
   - {name: Ⓜ️ 微软服务, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
   - {name: 🛒 亚马逊, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
-  #  - {name: 📢 谷歌中国, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
-  #  - {name: ☁️ Cloudflare, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
-  #  - {name: 🖥️ 直连软件, type: select, proxies: [🎯 全球直连]}
-  #  - {name: 🔒 私有网络, type: select, proxies: [🎯 全球直连]}
+#  - {name: 📢 谷歌中国, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
+#  - {name: ☁️ Cloudflare, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
+#  - {name: 🖥️ 直连软件, type: select, proxies: [🎯 全球直连]}
+#  - {name: 🔒 私有网络, type: select, proxies: [🎯 全球直连]}
   - {name: 🎯 全球直连, type: select, proxies: [DIRECT]}
-  #  - {name: ⛔ 禁止代理, type: select, proxies: [🎯 全球直连]}
-  #  - {name: ✅ 允许代理, type: select, proxies: [✈️ 节点选择]}
+#  - {name: ⛔ 禁止代理, type: select, proxies: [🎯 全球直连]}
+#  - {name: ✅ 允许代理, type: select, proxies: [✈️ 节点选择]}
   - {name: 📺 省流节点, <<: *UrlTest, filter: "(0.[1-5]|低倍率|省流|大流量)"}
   - {name: 👍 高级节点, <<: *UrlTest, filter: "(专线|专用|高级|直连|急速|高倍率|游戏|game|Game|GAME|IEPL|IPLC|AIA|CTM|CC|iepl|iplc|aia|ctm|cc|AC)"}
   - {name: 🎮 游戏节点, <<: *UrlTest, filter: "^(?=.*((?i)游戏|🎮|(\b(GAME)\b)))(?!.*((?i)回国|校园)).*$"}
@@ -158,15 +155,15 @@ proxy-groups:
   - {name: 🇺🇸 美国节点, <<: *UrlTest, filter: "(?i)美|us|unitedstates|united states"}
   - {name: 🇰🇷 韩国节点, <<: *UrlTest, filter: "(?i)韩|kr|korea"}
   - {name: ✈️ 机场节点, type: select, include-all-providers: true, filter: *FilterAll}
-  # - {name: 🇹🇭 泰国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)泰|th|thailand"}
-  # - {name: 🇩🇪 德国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)德|de|germany"}
-  # - {name: 🇬🇧 英国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)英|uk|united kingdom"}
-  # - {name: 🇨🇦 加拿大节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)加拿大|ca|canada"}
-  # - {name: 🇦🇺 澳大利亚节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)澳大利亚|au|australia"}
-  # - {name: 🇲🇾 马来西亚节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)马来西亚|my|malaysia"}
-  # - {name: 🇮🇳 印度节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)印度|in|india"}
-  # - {name: 🇹🇷 土耳其节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)土耳其|tr|turkey"}
-  # - {name: 🇦🇷 阿根廷节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)阿根廷|ar|argentina"}
+#  - {name: 🇹🇭 泰国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)泰|th|thailand"}
+#  - {name: 🇩🇪 德国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)德|de|germany"}
+#  - {name: 🇬🇧 英国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)英|uk|united kingdom"}
+#  - {name: 🇨🇦 加拿大节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)加拿大|ca|canada"}
+#  - {name: 🇦🇺 澳大利亚节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)澳大利亚|au|australia"}
+#  - {name: 🇲🇾 马来西亚节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)马来西亚|my|malaysia"}
+#  - {name: 🇮🇳 印度节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)印度|in|india"}
+#  - {name: 🇹🇷 土耳其节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)土耳其|tr|turkey"}
+#  - {name: 🇦🇷 阿根廷节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)阿根廷|ar|argentina"}
 
 rule-providers:
   SteamCN: {type: http, behavior: classical, format: text, path: ./RuleSet/SteamCN.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/SteamCN/SteamCN.list", interval: 21600, proxy: 🇭🇰 香港节点}
@@ -219,36 +216,23 @@ rules:
   - DOMAIN-SUFFIX,yangshipin.cn,🎯 全球直连
   - IP-CIDR,183.206.0.0/15,🎯 全球直连,no-resolve
   - RULE-SET,SteamCN,🎯 全球直连
-  # 自行测试当地是否能够直连，不能直连删掉下面这行
-  # - DOMAIN,beesport.livednow.com,🎯 全球直连
-  # 海外
-  #   - DOMAIN-SUFFIX,livednow.com,🚀 手动切换
-  #   - DOMAIN-SUFFIX,orz-7.com,🚀 手动切换
-  #   - DOMAIN-SUFFIX,4gtv.tv,🚀 手动切换
-  #   - DOMAIN-SUFFIX,hinet.net,🚀 手动切换
-  #   - DOMAIN-SUFFIX,ofiii.com,🚀 手动切换
-  #   - DOMAIN-SUFFIX,googlevideo.com,🚀 手动切换
-  #   - DOMAIN-SUFFIX,youtube.com,🚀 手动切换
-  #   - DOMAIN-SUFFIX,mytvsuper.com,🚀 手动切换
-  #   - RULE-SET,Custom_Direct,🎯 全球直连
-  #   - RULE-SET,Tailscale-Derp,🎯 全球直连
-  #   - RULE-SET,Custom_Proxy,✈️ 节点选择
+#   自行测试当地是否能够直连，不能直连删掉下面这行
+#  - DOMAIN,beesport.livednow.com,🎯 全球直连
+#  - RULE-SET,Custom_Direct,🎯 全球直连
+#  - RULE-SET,Custom_Proxy,✈️ 节点选择
   - RULE-SET,SteamCN,🎯 全球直连
   - RULE-SET,Private,🎯 全球直连
   - RULE-SET,Direct,🎯 全球直连
   - RULE-SET,PT,🧲 PT下载
-  # - RULE-SET,Applications,🖥️ 直连软件
+#  - RULE-SET,Applications,🖥️ 直连软件
   - RULE-SET,Speedtest,📈 网络测试
   - RULE-SET,Apple,🍎 苹果服务
   - RULE-SET,OpenAI,🤖 人工智能
-#   - RULE-SET,Bing,🤖 人工智能
+#  - RULE-SET,Bing,🤖 人工智能
   - RULE-SET,Gemini,🤖 人工智能
   - RULE-SET,Claude,🤖 人工智能
   - RULE-SET,Copilot,🤖 人工智能
   - RULE-SET,AmazonCN,🎯 全球直连
-  #  - RULE-SET,Cloudflarecn,🎯 全球直连
-  #  - RULE-SET,GoogleCN,📢 谷歌中国
-#   - RULE-SET,OneDrive,Ⓜ️ 微软云盘
   - RULE-SET,Microsoft,Ⓜ️ 微软服务
   - RULE-SET,Amazon,🛒 亚马逊
   - RULE-SET,Telegram,📲 Telegram
@@ -256,11 +240,10 @@ rules:
   - RULE-SET,Sony,🎮 游戏平台
   - RULE-SET,Steam,🎮 游戏平台
   - RULE-SET,Nintendo,🎮 游戏平台
-  #  - RULE-SET,Cloudflare,☁️ Cloudflare
-  #  - RULE-SET,YouTube,📹 油管视频
-  # - RULE-SET,Netflix,🎥 奈飞视频
-  #  - RULE-SET,Disney,📽️ 迪士尼+
-  # - RULE-SET,BiliBili,📺 哔哩哔哩
+#  - RULE-SET,YouTube,📹 油管视频
+#  - RULE-SET,Netflix,🎥 奈飞视频
+#  - RULE-SET,Disney,📽️ 迪士尼+
+#  - RULE-SET,BiliBili,📺 哔哩哔哩
   - RULE-SET,ChinaMedia,🎬 国内媒体
   - RULE-SET,TikTok,🎵 TikTok
   - RULE-SET,GlobalMedia,🎞️ 国外媒体
@@ -268,6 +251,6 @@ rules:
   - RULE-SET,GitHub,✈️ 节点选择
   - RULE-SET,Proxy,✈️ 节点选择
   - RULE-SET,ChinaMaxNoIP,🎯 全球直连
-  #  - RULE-SET,ChinaASN,🎯 全球直连
+#  - RULE-SET,ChinaASN,🎯 全球直连
   - GEOIP,CN,🎯 全球直连
   - MATCH,🐟 漏网之鱼
