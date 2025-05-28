@@ -2,7 +2,7 @@
 # Mosdns + singbox/mihomo 虚拟机分流代理项目 纯自用版本
 
 ## 项目简介
-仅自用会存在bug见谅
+### 仅自用会存在bug见谅
 
 封装 `mosdns` 和 `singbox` 两个服务，实现高效的分流代理。
 同时，结合 `filebrowser` 用于配置文件的可视化管理，并使用 `zashboard` 作为 `singbox/mihomo` 的前端显示界面。
@@ -10,6 +10,8 @@
 完全参考 https://github.com/herozmy/StoreHouse/tree/latest 主要是想有个界面修改配置以及监听重启
 
 mosdns 配置来自Ph佬的配置增加了统计页面和缓存加速
+
+### 感谢各位大佬的项目和帮助，特别是PH佬和英雄佬
 
 ---
 
