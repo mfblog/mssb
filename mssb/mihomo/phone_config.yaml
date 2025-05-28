@@ -93,8 +93,7 @@ tun:
   stack: mixed
   mtu: 9000
   dns-hijack:
-    - "any:53"
-    - "tcp://any:53"
+    - "198.18.0.2:53"
   auto-route: true
   auto-redirect: true
   auto-detect-interface: true
@@ -104,7 +103,7 @@ dns:
   # 默认端口也不能修改
   listen: 0.0.0.0:53
   ipv6: true
-  enhanced-mode: fake-ip
+  enhanced-mode: redir-host
   # 这个也不能修改和mosdns联动的
   fake-ip-range: 28.0.0.1/8
   fake-ip-filter:
@@ -153,20 +152,18 @@ UrlTest: &UrlTest {type: url-test, interval: 30, tolerance: 20, lazy: true, url:
 
 
 proxies:
-  # 根据自己实际需要填写
-  - name: "wg"
+  - name: "wg_home"
     type: wireguard
     private-key: eCtXsJZ27+4PbhDkHnB923tkUn2Gj59wZw5wFA75MnU=
     server: 162.159.192.1
     port: 2480
     ip: 172.16.0.2
+    # ipv6: 可选，如果你使用 IPv6，可以加上
     ipv6: fd01:5ca1:ab1e:80fa:ab85:6eea:213f:f4a5
     public-key: Cr8hWlKvtDt7nrvf+f0brNQQzabAqrjfBvas9pmowjo=
-    allowed-ips: ['0.0.0.0/0']
-    # pre-shared-key: 31aIhAPwktDGpH4JDhA8GNvjFXEf/a6+UaQRyOAiyfM=
-    # reserved: [209,98,59]  # 字符串格式也是合法的，如"U4An"
+    allowed-ips: ["0.0.0.0/0", "::/0"]
+    mtu: 1420
     udp: true
-    # mtu: 1408
     # dialer-proxy: "ss1"  # 一个出站代理的标识。当值不为空时，将使用指定的 proxy/proxy-group 发出连接
     # remote-dns-resolve: true # 强制dns远程解析，默认值为false
     # dns: [ 1.1.1.1, 8.8.8.8 ] # 仅在remote-dns-resolve为true时生效
@@ -207,6 +204,7 @@ proxy-groups:
   #  - {name: ☁️ Cloudflare, type: select, proxies: [🎯 全球直连, ✈️ 节点选择]}
   #  - {name: 🖥️ 直连软件, type: select, proxies: [🎯 全球直连]}
   #  - {name: 🔒 私有网络, type: select, proxies: [🎯 全球直连]}
+  - {name: 🏠 直连回家, type: select, proxies: [🎯 全球直连, 🏠 wg回家] }
   - {name: 🎯 全球直连, type: select, proxies: [DIRECT]}
   #  - {name: ⛔ 禁止代理, type: select, proxies: [🎯 全球直连]}
   #  - {name: ✅ 允许代理, type: select, proxies: [✈️ 节点选择]}
@@ -219,6 +217,8 @@ proxy-groups:
   - {name: 🇸🇬 新加坡节点, <<: *UrlTest, filter: "(?i)新|sg|singapore"}
   - {name: 🇺🇸 美国节点, <<: *UrlTest, filter: "(?i)美|us|unitedstates|united states"}
   - {name: 🇰🇷 韩国节点, <<: *UrlTest, filter: "(?i)韩|kr|korea"}
+  # 测速🔗自己改
+  - {name: 🏠 wg回家, type: url-test, interval: 600, tolerance: 20, lazy: true, url: 'http://192.168.20.1:7780/', proxies: [wg_home]}
   - {name: ✈️ 机场节点, type: select, include-all-providers: true, filter: *FilterAll}
   # - {name: 🇹🇭 泰国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)泰|th|thailand"}
   # - {name: 🇩🇪 德国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)德|de|germany"}
@@ -280,6 +280,8 @@ rules:
   - DOMAIN-SUFFIX,cctv.cn,🎯 全球直连
   - DOMAIN-SUFFIX,yangshipin.cn,🎯 全球直连
   - IP-CIDR,183.206.0.0/15,🎯 全球直连,no-resolve
+  # 回家的局域网ip自行配置
+  - IP-CIDR,192.168.20.0/24,🏠 直连回家,no-resolve
   - RULE-SET,SteamCN,🎯 全球直连
   # 自行测试当地是否能够直连，不能直连删掉下面这行
   # - DOMAIN,beesport.livednow.com,🎯 全球直连
