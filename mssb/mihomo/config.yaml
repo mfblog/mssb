@@ -218,14 +218,14 @@ rules:
   - DOMAIN,beesport.livednow.com,🎯 全球直连
 
   # 海外
-  - DOMAIN-SUFFIX,livednow.com,🚀 手动切换
-  - DOMAIN-SUFFIX,orz-7.com,🚀 手动切换
-  - DOMAIN-SUFFIX,4gtv.tv,🚀 手动切换
-  - DOMAIN-SUFFIX,hinet.net,🚀 手动切换
-  - DOMAIN-SUFFIX,ofiii.com,🚀 手动切换
-  - DOMAIN-SUFFIX,googlevideo.com,🚀 手动切换
-  - DOMAIN-SUFFIX,youtube.com,🚀 手动切换
-  - DOMAIN-SUFFIX,mytvsuper.com,🚀 手动切换
+#  - DOMAIN-SUFFIX,livednow.com,🚀 手动切换
+#  - DOMAIN-SUFFIX,orz-7.com,🚀 手动切换
+#  - DOMAIN-SUFFIX,4gtv.tv,🚀 手动切换
+#  - DOMAIN-SUFFIX,hinet.net,🚀 手动切换
+#  - DOMAIN-SUFFIX,ofiii.com,🚀 手动切换
+#  - DOMAIN-SUFFIX,googlevideo.com,🚀 手动切换
+#  - DOMAIN-SUFFIX,youtube.com,🚀 手动切换
+#  - DOMAIN-SUFFIX,mytvsuper.com,🚀 手动切换
 
   - RULE-SET,Custom_Direct,🎯 全球直连
   - RULE-SET,Custom_Proxy,✈️ 节点选择
