@@ -869,7 +869,6 @@ main() {
             cp_config_files
             mihomo_configure_files
             check_ui
-            mihomo_install_ui
             install_tproxy
             mihomo_customize_settings
             reload_service
