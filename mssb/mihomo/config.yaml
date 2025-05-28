@@ -167,8 +167,9 @@ proxy-groups:
 
 rule-providers:
   SteamCN: {type: http, behavior: classical, format: text, path: ./RuleSet/SteamCN.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/SteamCN/SteamCN.list", interval: 21600, proxy: 🇭🇰 香港节点}
-#  Custom_Direct: {type: http, behavior: classical, format: text, path: ./RuleSet/Custom_Direct.list, url: "自定义直连链接地址", interval: 21600}
-#  Custom_Proxy: {type: http, behavior: classical, format: text, path: ./RuleSet/Custom_Proxy.list, url: "自定义代理链接地址", interval: 21600}
+  # 自定义的两个分组看自己需求修改
+  Myself_Direct: {type: http, behavior: classical, format: text, path: ./RuleSet/Myself_Direct.list, url: "https://raw.githubusercontent.com/baozaodetudou/singbox/refs/heads/main/mihomo/direct.list", interval: 21600, proxy: 🇭🇰 香港节点}
+  Myself_Proxy: {type: http, behavior: classical, format: text, path: ./RuleSet/Myself_Proxy.list, url: "https://raw.githubusercontent.com/baozaodetudou/singbox/refs/heads/main/mihomo/proxy.list", interval: 21600, proxy: 🇭🇰 香港节点}
 #  Tailscale-Derp: {type: http, behavior: classical, format: text, path: ./RuleSet/Tailscale-Derp.list, url: "**自定义", interval: 21600}
   Private: {type: http, behavior: classical, format: text, path: ./RuleSet/Lan.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Lan/Lan.list", interval: 21600, proxy: 🇭🇰 香港节点}
   Direct: {type: http, behavior: classical, format: text, path: ./RuleSet/Direct.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Direct/Direct.list", interval: 21600, proxy: 🇭🇰 香港节点}
@@ -220,8 +221,8 @@ rules:
   - RULE-SET,SteamCN,🎯 全球直连
 #   自行测试当地是否能够直连，不能直连删掉下面这行
 #  - DOMAIN,beesport.livednow.com,🎯 全球直连
-#  - RULE-SET,Custom_Direct,🎯 全球直连
-#  - RULE-SET,Custom_Proxy,✈️ 节点选择
+  - RULE-SET,Myself_Direct,🎯 全球直连
+  - RULE-SET,Myself_Proxy,✈️ 节点选择
   - RULE-SET,SteamCN,🎯 全球直连
   - RULE-SET,Private,🎯 全球直连
   - RULE-SET,Direct,🎯 全球直连
