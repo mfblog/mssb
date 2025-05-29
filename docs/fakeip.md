@@ -20,7 +20,7 @@
 
 在 WinBox 或 WebFig 中，进入 `IP > Routes`，添加如下 Route 规则：
 
-![routelist.png](docs/png/routelist.png)
+![routelist.png](png/routelist.png)
     命令示例:
     ```shell
     /ip route
@@ -53,9 +53,9 @@
 
    示例截图：
 
-![dns.png](docs/png/dns.png)
+![dns.png](png/dns.png)
 
-![dhcp.png](docs/png/dhcp.png)
+![dhcp.png](png/dhcp.png)
 
 ---
 
@@ -79,11 +79,11 @@
 
 示意图：
 
-![netwatch.png](docs/png/netwatch.png)
+![netwatch.png](png/netwatch.png)
 
-![watchup.png](docs/png/watchup.png)
+![watchup.png](png/watchup.png)
 
-![watchdown.png](docs/png/watchdown.png)
+![watchdown.png](png/watchdown.png)
 
 ---
 
