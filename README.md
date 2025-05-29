@@ -79,6 +79,13 @@ tail -f /var/log/supervisor/*.log
 * 端口：8088
 * 默认用户：`admin`
 * 默认密码：`admin`
+* 有些人不想要登录可以执行下边的命令
+  ```shell
+  # 取消用户密码登录登录功能
+  supervisorctl stop filebrowser && filebrowser config set --auth.method=noauth -c /mssb/fb/fb.json -d /mssb/fb/fb.db && supervisorctl start filebrowser
+  # 恢复用户密码登录登录功能
+  supervisorctl stop filebrowser && filebrowser config set --auth.method=json -c /mssb/fb/fb.json -d /mssb/fb/fb.db && supervisorctl start filebrowser
+  ```
 
 ### 2. supervisor
 
