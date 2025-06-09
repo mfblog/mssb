@@ -244,45 +244,117 @@ install_singbox() {
     rm -f "sing-box-linux-$arch.tar.gz"
     log "临时文件已清理"
 }
+# 检查并恢复配置文件
+check_and_restore_config() {
+    local config_type=$1
+    local config_path=$2
+    local backup_dir="/mssb/backup"
+    
+    if [ -d "$backup_dir" ]; then
+        case "$config_type" in
+            "sing-box")
+                latest_backup=$(ls -t "$backup_dir"/sing-box-config-*.json 2>/dev/null | head -n1)
+                ;;
+            "mihomo")
+                latest_backup=$(ls -t "$backup_dir"/mihomo-config-*.yaml 2>/dev/null | head -n1)
+                ;;
+            "mosdns")
+                latest_backup=$(ls -t "$backup_dir"/mosdns-config-*.yaml 2>/dev/null | head -n1)
+                ;;
+            "proxy-device-list")
+                latest_backup=$(ls -t "$backup_dir"/mosdns-proxy-device-list-*.txt 2>/dev/null | head -n1)
+                ;;
+        esac
+        
+        if [ -n "$latest_backup" ]; then
+            echo -e "${green_text}发现 $config_type 的备份配置文件：${reset}"
+            echo -e "备份文件：$latest_backup"
+            read -p "是否恢复此备份？(y/n): " restore_choice
+            if [ "$restore_choice" = "y" ]; then
+                mkdir -p "$(dirname "$config_path")"
+                cp "$latest_backup" "$config_path"
+                log "$config_type 配置文件已从备份恢复"
+                return 0
+            fi
+        fi
+    fi
+    return 1
+}
+
 # singbox用户自定义设置
 singbox_customize_settings() {
-    echo "是否选择生成配置（更新安装请选择n）？(y/n)"
-    echo "生成配置文件需要添加机场订阅，如自建 VPS 请选择 n"
-    read choice
-    if [ "$choice" = "y" ]; then
-        while true; do
-            read -p "输入订阅连接（多个用空格分隔，输入 q 退出）： " suburls
-
-            if [[ "$suburls" == "q" ]]; then
-                log "已取消自动生成配置，请手动编辑 /mssb/sing-box/config.json"
-                break
+    echo -e "\n${green_text}=== Sing-box 配置设置 ===${reset}"
+    echo -e "1. 检查是否有备份配置"
+    echo -e "2. 生成新配置"
+    echo -e "3. 手动配置"
+    echo -e "${green_text}------------------------${reset}"
+    
+    # 检查并尝试恢复备份
+    if check_and_restore_config "sing-box" "/mssb/sing-box/config.json"; then
+        return
+    fi
+    
+    read -p "请选择配置方式 (1/2/3): " config_choice
+    
+    case "$config_choice" in
+        1)
+            echo -e "${yellow}正在检查备份配置...${reset}"
+            if check_and_restore_config "sing-box" "/mssb/sing-box/config.json"; then
+                return
+            else
+                echo -e "${red}未找到备份配置，请选择其他配置方式${reset}"
+                singbox_customize_settings
+                return
             fi
+            ;;
+        2)
+            echo -e "\n${green_text}=== 生成新配置 ===${reset}"
+            echo -e "此选项将根据订阅链接自动生成配置"
+            echo -e "注意："
+            echo -e "1. 需要提供有效的订阅链接"
+            echo -e "2. 多个订阅链接请用空格分隔"
+            echo -e "3. 输入 q 可返回上一步"
+            echo -e "${green_text}------------------------${reset}"
+            
+            while true; do
+                read -p "请输入订阅链接（多个用空格分隔，输入 q 退出）： " suburls
 
-            valid=true
-            for url in $suburls; do
-                if [[ $url != http* ]]; then
-                    echo "❌ 无效的订阅连接：$url（应以 http 开头）"
-                    valid=false
+                if [[ "$suburls" == "q" ]]; then
+                    log "已取消自动生成配置，请手动编辑 /mssb/sing-box/config.json"
                     break
                 fi
-            done
 
-            if [ "$valid" = true ]; then
-                echo "✅ 已设置订阅连接地址：$suburls"
-                python3 update_sub.py -v "$suburls"
-                log "订阅连接处理完成。"
-                break
-            else
-                log "部分订阅链接不符合要求，请重新输入。"
-            fi
-        done
-    elif [ "$choice" = "n" ]; then
-        log "你选择了手动配置，请编辑 /mssb/sing-box/config.json"
-    else
-        log "无效选择，请输入 y 或 n。"
-        singbox_customize_settings  # 递归重新执行
-    fi
+                valid=true
+                for url in $suburls; do
+                    if [[ $url != http* ]]; then
+                        echo -e "${red}❌ 无效的订阅链接：$url（应以 http 开头）${reset}"
+                        valid=false
+                        break
+                    fi
+                done
+
+                if [ "$valid" = true ]; then
+                    echo -e "${green_text}✅ 已设置订阅链接地址：$suburls${reset}"
+                    python3 update_sub.py -v "$suburls"
+                    log "订阅链接处理完成"
+                    break
+                else
+                    log "部分订阅链接不符合要求，请重新输入"
+                fi
+            done
+            ;;
+        3)
+            echo -e "\n${yellow}请手动编辑 /mssb/sing-box/config.json${reset}"
+            echo -e "配置文件位置：/mssb/sing-box/config.json"
+            echo -e "编辑完成后请确保配置正确"
+            ;;
+        *)
+            echo -e "${red}无效选择，请重新选择${reset}"
+            singbox_customize_settings
+            ;;
+    esac
 }
+
 # 安装mihomo
 install_mihomo() {
     arch=$(detect_architecture)
@@ -306,31 +378,69 @@ install_mihomo() {
 }
 # mihomo用户自定义设置
 mihomo_customize_settings() {
-    echo "是否选择生成配置（更新安装请选择n）？(y/n)"
-    echo "生成配置文件需要添加机场订阅，如自建vps请选择n"
-    read choice
-    if [ "$choice" = "y" ]; then
-        while true; do
-            read -p "输入订阅连接（mihomo模式暂时只支持单个，多个需手动修改yaml文件），输入 q 返回上一步: " suburl
-            if [[ "$suburl" == "q" ]]; then
-                log "已取消自动生成配置，请手动编辑 /mssb/mihomo/config.yaml"
-                break
-            elif [[ -n "$suburl" ]]; then
-                escaped_url=$(printf '%s\n' "$suburl" | sed 's/[&/\]/\\&/g')
-                sed -i "s|url: '机场订阅'|url: '$escaped_url'|" /mssb/mihomo/config.yaml
-                sed -i "s|interface-name: eth0|interface-name: $selected_interface|" /mssb/mihomo/config.yaml
-                log "订阅链接已写入。"
-                break
-            else
-                echo "订阅链接不能为空，请重新输入或输入 q 退出。"
-            fi
-        done
-    elif [ "$choice" = "n" ]; then
-        log "你选择了手动配置 /mssb/mihomo/config.yaml。"
-    else
-        log "无效选择，请输入 y 或 n。"
-        mihomo_customize_settings  # 重新询问
+    echo -e "\n${green_text}=== Mihomo 配置设置 ===${reset}"
+    echo -e "1. 检查是否有备份配置"
+    echo -e "2. 生成新配置"
+    echo -e "3. 手动配置"
+    echo -e "${green_text}------------------------${reset}"
+    
+    # 检查并尝试恢复备份
+    if check_and_restore_config "mihomo" "/mssb/mihomo/config.yaml"; then
+        return
     fi
+    
+    read -p "请选择配置方式 (1/2/3): " config_choice
+    
+    case "$config_choice" in
+        1)
+            echo -e "${yellow}正在检查备份配置...${reset}"
+            if check_and_restore_config "mihomo" "/mssb/mihomo/config.yaml"; then
+                return
+            else
+                echo -e "${red}未找到备份配置，请选择其他配置方式${reset}"
+                mihomo_customize_settings
+                return
+            fi
+            ;;
+        2)
+            echo -e "\n${green_text}=== 生成新配置 ===${reset}"
+            echo -e "此选项将根据订阅链接自动生成配置"
+            echo -e "注意："
+            echo -e "1. 需要提供有效的订阅链接"
+            echo -e "2. mihomo模式暂时只支持单个订阅链接"
+            echo -e "3. 输入 q 可返回上一步"
+            echo -e "${green_text}------------------------${reset}"
+            
+            while true; do
+                read -p "请输入订阅链接（输入 q 返回上一步）: " suburl
+                if [[ "$suburl" == "q" ]]; then
+                    log "已取消自动生成配置，请手动编辑 /mssb/mihomo/config.yaml"
+                    break
+                elif [[ -n "$suburl" ]]; then
+                    if [[ $suburl != http* ]]; then
+                        echo -e "${red}❌ 无效的订阅链接：$suburl（应以 http 开头）${reset}"
+                        continue
+                    fi
+                    escaped_url=$(printf '%s\n' "$suburl" | sed 's/[&/\]/\\&/g')
+                    sed -i "s|url: '机场订阅'|url: '$escaped_url'|" /mssb/mihomo/config.yaml
+                    sed -i "s|interface-name: eth0|interface-name: $selected_interface|" /mssb/mihomo/config.yaml
+                    echo -e "${green_text}✅ 订阅链接已写入${reset}"
+                    break
+                else
+                    echo -e "${red}订阅链接不能为空，请重新输入或输入 q 退出${reset}"
+                fi
+            done
+            ;;
+        3)
+            echo -e "\n${yellow}请手动编辑 /mssb/mihomo/config.yaml${reset}"
+            echo -e "配置文件位置：/mssb/mihomo/config.yaml"
+            echo -e "编辑完成后请确保配置正确"
+            ;;
+        *)
+            echo -e "${red}无效选择，请重新选择${reset}"
+            mihomo_customize_settings
+            ;;
+    esac
 }
 
 # 检测ui是否存在
@@ -560,78 +670,151 @@ check_and_copy_folder() {
         log "成功复制 mssb/$folder_name 目录到 /mssb/"
     fi
 }
-# 复制 mssb/mosdns fb 配置文件
-cp_config_files() {
-  log "复制 mssb/fb 目录..."
-  check_and_copy_folder "fb"
+# mosdns配置文件复制
+mosdns_configure_files() {
+    log "检查是否存在 /mssb/mosdns/config.yaml ..."
+    CONFIG_YAML="/mssb/mosdns/config.yaml"
+    backup_dir="/mssb/backup"
+    mkdir -p "$backup_dir"
+    BACKUP_YAML="$backup_dir/mosdns-config-$(date +%Y%m%d-%H%M%S).yaml"
 
-  # ===============================
-  # 备份 proxy-device-list.txt
-  # ===============================
-  if [ -f "/mssb/mosdns/proxy-device-list.txt" ]; then
-      log "备份 /mssb/mosdns/proxy-device-list.txt 到 /tmp/ 目录..."
-      cp "/mssb/mosdns/proxy-device-list.txt" /tmp/proxy-device-list.txt.bak || {
-          log "备份 proxy-device-list.txt 失败，退出脚本。"
-          exit 1
-      }
-  fi
+    # 如果 config.yaml 存在，则进行备份
+    if [ -f "$CONFIG_YAML" ]; then
+        log "发现 config.yaml 文件，备份到 $backup_dir 目录..."
+        cp "$CONFIG_YAML" "$BACKUP_YAML" || { log "备份 config.yaml 失败！退出脚本。"; exit 1; }
+    else
+        log "未发现 config.yaml 文件，跳过备份步骤。"
+    fi
 
-  log "复制 mssb/mosdns 目录..."
-  check_and_copy_folder "mosdns"
+    # 复制 mssb/mosdns 目录
+    log "复制 mssb/mosdns 目录..."
+    if [ -d "/mssb/mosdns" ]; then
+        log "/mssb/mosdns 目录已存在，跳过替换。"
+    else
+        cp -r mssb/mosdns /mssb || { log "复制 mssb/mosdns 目录失败！退出脚本。"; exit 1; }
+        log "成功复制 mssb/mosdns 目录到 /mssb"
+    fi
 
-  # ===============================
-  # 恢复 proxy-device-list.txt
-  # ===============================
-  if [ -f "/tmp/proxy-device-list.txt.bak" ]; then
-      log "恢复 proxy-device-list.txt 到 /mssb/mosdns/..."
-      cp /tmp/proxy-device-list.txt.bak /mssb/mosdns/proxy-device-list.txt || {
-          log "恢复 proxy-device-list.txt 失败，退出脚本。"
-          exit 1
-      }
-      rm -f /tmp/proxy-device-list.txt.bak
-  fi
-
-  log "复制supervisor配置文件..."
-  if [ "$core_name" = "sing-box" ]; then
-      cp run_mssb/supervisord.conf /etc/supervisor/ || {
-          log "复制 supervisord.conf 失败！退出脚本。"
-          exit 1
-      }
-  elif [ "$core_name" = "mihomo" ]; then
-      cp run_msmo/supervisord.conf /etc/supervisor/ || {
-          log "复制 supervisord.conf 失败！退出脚本。"
-          exit 1
-      }
-  else
-      log "未识别的 core_name: $core_name，跳过复制 supervisor 配置文件。"
-  fi
-
-  cp -r watch / || {
-      log "复制 watch 目录失败！退出脚本。"
-      exit 1
-  }
-
-  log "设置脚本可执行权限..."
-  chmod +x /watch/*.sh || {
-      log "设置 /watch/*.sh 权限失败！退出脚本。"
-      exit 1
-  }
+    # 如果之前有备份 config.yaml，则恢复备份文件
+    if [ -f "$BACKUP_YAML" ]; then
+        log "恢复 config.yaml 文件到 /mssb/mosdns ..."
+        cp "$BACKUP_YAML" "$CONFIG_YAML" || { log "恢复 config.yaml 失败！退出脚本。"; exit 1; }
+        log "恢复完成"
+    else
+        # 使用默认配置，并提示用户修改 DNS
+        echo -e "\n${yellow}=== 运营商 DNS 配置 ===${reset}"
+        echo -e "默认已设置第一解析为阿里公共 DNS：${green_text}223.5.5.5${reset}"
+        echo -e "当前第二解析配置的运营商 DNS 为：${green_text}202.102.128.68${reset}"
+        echo -e "建议修改为您所在运营商的 DNS 服务器地址，否则可能影响解析速度"
+        echo -e "常见运营商 DNS："
+        echo -e "  电信：223.5.5.5, 223.6.6.6"
+        echo -e "  联通：119.29.29.29, 119.28.28.28"
+        echo -e "  移动：120.196.165.7, 120.196.165.22"
+        echo -e "  阿里：223.5.5.5, 223.6.6.6"
+        echo -e "  腾讯：119.29.29.29, 119.28.28.28"
+        echo -e "${green_text}------------------------${reset}"
+        
+        read -p "请输入您的运营商 DNS 地址（直接回车使用腾讯作为第二解析 119.29.29.29）：" dns_addr
+        if [ -n "$dns_addr" ]; then
+            # 验证输入的 IP 地址格式
+            if [[ $dns_addr =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+                # 替换配置文件中的 DNS 地址
+                sed -i "s/addr: \"202.102.128.68\"/addr: \"$dns_addr\"/" "$CONFIG_YAML"
+                log "已更新运营商 DNS 地址为：$dns_addr"
+            else
+                log "输入的 DNS 地址格式不正确，将使用默认值 119.29.29.29"
+                sed -i "s/addr: \"202.102.128.68\"/addr: \"119.29.29.29\"/" "$CONFIG_YAML"
+            fi
+        else
+            log "使用默认 DNS 地址：119.29.29.29"
+            sed -i "s/addr: \"202.102.128.68\"/addr: \"119.29.29.29\"/" "$CONFIG_YAML"
+        fi
+    fi
 }
 
+# 复制 mssb/mosdns fb 配置文件
+cp_config_files() {
+    log "复制 mssb/fb 目录..."
+    check_and_copy_folder "fb"
+
+    # 检查并恢复 mosdns 配置
+    echo -e "\n${green_text}=== MosDNS 配置设置 ===${reset}"
+    echo -e "1. 检查是否有备份配置"
+    echo -e "2. 使用默认配置"
+    echo -e "${green_text}------------------------${reset}"
+    
+    read -p "请选择配置方式 (1/2): " mosdns_choice
+    
+    case "$mosdns_choice" in
+        1)
+            # 检查是否有备份配置
+            if check_and_restore_config "mosdns" "/mssb/mosdns/config.yaml"; then
+                log "已从备份恢复 mosdns config.yaml"
+            else
+                log "未找到 mosdns config.yaml 备份，将使用默认配置"
+                mosdns_configure_files
+            fi
+            
+            # 检查并恢复 proxy-device-list.txt
+            if check_and_restore_config "proxy-device-list" "/mssb/mosdns/proxy-device-list.txt"; then
+                log "已从备份恢复 proxy-device-list.txt"
+            else
+                log "未找到 proxy-device-list.txt 备份，将使用默认配置"
+            fi
+            ;;
+        2)
+            log "使用默认 MosDNS 配置..."
+            mosdns_configure_files
+            ;;
+        *)
+            echo -e "${red}无效选择，将使用默认配置${reset}"
+            mosdns_configure_files
+            ;;
+    esac
+
+    log "复制supervisor配置文件..."
+    if [ "$core_name" = "sing-box" ]; then
+        cp run_mssb/supervisord.conf /etc/supervisor/ || {
+            log "复制 supervisord.conf 失败！退出脚本。"
+            exit 1
+        }
+    elif [ "$core_name" = "mihomo" ]; then
+        cp run_msmo/supervisord.conf /etc/supervisor/ || {
+            log "复制 supervisord.conf 失败！退出脚本。"
+            exit 1
+        }
+    else
+        log "未识别的 core_name: $core_name，跳过复制 supervisor 配置文件。"
+    fi
+
+    cp -r watch / || {
+        log "复制 watch 目录失败！退出脚本。"
+        exit 1
+    }
+
+    log "设置脚本可执行权限..."
+    chmod +x /watch/*.sh || {
+        log "设置 /watch/*.sh 权限失败！退出脚本。"
+        exit 1
+    }
+}
 
 # singbox配置文件复制
 singbox_configure_files() {
     log "检查是否存在 /mssb/sing-box/config.json ..."
     CONFIG_JSON="/mssb/sing-box/config.json"
-    BACKUP_JSON="/tmp/config_backup.json"
+    backup_dir="/mssb/backup"
+    mkdir -p "$backup_dir"
+    BACKUP_JSON="$backup_dir/sing-box-config-$(date +%Y%m%d-%H%M%S).json"
 
     # 如果 config.json 存在，则进行备份
     if [ -f "$CONFIG_JSON" ]; then
-        log "发现 config.json 文件，备份到 /tmp 目录..."
+        log "发现 config.json 文件，备份到 $backup_dir 目录..."
         cp "$CONFIG_JSON" "$BACKUP_JSON" || { log "备份 config.json 失败！退出脚本。"; exit 1; }
     else
         log "未发现 config.json 文件，跳过备份步骤。"
     fi
+
     # 复制 mssb/sing-box 目录
     log "复制 mssb/sing-box 目录..."
     if [ -d "/mssb/sing-box" ]; then
@@ -645,40 +828,43 @@ singbox_configure_files() {
     if [ -f "$BACKUP_JSON" ]; then
         log "恢复 config.json 文件到 /mssb/sing-box ..."
         cp "$BACKUP_JSON" "$CONFIG_JSON" || { log "恢复 config.json 失败！退出脚本。"; exit 1; }
-        log "恢复完成，删除临时备份文件..."
-        rm -f "$BACKUP_JSON"
+        log "恢复完成"
     fi
 }
+
 # mihomo配置文件复制
 mihomo_configure_files() {
     log "检查是否存在 /mssb/mihomo/config.yaml ..."
     CONFIG_YAML="/mssb/mihomo/config.yaml"
-    BACKUP_YAML="/tmp/mihomo_config.yaml"
+    backup_dir="/mssb/backup"
+    mkdir -p "$backup_dir"
+    BACKUP_YAML="$backup_dir/mihomo-config-$(date +%Y%m%d-%H%M%S).yaml"
 
-    # 如果 config.json 存在，则进行备份
+    # 如果 config.yaml 存在，则进行备份
     if [ -f "$CONFIG_YAML" ]; then
-        log "发现 config.yaml 文件，备份到 /tmp 目录..."
+        log "发现 config.yaml 文件，备份到 $backup_dir 目录..."
         cp "$CONFIG_YAML" "$BACKUP_YAML" || { log "备份 config.yaml 失败！退出脚本。"; exit 1; }
     else
         log "未发现 config.yaml 文件，跳过备份步骤。"
     fi
-    # 复制 mssb/sing-box 目录
+
+    # 复制 mssb/mihomo 目录
     log "复制 mssb/mihomo 目录..."
     if [ -d "/mssb/mihomo" ]; then
         log "/mssb/mihomo 目录已存在，跳过替换。"
     else
         cp -r mssb/mihomo /mssb || { log "复制 mssb/mihomo 目录失败！退出脚本。"; exit 1; }
-        log "成功复制 mssb/mihomo目录到 /mssb"
+        log "成功复制 mssb/mihomo 目录到 /mssb"
     fi
 
-    # 如果之前有备份 config.json，则恢复备份文件
+    # 如果之前有备份 config.yaml，则恢复备份文件
     if [ -f "$BACKUP_YAML" ]; then
-        log "恢复 config.json 文件到 /mssb/mihomo ..."
+        log "恢复 config.yaml 文件到 /mssb/mihomo ..."
         cp "$BACKUP_YAML" "$CONFIG_YAML" || { log "恢复 config.yaml 失败！退出脚本。"; exit 1; }
-        log "恢复完成，删除临时备份文件..."
-        rm -f "$BACKUP_YAML"
+        log "恢复完成"
     fi
 }
+
 # 服务启动和重载
 reload_service() {
     log "重启 Supervisor..."
@@ -698,10 +884,24 @@ reload_service() {
 
     # 根据 core_name 重启 systemd 服务
     if [ "$core_name" = "sing-box" ]; then
-        systemctl restart sing-box-router
+        # 确保 mihomo-router 服务被禁用和停止
+        systemctl stop mihomo-router 2>/dev/null
+        systemctl disable mihomo-router 2>/dev/null
+        rm -f /etc/systemd/system/mihomo-router.service
+        
+        # 启动 sing-box-router
+        systemctl daemon-reload
+        systemctl enable --now sing-box-router || { log "启用 sing-box-router 服务失败！"; exit 1; }
         log "已重启 sing-box-router 服务。"
     elif [ "$core_name" = "mihomo" ]; then
-        systemctl restart mihomo-router
+        # 确保 sing-box-router 服务被禁用和停止
+        systemctl stop sing-box-router 2>/dev/null
+        systemctl disable sing-box-router 2>/dev/null
+        rm -f /etc/systemd/system/sing-box-router.service
+        
+        # 启动 mihomo-router
+        systemctl daemon-reload
+        systemctl enable --now mihomo-router || { log "启用 mihomo-router 服务失败！"; exit 1; }
         log "已重启 mihomo-router 服务。"
     else
         log "未识别的 core_name: $core_name，跳过 systemd 服务重启。"
@@ -742,6 +942,131 @@ add_cron_jobs() {
     done
 }
 
+# 停止所有服务
+stop_all_services() {
+    log "正在停止所有服务..."
+    
+    # 停止 supervisor 管理的服务
+    if command -v supervisorctl &>/dev/null; then
+        supervisorctl stop all 2>/dev/null || true
+    fi
+    
+    # 停止并禁用 sing-box-router
+    if systemctl is-active sing-box-router &>/dev/null; then
+        systemctl stop sing-box-router
+        systemctl disable sing-box-router
+    fi
+    
+    # 停止并禁用 mihomo-router
+    if systemctl is-active mihomo-router &>/dev/null; then
+        systemctl stop mihomo-router
+        systemctl disable mihomo-router
+    fi
+    
+    # 停止并禁用 nftables
+    if systemctl is-active nftables &>/dev/null; then
+        systemctl stop nftables
+        systemctl disable nftables
+    fi
+    
+    systemctl daemon-reload
+    log "所有服务已停止。"
+}
+
+# 启动所有服务
+start_all_services() {
+    log "正在启动所有服务..."
+    
+    # 检查并启动 nftables
+    if [ -f "/etc/nftables.conf" ]; then
+        # 备份当前配置
+        cp /etc/nftables.conf /etc/nftables.conf.bak
+        
+        # 检查配置语法
+        if nft -c -f /etc/nftables.conf; then
+            nft flush ruleset
+            sleep 1
+            nft -f /etc/nftables.conf
+            systemctl enable --now nftables || log "nftables 服务启动失败"
+        else
+            log "nftables 配置有语法错误，已取消加载"
+            cp /etc/nftables.conf.bak /etc/nftables.conf
+        fi
+    fi
+    
+    # 检查并启动对应的路由服务
+    if [ -f "/etc/systemd/system/sing-box-router.service" ]; then
+        systemctl enable --now sing-box-router || log "sing-box-router 服务启动失败"
+    elif [ -f "/etc/systemd/system/mihomo-router.service" ]; then
+        systemctl enable --now mihomo-router || log "mihomo-router 服务启动失败"
+    fi
+    
+    # 启动 supervisor 管理的服务
+    if command -v supervisorctl &>/dev/null; then
+        supervisorctl start all || log "supervisor 服务启动失败"
+    fi
+    
+    log "所有服务启动完成。"
+}
+
+# 卸载所有服务
+uninstall_all_services() {
+    log "正在卸载所有服务..."
+    
+    # 停止所有服务
+    stop_all_services
+    
+    # 创建备份目录
+    backup_dir="/mssb/backup"
+    mkdir -p "$backup_dir"
+    
+    # 备份配置文件
+    if [ -f "/mssb/sing-box/config.json" ]; then
+        log "备份 sing-box 配置文件..."
+        cp "/mssb/sing-box/config.json" "$backup_dir/sing-box-config-$(date +%Y%m%d-%H%M%S).json"
+    fi
+    
+    if [ -f "/mssb/mihomo/config.yaml" ]; then
+        log "备份 mihomo 配置文件..."
+        cp "/mssb/mihomo/config.yaml" "$backup_dir/mihomo-config-$(date +%Y%m%d-%H%M%S).yaml"
+    fi
+    
+    if [ -f "/mssb/mosdns/proxy-device-list.txt" ]; then
+        log "备份 mosdns proxy-device-list.txt..."
+        cp "/mssb/mosdns/proxy-device-list.txt" "$backup_dir/mosdns-proxy-device-list-$(date +%Y%m%d-%H%M%S).txt"
+    fi
+
+    if [ -f "/mssb/mosdns/config.yaml" ]; then
+        log "备份 mosdns config.yaml..."
+        cp "/mssb/mosdns/config.yaml" "$backup_dir/mosdns-config-$(date +%Y%m%d-%H%M%S).yaml"
+    fi
+    
+    # 删除服务文件
+    rm -f /etc/systemd/system/sing-box-router.service
+    rm -f /etc/systemd/system/mihomo-router.service
+    rm -f /etc/nftables.conf
+    
+    # 删除程序文件
+    rm -f /usr/local/bin/mosdns
+    rm -f /usr/local/bin/sing-box
+    rm -f /usr/local/bin/mihomo
+    rm -f /usr/local/bin/filebrowser
+    
+    # 删除配置目录（保留备份目录）
+    find /mssb -mindepth 1 -maxdepth 1 -not -name "backup" -exec rm -rf {} +
+    
+    # 删除 supervisor 配置
+    rm -f /etc/supervisor/supervisord.conf
+    
+    # 卸载 supervisor
+    if command -v apt-get &>/dev/null; then
+        apt-get remove -y supervisor >/dev/null 2>&1
+        apt-get purge -y supervisor >/dev/null 2>&1
+    fi
+    
+    systemctl daemon-reload
+    log "所有服务已卸载完成。配置文件已备份到 $backup_dir 目录"
+}
 
 # 主函数
 main() {
@@ -760,63 +1085,15 @@ main() {
 
     case "$main_choice" in
         2)
-            echo -e "${red_text}⛔ 正在停止所有转发相关服务...${reset}"
-            supervisorctl stop all || echo "supervisorctl 未安装或未配置"
-            systemctl stop sing-box-router.service 2>/dev/null
-            systemctl stop mihomo-router.service 2>/dev/null
-            systemctl stop nftables.service 2>/dev/null
-            log "所有相关服务已停止。"
+            stop_all_services
             exit 0
             ;;
         3)
-            echo -e "${red_text}⚠️ 正在停止并卸载所有服务...${reset}"
-            supervisorctl stop all || echo "supervisorctl 未安装或未配置"
-            systemctl stop sing-box-router.service 2>/dev/null
-            systemctl stop mihomo-router.service 2>/dev/null
-            systemctl stop nftables.service 2>/dev/null
-
-            systemctl disable sing-box-router.service 2>/dev/null
-            systemctl disable mihomo-router.service 2>/dev/null
-            systemctl disable nftables.service 2>/dev/null
-
-            rm -rf /mssb
-            rm -rf /etc/systemd/system/sing-box-router.service
-            rm -rf /etc/systemd/system/mihomo-router.service
-            rm -rf /etc/nftables.conf
-            rm -rf /usr/local/bin/mosdns
-            rm -f /etc/supervisor/supervisord.conf
-            apt-get remove -y supervisor >/dev/null 2>&1
-            apt-get purge -y supervisor >/dev/null 2>&1
-            systemctl daemon-reload
-
-            log "✅ 所有服务已停止，配置与文件已删除，supervisor 已卸载。"
+            uninstall_all_services
             exit 0
             ;;
         4)
-            echo -e "${green_text}✅ 正在启动所有转发相关服务...${reset}"
-            # 启动 sing-box-router
-            systemctl start sing-box-router.service 2>/dev/null || echo "❌ sing-box-router 启动失败"
-            # 启动 mihomo-router
-            systemctl start mihomo-router.service 2>/dev/null || echo "❌ mihomo-router 启动失败"
-            # 清空 nftables 前备份，防止错误导致无规则运行
-            cp /etc/nftables.conf /etc/nftables.conf.bak
-            # 语法检查 nft 配置，避免意外
-            if nft -c -f /etc/nftables.conf; then
-                nft flush ruleset
-                sleep 1
-                nft -f /etc/nftables.conf
-                systemctl start nftables.service 2>/dev/null || echo "❌ nftables 服务启动失败"
-            else
-                echo "⚠️ /etc/nftables.conf 有语法错误，已取消加载。"
-            fi
-            # 判断 supervisor 是否安装
-            if command -v supervisorctl &>/dev/null; then
-                supervisorctl start all || echo "❌ supervisorctl 执行失败"
-            else
-                echo "⚠️ supervisorctl 未安装"
-            fi
-
-            log "✅ 所有相关服务已启动完成。"
+            start_all_services
             exit 0
             ;;
         1)
