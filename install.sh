@@ -703,18 +703,15 @@ mosdns_configure_files() {
     else
         # 使用默认配置，并提示用户修改 DNS
         echo -e "\n${yellow}=== 运营商 DNS 配置 ===${reset}"
-        echo -e "默认已设置第一解析为阿里公共 DNS：${green_text}223.5.5.5${reset}"
-        echo -e "当前第二解析配置的运营商 DNS 为：${green_text}202.102.128.68${reset}"
+        echo -e "默认已设置第一、第二解析为阿里公共 DNS：${green_text}223.5.5.5${reset}"
+        echo -e "当前第三解析配置的运营商 DNS 为：${green_text}202.102.128.68${reset}"
         echo -e "建议修改为您所在运营商的 DNS 服务器地址，否则可能影响解析速度"
-        echo -e "常见运营商 DNS："
-        echo -e "  电信：223.5.5.5, 223.6.6.6"
-        echo -e "  联通：119.29.29.29, 119.28.28.28"
-        echo -e "  移动：120.196.165.7, 120.196.165.22"
+        echo -e "常见运营商 DNS：可以参考 https://ipw.cn/doc/else/dns.html"
         echo -e "  阿里：223.5.5.5, 223.6.6.6"
         echo -e "  腾讯：119.29.29.29, 119.28.28.28"
         echo -e "${green_text}------------------------${reset}"
         
-        read -p "请输入您的运营商 DNS 地址（直接回车使用腾讯作为第二解析 119.29.29.29）：" dns_addr
+        read -p "请输入您的运营商 DNS 地址（直接回车使用腾讯作为第三解析 119.29.29.29）：" dns_addr
         if [ -n "$dns_addr" ]; then
             # 验证输入的 IP 地址格式
             if [[ $dns_addr =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
