@@ -48,13 +48,9 @@ if __name__ == "__main__":
         # 构建 outbound_providers 的新值
         outbound_providers_value.append({
             "type": "remote",
-            "path": f"/mssb/sing-box/providers/{index}.yaml",
             "tag": f"✈️机场{index}",
-            "healthcheck_url": "http://www.gstatic.com/generate_204",
-            "healthcheck_interval": "10m0s",
-            "download_url": url,
-            "download_ua": "clash.meta",
-            "download_interval": "24h0m0s",
+            "url": url,
+            "update_interval": "24000h",
             "download_detour": "direct"
         })
     # 修改 outbound_providers

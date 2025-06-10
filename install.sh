@@ -253,7 +253,19 @@ check_and_restore_config() {
     if [ -d "$backup_dir" ]; then
         case "$config_type" in
             "sing-box")
-                latest_backup=$(ls -t "$backup_dir"/sing-box-config-*.json 2>/dev/null | head -n1)
+                # 获取当前核心类型
+                if [ -f "/mssb/sing-box/core_type" ]; then
+                    core_type=$(cat "/mssb/sing-box/core_type")
+                else
+                    core_type="sing-box-reF1nd"  # 默认为 R核心
+                fi
+                
+                # 根据核心类型选择对应的备份文件
+                if [[ "$core_type" == "sing-box-reF1nd" ]]; then
+                    latest_backup=$(ls -t "$backup_dir"/sing-box-r-config-*.json 2>/dev/null | head -n1)
+                else
+                    latest_backup=$(ls -t "$backup_dir"/sing-box-y-config-*.json 2>/dev/null | head -n1)
+                fi
                 ;;
             "mihomo")
                 latest_backup=$(ls -t "$backup_dir"/mihomo-config-*.yaml 2>/dev/null | head -n1)
@@ -281,7 +293,58 @@ check_and_restore_config() {
     return 1
 }
 
-# singbox用户自定义设置
+# singbox配置文件复制（初始安装或更新安装时使用）
+singbox_configure_files() {
+    log "检查是否存在 /mssb/sing-box/config.json ..."
+    CONFIG_JSON="/mssb/sing-box/config.json"
+    backup_dir="/mssb/backup"
+    mkdir -p "$backup_dir"
+    
+    # 获取当前核心类型
+    if [ -f "/mssb/sing-box/core_type" ]; then
+        core_type=$(cat "/mssb/sing-box/core_type")
+    else
+        core_type="sing-box-reF1nd"  # 默认为 R核心
+    fi
+    
+    # 根据核心类型设置备份文件名
+    if [[ "$core_type" == "sing-box-reF1nd" ]]; then
+        BACKUP_JSON="$backup_dir/sing-box-r-config-$(date +%Y%m%d-%H%M%S).json"
+        SOURCE_CONFIG="/mssb/sing-box/sing-box-r.json"
+    else
+        BACKUP_JSON="$backup_dir/sing-box-y-config-$(date +%Y%m%d-%H%M%S).json"
+        SOURCE_CONFIG="/mssb/sing-box/sing-box-y.json"
+    fi
+
+    # 如果 config.json 存在，则进行备份
+    if [ -f "$CONFIG_JSON" ]; then
+        log "发现 config.json 文件，备份到 $backup_dir 目录..."
+        cp "$CONFIG_JSON" "$BACKUP_JSON" || { log "备份 config.json 失败！退出脚本。"; exit 1; }
+    else
+        log "未发现 config.json 文件，跳过备份步骤。"
+    fi
+
+    # 复制 mssb/sing-box 目录
+    log "复制 mssb/sing-box 目录..."
+    if [ -d "/mssb/sing-box" ]; then
+        log "/mssb/sing-box 目录已存在，跳过替换。"
+    else
+        cp -r mssb/sing-box /mssb || { log "复制 mssb/sing-box 目录失败！退出脚本。"; exit 1; }
+        log "成功复制 mssb/sing-box 目录到 /mssb"
+    fi
+
+    # 复制对应核心的配置文件
+    log "复制 $core_type 的配置文件..."
+    if [ -f "$SOURCE_CONFIG" ]; then
+        cp "$SOURCE_CONFIG" "$CONFIG_JSON" || { log "复制配置文件失败！退出脚本。"; exit 1; }
+        log "成功复制 $core_type 配置文件到 /mssb/sing-box/config.json"
+    else
+        log "错误：找不到源配置文件 $SOURCE_CONFIG"
+        exit 1
+    fi
+}
+
+# singbox用户自定义设置（用于配置设置）
 singbox_customize_settings() {
     echo -e "\n${green_text}=== Sing-box 配置设置 ===${reset}"
     echo -e "1. 检查是否有备份配置"
@@ -796,39 +859,6 @@ cp_config_files() {
     }
 }
 
-# singbox配置文件复制
-singbox_configure_files() {
-    log "检查是否存在 /mssb/sing-box/config.json ..."
-    CONFIG_JSON="/mssb/sing-box/config.json"
-    backup_dir="/mssb/backup"
-    mkdir -p "$backup_dir"
-    BACKUP_JSON="$backup_dir/sing-box-config-$(date +%Y%m%d-%H%M%S).json"
-
-    # 如果 config.json 存在，则进行备份
-    if [ -f "$CONFIG_JSON" ]; then
-        log "发现 config.json 文件，备份到 $backup_dir 目录..."
-        cp "$CONFIG_JSON" "$BACKUP_JSON" || { log "备份 config.json 失败！退出脚本。"; exit 1; }
-    else
-        log "未发现 config.json 文件，跳过备份步骤。"
-    fi
-
-    # 复制 mssb/sing-box 目录
-    log "复制 mssb/sing-box 目录..."
-    if [ -d "/mssb/sing-box" ]; then
-        log "/mssb/sing-box 目录已存在，跳过替换。"
-    else
-        cp -r mssb/sing-box /mssb || { log "复制 mssb/sing-box 目录失败！退出脚本。"; exit 1; }
-        log "成功复制 mssb/sing-box 目录到 /mssb"
-    fi
-
-    # 如果之前有备份 config.json，则恢复备份文件
-    if [ -f "$BACKUP_JSON" ]; then
-        log "恢复 config.json 文件到 /mssb/sing-box ..."
-        cp "$BACKUP_JSON" "$CONFIG_JSON" || { log "恢复 config.json 失败！退出脚本。"; exit 1; }
-        log "恢复完成"
-    fi
-}
-
 # mihomo配置文件复制
 mihomo_configure_files() {
     log "检查是否存在 /mssb/mihomo/config.yaml ..."
@@ -1065,6 +1095,98 @@ uninstall_all_services() {
     log "所有服务已卸载完成。配置文件已备份到 $backup_dir 目录"
 }
 
+# 记录 Sing-box 核心版本
+record_singbox_core() {
+    local core_type=$1
+    echo "$core_type" > /mssb/sing-box/core_type
+    log "已记录 Sing-box 核心类型：$core_type 在/mssb/sing-box/core_type文件夹"
+}
+
+# reF1nd佬 R核心安装函数
+singbox_r_install() {
+    arch=$(detect_architecture)
+    download_url="https://github.com/herozmy/StoreHouse/releases/download/sing-box-reF1nd/sing-box-reF1nd-dev-linux-${arch}.tar.gz"
+
+    log "开始下载 reF1nd佬 R核心..."
+    if ! wget -O sing-box.tar.gz "$download_url"; then
+        error_log "下载失败，请检查网络连接"
+        exit 1
+    fi
+    
+    log "下载完成，开始安装"
+    tar -zxvf sing-box.tar.gz > /dev/null 2>&1
+    mv sing-box /usr/local/bin/
+    chmod +x /usr/local/bin/sing-box
+    rm -f sing-box.tar.gz
+    
+    # 记录核心类型
+    record_singbox_core "sing-box-reF1nd"
+}
+
+# S核安装函数
+singbox_s_install() {
+    arch=$(detect_architecture)
+    download_url="https://github.com/herozmy/StoreHouse/releases/download/sing-box-yelnoo/sing-box-yelnoo-linux-${arch}.tar.gz"
+
+    log "开始下载 S佬Y核心..."
+    if ! wget -O sing-box.tar.gz "$download_url"; then
+        error_log "下载失败，请检查网络连接"
+        exit 1
+    fi
+    
+    log "下载完成，开始安装"
+    tar -zxvf sing-box.tar.gz > /dev/null 2>&1
+    mv sing-box /usr/local/bin/
+    chmod +x /usr/local/bin/sing-box
+    rm -f sing-box.tar.gz
+    
+    # 记录核心类型
+    record_singbox_core "sing-box-yelnoo"
+}
+
+# P核安装函数
+singbox_p_install() {
+    arch=$(detect_architecture)
+    download_url="https://github.com/herozmy/StoreHouse/releases/download/sing-box/sing-box-puernya-linux-${arch}.tar.gz"
+
+    log "开始下载 Puer喵佬核心..."
+    if ! wget -O sing-box.tar.gz "$download_url"; then
+        error_log "下载失败，请检查网络连接"
+        exit 1
+    fi
+    
+    log "下载完成，开始安装"
+    tar -zxvf sing-box.tar.gz
+    mv sing-box /usr/local/bin/
+    chmod +x /usr/local/bin/sing-box
+    rm -f sing-box.tar.gz
+    
+    # 记录核心类型
+    record_singbox_core "sing-box-puernya"
+}
+
+# 曦灵X核心安装函数
+singbox_x_install() {
+    arch=$(detect_architecture)
+    download_url="https://github.com/herozmy/StoreHouse/releases/download/sing-box-x/sing-box-x.tar.gz"
+
+    log "开始下载 曦灵X核心..."
+    if ! wget -O sing-box.tar.gz "$download_url"; then
+        error_log "下载失败，请检查网络连接"
+        exit 1
+    fi
+    
+    log "下载完成，开始安装"
+    tar -zxvf sing-box.tar.gz > /dev/null 2>&1
+    mv sing-box_linux_amd64 sing-box
+    mv sing-box /usr/local/bin/
+    chmod +x /usr/local/bin/sing-box
+    rm -f sing-box.tar.gz
+    
+    # 记录核心类型
+    record_singbox_core "sing-box-x"
+}
+
 # 主函数
 main() {
     green_text="\e[32m"
@@ -1116,17 +1238,42 @@ main() {
     echo
 
     echo -e "${green_text}请选择安装方案：${reset}"
-    echo "1) 方案1：Sing-box P核(支持订阅) + MosDNS"
+    echo "1) 方案1：Sing-box (支持订阅) + MosDNS"
     echo "2) 方案2：Mihomo + MosDNS"
     echo -e "${green_text}-------------------------------------------------${reset}"
     read -p "请输入选项 (1/2): " choice
     case "$choice" in
         1)
             core_name="sing-box"
-            log "你选择了方案1：Sing-box P核(支持订阅) + MosDNS"
+            log "你选择了方案1：Sing-box (支持订阅) + MosDNS"
+            
+            # 显示 Sing-box 核心版本选择
+            echo -e "\n${green_text}请选择 Sing-box 核心版本：${reset}"
+            echo -e "${yellow}1. Sing-box reF1nd佬 R核心${reset} <支持订阅> ${green_text}推荐${reset}"
+            echo -e "${yellow}2. Sing-box S佬Y核心${reset} <支持订阅> ${green_text}推荐${reset}"
+            echo -e "${yellow}说明: Sing-box Puer喵佬核心${reset} <支持订阅> ${green_text}停更不再支持${reset}"
+            echo -e "${yellow}说明: Sing-box 曦灵X核心${reset} <支持订阅> ${green_text}停更不在支持${reset}"
+            echo -e "${green_text}-------------------------------------------------${reset}"
+            read -p "请输入选项 (1/2): " singbox_choice
+            
             install_filebrower
             install_mosdns
-            install_singbox
+            
+            case "$singbox_choice" in
+                1)
+                    log "你选择了 Sing-box reF1nd佬 R核心"
+                    singbox_r_install
+                    ;;
+                2)
+                    log "你选择了 Sing-box S佬Y核心"
+                    singbox_s_install
+                    ;;
+                *)
+                    log "无效选项，将使用默认的 reF1nd佬 R核心"
+                    singbox_r_install
+                    ;;
+            esac
+            
             cp_config_files
             singbox_configure_files
             singbox_customize_settings
