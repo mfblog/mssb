@@ -1418,20 +1418,21 @@ main() {
 
     case "$main_choice" in
         2)
-                # 停止所有转发服务
-                stop_services
-                ;;
+            stop_all_services
+            exit 0
+            ;;
         3)
-            # 停止所有服务并卸载 + 删除所有相关文件
-            uninstall_services
+            uninstall_all_services
+            exit 0
             ;;
         4)
-            # 启用所有服务
-            start_services
+            start_all_services
+            exit 0
             ;;
         5)
             # 修改服务配置
             modify_service_config
+            exit 0
             ;;
         1)
             echo -e "${green_text}✅ 继续安装/更新代理服务...${reset}"
