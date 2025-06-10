@@ -1248,20 +1248,162 @@ singbox_x_install() {
     record_singbox_core "sing-box-x"
 }
 
+# 修改 Supervisor 配置
+modify_supervisor_config() {
+    echo -e "\n${green_text}请选择 Supervisor 管理界面配置方式：${reset}"
+    echo -e "${green_text}1) 使用默认配置（用户名：mssb，密码：mssb123..）${reset}"
+    echo -e "${green_text}2) 自定义用户名和密码${reset}"
+    echo -e "${green_text}3) 不设置用户名密码${reset}"
+    echo -e "${green_text}-------------------------------------------------${reset}"
+    read -p "请输入选项 (1/2/3): " supervisor_choice
+
+    case $supervisor_choice in
+        1)
+            # 使用默认配置
+            supervisor_username="mssb"
+            supervisor_password="mssb123.."
+            ;;
+        2)
+            # 自定义用户名和密码
+            read -p "请输入用户名: " supervisor_username
+            read -p "请输入密码: " supervisor_password
+            ;;
+        3)
+            # 不设置用户名密码
+            supervisor_username=""
+            supervisor_password=""
+            ;;
+        *)
+            echo -e "${red_text}无效的选项${reset}"
+            return 1
+            ;;
+    esac
+
+    # 更新 Supervisor 配置
+    if [ -f "/etc/supervisor/supervisord.conf" ]; then
+        if [ -n "$supervisor_username" ] && [ -n "$supervisor_password" ]; then
+            sed -i "s/^username=.*/username=$supervisor_username/" /etc/supervisor/supervisord.conf
+            sed -i "s/^password=.*/password=$supervisor_password/" /etc/supervisor/supervisord.conf
+        else
+            sed -i "s/^username=.*/username=/" /etc/supervisor/supervisord.conf
+            sed -i "s/^password=.*/password=/" /etc/supervisor/supervisord.conf
+        fi
+        systemctl restart supervisor.service
+        supervisorctl reload
+        echo -e "${green_text}Supervisor 配置已更新${reset}"
+    else
+        echo -e "${red_text}Supervisor 配置文件不存在${reset}"
+        return 1
+    fi
+}
+
+# 修改 Filebrowser 配置
+modify_filebrowser_config() {
+    echo -e "\n${green_text}请选择 Filebrowser 登录方式：${reset}"
+    echo -e "${green_text}1) 使用密码登录${reset}"
+    echo -e "${green_text}2) 禁用密码登录${reset}"
+    echo -e "${green_text}-------------------------------------------------${reset}"
+    read -p "请输入选项 (1/2): " fb_choice
+
+    case $fb_choice in
+        1)
+            # 使用密码登录
+            if [ -f "/mssb/fb/fb.db" ]; then
+                echo -e "\n${green_text}请选择密码设置方式：${reset}"
+                echo -e "${green_text}1) 使用默认密码（admin/admin）${reset}"
+                echo -e "${green_text}2) 自定义密码${reset}"
+                echo -e "${green_text}-------------------------------------------------${reset}"
+                read -p "请输入选项 (1/2): " password_choice
+
+                supervisorctl stop filebrowser
+                filebrowser config set --auth.method=json -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+
+                case $password_choice in
+                    1)
+                        # 使用默认密码
+                        filebrowser users update admin --password "admin" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+                        echo -e "${green_text}Filebrowser 已设置为使用默认密码（admin/admin）${reset}"
+                        ;;
+                    2)
+                        # 自定义密码
+                        read -p "请输入新密码（输入时可见）: " new_password
+                        if [ -n "$new_password" ]; then
+                            filebrowser users update admin --password "$new_password" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+                            echo -e "${green_text}Filebrowser 密码已更新${reset}"
+                        else
+                            echo -e "${red_text}密码不能为空，将使用默认密码${reset}"
+                            filebrowser users update admin --password "admin" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+                        fi
+                        ;;
+                    *)
+                        echo -e "${red_text}无效的选项，将使用默认密码${reset}"
+                        filebrowser users update admin --password "admin" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+                        ;;
+                esac
+
+                supervisorctl start filebrowser
+            else
+                echo -e "${red_text}Filebrowser 配置文件不存在${reset}"
+                return 1
+            fi
+            ;;
+        2)
+            # 禁用密码登录
+            if [ -f "/mssb/fb/fb.db" ]; then
+                supervisorctl stop filebrowser
+                filebrowser config set --auth.method=noauth -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+                supervisorctl start filebrowser
+                echo -e "${green_text}Filebrowser 已禁用密码登录${reset}"
+            else
+                echo -e "${red_text}Filebrowser 配置文件不存在${reset}"
+                return 1
+            fi
+            ;;
+        *)
+            echo -e "${red_text}无效的选项${reset}"
+            return 1
+            ;;
+    esac
+}
+
+# 修改服务配置
+modify_service_config() {
+    echo -e "\n${green_text}请选择要修改的配置：${reset}"
+    echo -e "${green_text}1) 修改 Supervisor 管理界面配置${reset}"
+    echo -e "${green_text}2) 修改 Filebrowser 登录方式${reset}"
+    echo -e "${green_text}-------------------------------------------------${reset}"
+    read -p "请输入选项 (1/2): " config_choice
+
+    case $config_choice in
+        1)
+            modify_supervisor_config
+            ;;
+        2)
+            modify_filebrowser_config
+            ;;
+        *)
+            echo -e "${red_text}无效的选项${reset}"
+            return 1
+            ;;
+    esac
+}
+
 # 主函数
 main() {
     green_text="\e[32m"
     red_text="\e[31m"
     reset="\e[0m"
 
+    # 主菜单
     echo -e "${green_text}------------------------注意：请使用 root 用户安装！！！-------------------------${reset}"
     echo -e "${green_text}请选择操作：${reset}"
     echo -e "${green_text}1) 安装/更新代理转发服务${reset}"
     echo -e "${red_text}2) 停止所有转发服务${reset}"
     echo -e "${red_text}3) 停止所有服务并卸载 + 删除所有相关文件${reset}"
     echo -e "${green_text}4) 启用所有服务${reset}"
+    echo -e "${green_text}5) 修改服务配置${reset}"
     echo -e "${green_text}-------------------------------------------------${reset}"
-    read -p "请输入选项 (1/2/3/4): " main_choice
+    read -p "请输入选项 (1/2/3/4/5): " main_choice
 
     case "$main_choice" in
         2)
@@ -1274,6 +1416,11 @@ main() {
             ;;
         4)
             start_all_services
+            exit 0
+            ;;
+        5)
+            # 修改服务配置
+            modify_service_config
             exit 0
             ;;
         1)
@@ -1307,7 +1454,7 @@ main() {
         1)
             core_name="sing-box"
             log "你选择了方案1：Sing-box (支持订阅) + MosDNS"
-            
+
             # 显示 Sing-box 核心版本选择
             echo -e "\n${green_text}请选择 Sing-box 核心版本：${reset}"
             echo -e "${yellow}1. Sing-box reF1nd佬 R核心${reset} <支持订阅> ${green_text}推荐${reset}"
@@ -1316,10 +1463,10 @@ main() {
             echo -e "${yellow}说明: Sing-box 曦灵X核心${reset} <支持订阅> ${green_text}停更不在支持${reset}"
             echo -e "${green_text}-------------------------------------------------${reset}"
             read -p "请输入选项 (1/2): " singbox_choice
-            
+
             install_filebrower
             install_mosdns
-            
+
             case "$singbox_choice" in
                 1)
                     log "你选择了 Sing-box reF1nd佬 R核心"
@@ -1334,7 +1481,7 @@ main() {
                     singbox_r_install
                     ;;
             esac
-            
+
             cp_config_files
             singbox_configure_files
             singbox_customize_settings
