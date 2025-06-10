@@ -29,8 +29,31 @@ detect_architecture() {
 main() {
     log "开始更新 Sing-box..."
 
+    # 获取当前核心类型
+    if [ -f "/mssb/sing-box/core_type" ]; then
+        core_type=$(cat "/mssb/sing-box/core_type")
+    else
+        log "未找到核心类型记录，默认使用 reF1nd佬 R核心"
+        core_type="sing-box-reF1nd"
+    fi
+
     arch=$(detect_architecture)
-    SING_BOX_URL="https://github.com/herozmy/StoreHouse/releases/download/sing-box/sing-box-puernya-linux-${arch}.tar.gz"
+    
+    # 根据核心类型选择下载地址
+    case "$core_type" in
+        "sing-box-reF1nd")
+            SING_BOX_URL="https://github.com/herozmy/StoreHouse/releases/download/sing-box-reF1nd/sing-box-reF1nd-dev-linux-${arch}.tar.gz"
+            log "当前使用 reF1nd佬 R核心，准备更新..."
+            ;;
+        "sing-box-yelnoo")
+            SING_BOX_URL="https://github.com/herozmy/StoreHouse/releases/download/sing-box-yelnoo/sing-box-yelnoo-linux-${arch}.tar.gz"
+            log "当前使用 S佬Y核心，准备更新..."
+            ;;
+        *)
+            log "未知的核心类型：$core_type，退出更新"
+            exit 1
+            ;;
+    esac
 
     log "正在从 $SING_BOX_URL 下载 Sing-box..."
     if wget -O /tmp/sing-box.tar.gz "$SING_BOX_URL"; then

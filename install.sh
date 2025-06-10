@@ -1091,6 +1091,10 @@ uninstall_all_services() {
         apt-get purge -y supervisor >/dev/null 2>&1
     fi
     
+    # 清理定时任务
+    log "清理定时任务..."
+    (crontab -l | grep -v -e "# update_mosdns" -e "# update_sb" -e "# update_cn" -e "# update_mihomo") | crontab -
+    
     systemctl daemon-reload
     log "所有服务已卸载完成。配置文件已备份到 $backup_dir 目录"
 }
