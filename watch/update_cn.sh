@@ -37,16 +37,14 @@ download_file() {
     local destination=$2
     local description=$3
     local temp_file="${destination}.tmp"
-    
+
     log "正在更新 ${description}..."
-    
     # 如果代理变量非空，则设置 curl 命令使用代理
     if [ -n "$proxy" ]; then
         CURL_COMMAND="curl --progress-bar --show-error -x $proxy -o"
     else
         CURL_COMMAND="curl --progress-bar --show-error -o"
     fi
-    
     # 下载到临时文件
     if $CURL_COMMAND "$temp_file" "$url"; then
         # 检查文件完整性
@@ -70,28 +68,26 @@ download_file() {
 # 主函数
 main() {
     log "开始更新 CN 规则文件..."
-    
+
     # 设置需要下载的文件 URL
     proxy_list_url="https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/proxy-list.txt"
     gfw_list_url="https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/gfw.txt"
     direct_list_url="https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/direct-list.txt"
     cn_ip_cidr_url="https://raw.githubusercontent.com/Hackl0us/GeoIP2-CN/release/CN-ip-cidr.txt"
-    
+
     # 设置本地文件路径
     geosite_geolocation_noncn_file="/mssb/mosdns/rule/geosite_geolocation_noncn.txt"
     gfw_file="/mssb/mosdns/rule/gfw.txt"
     geosite_cn_file="/mssb/mosdns/rule/geosite_cn.txt"
     geoip_cn_file="/mssb/mosdns/rule/geoip_cn.txt"
-    
     # 确保目录存在
     mkdir -p "$(dirname "$geosite_geolocation_noncn_file")"
-    
+
     # 下载文件
     download_file "$proxy_list_url" "$geosite_geolocation_noncn_file" "代理列表" || exit 1
     download_file "$gfw_list_url" "$gfw_file" "GFW 列表" || exit 1
     download_file "$direct_list_url" "$geosite_cn_file" "直连列表" || exit 1
     download_file "$cn_ip_cidr_url" "$geoip_cn_file" "CN IP CIDR" || exit 1
-    
     # 重启 MosDNS 服务
     log "正在通过 Supervisor 重启 MosDNS 服务..."
     if supervisorctl restart mosdns; then
@@ -100,7 +96,7 @@ main() {
         error_log "MosDNS 服务重启失败，请检查 Supervisor 配置"
         exit 1
     fi
-    
+
     success_log "CN 规则更新和重启流程成功完成"
 }
 

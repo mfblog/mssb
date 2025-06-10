@@ -832,6 +832,27 @@ cp_config_files() {
             ;;
     esac
 
+    # Filebrowser 配置设置
+    echo -e "\n${green_text}=== Filebrowser 配置设置 ===${reset}"
+    echo -e "1. 启用密码登录（默认， 默认用户密码安装完提示，进入后可自行修改）"
+    echo -e "2. 禁用密码登录（无需登录即可访问）"
+    echo -e "${green_text}------------------------${reset}"
+    
+    read -p "请选择 Filebrowser 登录方式 (1/2): " fb_choice
+    
+    case "$fb_choice" in
+        2)
+            log "正在配置 Filebrowser 为无密码登录模式..."
+            filebrowser config set --auth.method=noauth -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+            log "Filebrowser 已配置为无密码登录模式"
+            ;;
+        *)
+            log "使用默认的密码登录模式..."
+            filebrowser config set --auth.method=json -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+            log "Filebrowser 已配置为密码登录模式"
+            ;;
+    esac
+
     log "复制supervisor配置文件..."
     if [ "$core_name" = "sing-box" ]; then
         cp run_mssb/supervisord.conf /etc/supervisor/ || {
@@ -846,6 +867,42 @@ cp_config_files() {
     else
         log "未识别的 core_name: $core_name，跳过复制 supervisor 配置文件。"
     fi
+
+    # Supervisor 配置设置
+    echo -e "\n${green_text}=== Supervisor 管理配置设置 ===${reset}"
+    echo -e "1. 使用默认用户名密码（mssb/mssb123..）"
+    echo -e "2. 自定义用户名密码"
+    echo -e "3. 不设置用户名密码"
+    echo -e "${green_text}------------------------${reset}"
+    
+    read -p "请选择 Supervisor 管理配置方式 (1/2/3): " supervisor_choice
+    
+    case "$supervisor_choice" in
+        2)
+            read -p "请输入用户名: " supervisor_username
+            read -p "请输入密码: " supervisor_password
+            
+            if [ -n "$supervisor_username" ] && [ -n "$supervisor_password" ]; then
+                sed -i "s/^username=.*/username=$supervisor_username/" /etc/supervisor/supervisord.conf
+                sed -i "s/^password=.*/password=$supervisor_password/" /etc/supervisor/supervisord.conf
+                log "已设置自定义 Supervisor 用户名和密码"
+            else
+                log "用户名或密码为空，将使用默认设置"
+                sed -i "s/^username=.*/username=mssb/" /etc/supervisor/supervisord.conf
+                sed -i "s/^password=.*/password=mssb123../" /etc/supervisor/supervisord.conf
+            fi
+            ;;
+        3)
+            sed -i "s/^username=.*/username=/" /etc/supervisor/supervisord.conf
+            sed -i "s/^password=.*/password=/" /etc/supervisor/supervisord.conf
+            log "已清除 Supervisor 用户名和密码设置"
+            ;;
+        *)
+            sed -i "s/^username=.*/username=mssb/" /etc/supervisor/supervisord.conf
+            sed -i "s/^password=.*/password=mssb123../" /etc/supervisor/supervisord.conf
+            log "已设置默认 Supervisor 用户名和密码"
+            ;;
+    esac
 
     cp -r watch / || {
         log "复制 watch 目录失败！退出脚本。"
@@ -1328,15 +1385,25 @@ main() {
     echo -e "🌐 Mosdns 统计界面：${green_text}http://${local_ip}:9099/graphic${reset}"
     echo
     echo -e "📦 Supervisor 管理界面：${green_text}http://${local_ip}:9001${reset}"
-    echo -e "   - 用户名：mssb"
-    echo -e "   - 密码：mssb123.."
+    if [ "$supervisor_choice" = "3" ]; then
+        echo -e "   - 无需登录"
+    elif [ "$supervisor_choice" = "2" ] && [ -n "$supervisor_username" ] && [ -n "$supervisor_password" ]; then
+        echo -e "   - 用户名：$supervisor_username"
+        echo -e "   - 密码：$supervisor_password"
+    else
+        echo -e "   - 用户名：mssb"
+        echo -e "   - 密码：mssb123.."
+    fi
     echo
     echo -e "🗂️  文件管理服务 Filebrowser：${green_text}http://${local_ip}:8088${reset}"
-    echo -e "   - 用户名：admin"
-    echo -e "   - 密码：admin"
+    if [ "$fb_choice" = "2" ]; then
+        echo -e "   - 无需登录"
+    else
+        echo -e "   - 用户名：admin"
+        echo -e "   - 密码：admin"
+    fi
     echo
     echo -e "🕸️  Sing-box/Mihomo 面板 UI：${green_text}http://${local_ip}:9090/ui${reset}"
-    echo -e "   - 密码：mssb123.."
     echo -e "${green_text}-------------------------------------------------${reset}"
 
 
