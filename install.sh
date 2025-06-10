@@ -1115,10 +1115,25 @@ uninstall_all_services() {
     backup_dir="/mssb/backup"
     mkdir -p "$backup_dir"
     
-    # 备份配置文件
-    if [ -f "/mssb/sing-box/config.json" ]; then
-        log "备份 sing-box 配置文件..."
-        cp "/mssb/sing-box/config.json" "$backup_dir/sing-box-config-$(date +%Y%m%d-%H%M%S).json"
+    # 检查当前使用的核心类型
+    if [ -f "/mssb/sing-box/core_type" ]; then
+        core_type=$(cat "/mssb/sing-box/core_type")
+        log "检测到当前使用的核心类型：$core_type"
+        
+        # 根据核心类型备份配置文件
+        if [[ "$core_type" == "sing-box-reF1nd" ]]; then
+            if [ -f "/mssb/sing-box/config.json" ]; then
+                log "备份 sing-box R核心配置文件..."
+                cp "/mssb/sing-box/config.json" "$backup_dir/sing-box-r-config-$(date +%Y%m%d-%H%M%S).json"
+            fi
+        else
+            if [ -f "/mssb/sing-box/config.json" ]; then
+                log "备份 sing-box Y核心配置文件..."
+                cp "/mssb/sing-box/config.json" "$backup_dir/sing-box-y-config-$(date +%Y%m%d-%H%M%S).json"
+            fi
+        fi
+    else
+        log "未检测到核心类型记录"
     fi
     
     if [ -f "/mssb/mihomo/config.yaml" ]; then
@@ -1165,6 +1180,7 @@ uninstall_all_services() {
     
     systemctl daemon-reload
     log "所有服务已卸载完成。配置文件已备份到 $backup_dir 目录"
+    log "卸载的核心类型：$core_type"
 }
 
 # 记录 Sing-box 核心版本
