@@ -718,8 +718,9 @@ check_interfaces() {
         read -p "请自行输入您的网卡名称: " selected_interface
         log "您输入的网卡名称是: $selected_interface"
     else
-        log "无效的选择"
-        exit 1
+        log "默认y继续进行"
+        selected_interface="$interface_name"
+        log "您选择的网卡是: $selected_interface"
     fi
 }
 
