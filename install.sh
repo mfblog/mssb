@@ -1302,8 +1302,9 @@ modify_filebrowser_config() {
     echo -e "\n${green_text}请选择 Filebrowser 登录方式：${reset}"
     echo -e "${green_text}1) 使用密码登录${reset}"
     echo -e "${green_text}2) 禁用密码登录${reset}"
+    echo -e "${green_text}3) 不设置用户密码登录${reset}"
     echo -e "${green_text}-------------------------------------------------${reset}"
-    read -p "请输入选项 (1/2): " fb_choice
+    read -p "请输入选项 (1/2/3): " fb_choice
 
     case $fb_choice in
         1)
@@ -1354,6 +1355,18 @@ modify_filebrowser_config() {
                 filebrowser config set --auth.method=noauth -c /mssb/fb/fb.json -d /mssb/fb/fb.db
                 supervisorctl start filebrowser
                 echo -e "${green_text}Filebrowser 已禁用密码登录${reset}"
+            else
+                echo -e "${red_text}Filebrowser 配置文件不存在${reset}"
+                return 1
+            fi
+            ;;
+        3)
+            # 不设置用户密码登录
+            if [ -f "/mssb/fb/fb.db" ]; then
+                supervisorctl stop filebrowser
+                filebrowser config set --auth.method=noauth -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+                supervisorctl start filebrowser
+                echo -e "${green_text}Filebrowser 已设置为不设置用户密码登录${reset}"
             else
                 echo -e "${red_text}Filebrowser 配置文件不存在${reset}"
                 return 1
