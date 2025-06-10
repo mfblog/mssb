@@ -1302,9 +1302,8 @@ modify_filebrowser_config() {
     echo -e "\n${green_text}请选择 Filebrowser 登录方式：${reset}"
     echo -e "${green_text}1) 使用密码登录${reset}"
     echo -e "${green_text}2) 禁用密码登录${reset}"
-    echo -e "${green_text}3) 不设置用户密码登录${reset}"
     echo -e "${green_text}-------------------------------------------------${reset}"
-    read -p "请输入选项 (1/2/3): " fb_choice
+    read -p "请输入选项 (1/2): " fb_choice
 
     case $fb_choice in
         1)
@@ -1360,18 +1359,6 @@ modify_filebrowser_config() {
                 return 1
             fi
             ;;
-        3)
-            # 不设置用户密码登录
-            if [ -f "/mssb/fb/fb.db" ]; then
-                supervisorctl stop filebrowser
-                filebrowser config set --auth.method=noauth -c /mssb/fb/fb.json -d /mssb/fb/fb.db
-                supervisorctl start filebrowser
-                echo -e "${green_text}Filebrowser 已设置为不设置用户密码登录${reset}"
-            else
-                echo -e "${red_text}Filebrowser 配置文件不存在${reset}"
-                return 1
-            fi
-            ;;
         *)
             echo -e "${red_text}无效的选项${reset}"
             return 1
@@ -1420,21 +1407,20 @@ main() {
 
     case "$main_choice" in
         2)
-            stop_all_services
-            exit 0
-            ;;
+                # 停止所有转发服务
+                stop_services
+                ;;
         3)
-            uninstall_all_services
-            exit 0
+            # 停止所有服务并卸载 + 删除所有相关文件
+            uninstall_services
             ;;
         4)
-            start_all_services
-            exit 0
+            # 启用所有服务
+            start_services
             ;;
         5)
             # 修改服务配置
             modify_service_config
-            exit 0
             ;;
         1)
             echo -e "${green_text}✅ 继续安装/更新代理服务...${reset}"
