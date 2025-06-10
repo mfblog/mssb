@@ -1446,7 +1446,7 @@ main() {
     set_timezone
 
     echo -e "${green_text}-------------------------------------------------${reset}"
-    echo -e "${green_text}Fake-ip 网关代理方案：sing-box P核/mihomo + MosDNS${reset}"
+    echo -e "${green_text}Fake-ip 网关代理方案：sing-box/mihomo + MosDNS${reset}"
     echo "---支持 debian，其他系统未测试。理论上支持debian/ubuntu 安装前请确保系统未安装其他代理软件---"
     echo "---完全参考 https://github.com/herozmy/StoreHouse/tree/latest ---"
     echo -e "当前机器地址:${green_text}${local_ip}${reset}"
