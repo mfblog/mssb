@@ -385,6 +385,9 @@
         }
     ],
     "route": {
+        "default_domain_resolver": {
+            "server": "localDns"
+        },
         "final": "🚀 节点选择",
         "auto_detect_interface": true,
         "default_mark": 1,
@@ -392,6 +395,9 @@
             {
                 "inbound": "in-dns",
                 "action": "hijack-dns"
+            },
+            {
+                "action": "sniff"
             },
             {
                 "ip_cidr": [
@@ -492,7 +498,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/spotify.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "docker",
@@ -500,7 +506,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/docker.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geoip-telegram",
@@ -508,7 +514,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/telegram.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geoip-cn",
@@ -516,7 +522,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geosite-openai",
@@ -524,7 +530,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/openai.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geosite-youtube",
@@ -532,7 +538,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/youtube.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geosite-google",
@@ -540,7 +546,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/google.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geosite-github",
@@ -548,7 +554,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/github.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geosite-telegram",
@@ -556,7 +562,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/telegram.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geosite-apple",
@@ -564,7 +570,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/apple.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geosite-microsoft",
@@ -572,7 +578,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/microsoft.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geosite-tiktok",
@@ -580,7 +586,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/tiktok.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geosite-cn",
@@ -588,7 +594,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/cn.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geosite-geolocation-!cn",
@@ -596,7 +602,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geosite-category-ads-all",
@@ -604,7 +610,7 @@
                 "format": "binary",
                 "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-ads-all.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             },
             {
                 "tag": "geosite-pt",
@@ -612,7 +618,7 @@
                 "format": "binary",
                 "url": "https://raw.githubusercontent.com/lyc8503/sing-box-rules/refs/heads/rule-set-geosite/geosite-category-pt.srs",
                 "download_detour": "direct",
-                "update_interval": "7d"
+                "update_interval": "3d"
             }
         ]
     }
