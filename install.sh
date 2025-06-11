@@ -1005,21 +1005,57 @@ reload_service() {
 }
 # 添加任务到 crontab
 add_cron_jobs() {
+    echo -e "\n${green_text}=== 定时更新任务设置 ===${reset}"
+    
+    # 询问是否更新 MosDNS
+    read -p "是否启用 MosDNS 自动更新？(y/n) [默认: y]: " update_mosdns
+    update_mosdns=${update_mosdns:-y}
+    
+    # 询问是否更新 CN 域名数据
+    read -p "是否启用 MosDNS CN 域名数据自动更新？(y/n) [默认: y]: " update_cn
+    update_cn=${update_cn:-y}
+    
+    # 根据核心类型询问相应的更新选项
     if [ "$core_name" = "sing-box" ]; then
-        cron_jobs=(
-            "0 4 * * 1 /watch/update_mosdns.sh # update_mosdns"
-            "15 4 * * 1 /watch/update_cn.sh    # update_cn"
-            "10 4 * * 1 /watch/update_sb.sh    # update_sb"
-        )
+        read -p "是否启用 Sing-box 自动更新？(y/n) [默认: y]: " update_core
+        update_core=${update_core:-y}
+        
+        cron_jobs=()
+        
+        # 根据用户选择添加任务
+        if [[ "$update_mosdns" =~ ^[Yy]$ ]]; then
+            cron_jobs+=("0 4 * * 1 /watch/update_mosdns.sh # update_mosdns")
+        fi
+        
+        if [[ "$update_cn" =~ ^[Yy]$ ]]; then
+            cron_jobs+=("15 4 * * 1 /watch/update_cn.sh # update_cn")
+        fi
+        
+        if [[ "$update_core" =~ ^[Yy]$ ]]; then
+            cron_jobs+=("10 4 * * 1 /watch/update_sb.sh # update_sb")
+        fi
 
         # 清除旧的 sing-box 相关任务
         (crontab -l | grep -v -e "# update_mosdns" -e "# update_sb" -e "# update_cn") | crontab -
+        
     elif [ "$core_name" = "mihomo" ]; then
-        cron_jobs=(
-            "0 4 * * 1 /watch/update_mosdns.sh # update_mosdns"
-            "15 4 * * 1 /watch/update_cn.sh    # update_cn"
-            "10 4 * * 1 /watch/update_mihomo.sh   # update_mihomo"
-        )
+        read -p "是否启用 Mihomo 自动更新？(y/n) [默认: y]: " update_core
+        update_core=${update_core:-y}
+        
+        cron_jobs=()
+        
+        # 根据用户选择添加任务
+        if [[ "$update_mosdns" =~ ^[Yy]$ ]]; then
+            cron_jobs+=("0 4 * * 1 /watch/update_mosdns.sh # update_mosdns")
+        fi
+        
+        if [[ "$update_cn" =~ ^[Yy]$ ]]; then
+            cron_jobs+=("15 4 * * 1 /watch/update_cn.sh # update_cn")
+        fi
+        
+        if [[ "$update_core" =~ ^[Yy]$ ]]; then
+            cron_jobs+=("10 4 * * 1 /watch/update_mihomo.sh # update_mihomo")
+        fi
 
         # 清除旧的 mihomo 相关任务
         (crontab -l | grep -v -e "# update_mosdns" -e "# update_mihomo" -e "# update_cn") | crontab -
@@ -1028,6 +1064,13 @@ add_cron_jobs() {
         return
     fi
 
+    # 如果没有选择任何更新任务
+    if [ ${#cron_jobs[@]} -eq 0 ]; then
+        log "未选择任何更新任务，跳过定时任务设置。"
+        return
+    fi
+
+    # 添加选中的定时任务
     for job in "${cron_jobs[@]}"; do
         if (crontab -l | grep -q -F "$job"); then
             log "定时任务已存在：$job"
