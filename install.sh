@@ -1007,6 +1007,10 @@ reload_service() {
 add_cron_jobs() {
     echo -e "\n${green_text}=== 定时更新任务设置 ===${reset}"
     
+    # 先清除所有相关的定时任务
+    (crontab -l | grep -v -e "# update_mosdns" -e "# update_sb" -e "# update_cn" -e "# update_mihomo") | crontab -
+    log "已清除所有相关定时任务"
+    
     # 询问是否更新 MosDNS
     read -p "是否启用 MosDNS 自动更新？(y/n) [默认: y]: " update_mosdns
     update_mosdns=${update_mosdns:-y}
@@ -1034,9 +1038,6 @@ add_cron_jobs() {
         if [[ "$update_core" =~ ^[Yy]$ ]]; then
             cron_jobs+=("10 4 * * 1 /watch/update_sb.sh # update_sb")
         fi
-
-        # 清除旧的 sing-box 相关任务
-        (crontab -l | grep -v -e "# update_mosdns" -e "# update_sb" -e "# update_cn") | crontab -
         
     elif [ "$core_name" = "mihomo" ]; then
         read -p "是否启用 Mihomo 自动更新？(y/n) [默认: y]: " update_core
@@ -1056,9 +1057,6 @@ add_cron_jobs() {
         if [[ "$update_core" =~ ^[Yy]$ ]]; then
             cron_jobs+=("10 4 * * 1 /watch/update_mihomo.sh # update_mihomo")
         fi
-
-        # 清除旧的 mihomo 相关任务
-        (crontab -l | grep -v -e "# update_mosdns" -e "# update_mihomo" -e "# update_cn") | crontab -
     else
         log "未识别的 core_name（$core_name），跳过定时任务设置。"
         return
