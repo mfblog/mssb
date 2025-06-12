@@ -194,42 +194,108 @@ detect_architecture() {
 
 # 安装mosdns
 install_mosdns() {
-  # 下载并安装 MosDNS
-  log "开始下载 MosDNS..."
-  arch=$(detect_architecture)
-  log "系统架构是：$arch"
+    # 检查是否已安装 MosDNS
+    if [ -f "/usr/local/bin/mosdns" ]; then
+        log "检测到已安装的 MosDNS"
+
+        # 获取当前版本信息
+        current_version=$(/usr/local/bin/mosdns version 2>/dev/null | head -n1 | awk '{print $2}' || echo "未知版本")
+        log "当前安装的版本：$current_version"
+
+        echo -e "\n${green_text}=== MosDNS 安装选项 ===${reset}"
+        echo -e "1. 跳过下载，使用现有版本"
+        echo -e "2. 下载最新版本并更新"
+        echo -e "${green_text}------------------------${reset}"
+
+        read -p "请选择操作 (1/2): " mosdns_choice
+
+        case "$mosdns_choice" in
+            1)
+                log "跳过 MosDNS 下载，使用现有版本：$current_version"
+                return 0
+                ;;
+            2)
+                log "选择更新 MosDNS 到最新版本"
+                ;;
+            *)
+                log "无效选择，默认跳过下载使用现有版本"
+                return 0
+                ;;
+        esac
+    fi
+
+    # 下载并安装 MosDNS
+    log "开始下载 MosDNS..."
+    arch=$(detect_architecture)
+    log "系统架构是：$arch"
 #  LATEST_MOSDNS_VERSION=$(curl -sL -o /dev/null -w %{url_effective} https://github.com/IrineSistiana/mosdns/releases/latest | awk -F '/' '{print $NF}')
 #  MOSDNS_URL="https://github.com/IrineSistiana/mosdns/releases/download/${LATEST_MOSDNS_VERSION}/mosdns-linux-$arch.zip"
-  MOSDNS_URL="https://github.com/herozmy/StoreHouse/releases/download/mosdns/mosdns-linux-$arch.zip"
+    MOSDNS_URL="https://github.com/herozmy/StoreHouse/releases/download/mosdns/mosdns-linux-$arch.zip"
 
+    log "从 $MOSDNS_URL 下载 MosDNS..."
+    if curl -L -o /tmp/mosdns.zip "$MOSDNS_URL"; then
+        log "MosDNS 下载成功。"
+    else
+        log "MosDNS 下载失败，请检查网络连接或 URL 是否正确。"
+        exit 1
+    fi
 
-  log "从 $MOSDNS_URL 下载 MosDNS..."
-  if curl -L -o /tmp/mosdns.zip "$MOSDNS_URL"; then
-      log "MosDNS 下载成功。"
-  else
-      log "MosDNS 下载失败，请检查网络连接或 URL 是否正确。"
-      exit 1
-  fi
+    log "解压 MosDNS..."
+    if unzip -o /tmp/mosdns.zip -d /usr/local/bin; then
+        log "MosDNS 解压成功。"
+    else
+        log "MosDNS 解压失败，请检查压缩包是否正确。"
+        exit 1
+    fi
 
-  log "解压 MosDNS..."
-  if unzip -o /tmp/mosdns.zip -d /usr/local/bin; then
-      log "MosDNS 解压成功。"
-  else
-      log "MosDNS 解压失败，请检查压缩包是否正确。"
-      exit 1
-  fi
+    log "设置 MosDNS 可执行权限..."
+    if chmod +x /usr/local/bin/mosdns; then
+        log "设置权限成功。"
 
-  log "设置 MosDNS 可执行权限..."
-  if chmod +x /usr/local/bin/mosdns; then
-      log "设置权限成功。"
-  else
-      log "设置权限失败，请检查文件路径和权限设置。"
-      exit 1
-  fi
+        # 显示安装完成的版本信息
+        new_version=$(/usr/local/bin/mosdns version 2>/dev/null | head -n1 | awk '{print $2}' || echo "未知版本")
+        log "MosDNS 安装完成，版本：$new_version"
+    else
+        log "设置权限失败，请检查文件路径和权限设置。"
+        exit 1
+    fi
+
+    # 清理临时文件
+    rm -f /tmp/mosdns.zip
 }
 # 安装filebrower
 install_filebrower() {
-  # 下载并安装 Filebrowser
+    # 检查是否已安装 Filebrowser
+    if [ -f "/usr/local/bin/filebrowser" ]; then
+        log "检测到已安装的 Filebrowser"
+
+        # 获取当前版本信息
+        current_version=$(/usr/local/bin/filebrowser version 2>/dev/null | head -n1 | awk '{print $3}' || echo "未知版本")
+        log "当前安装的版本：$current_version"
+
+        echo -e "\n${green_text}=== Filebrowser 安装选项 ===${reset}"
+        echo -e "1. 跳过下载，使用现有版本"
+        echo -e "2. 下载最新版本并更新"
+        echo -e "${green_text}------------------------${reset}"
+
+        read -p "请选择操作 (1/2): " filebrowser_choice
+
+        case "$filebrowser_choice" in
+            1)
+                log "跳过 Filebrowser 下载，使用现有版本：$current_version"
+                return 0
+                ;;
+            2)
+                log "选择更新 Filebrowser 到最新版本"
+                ;;
+            *)
+                log "无效选择，默认跳过下载使用现有版本"
+                return 0
+                ;;
+        esac
+    fi
+
+    # 下载并安装 Filebrowser
     log "开始下载 Filebrowser..."
     arch=$(detect_architecture)
     log "系统架构是：$arch"
@@ -255,62 +321,19 @@ install_filebrower() {
     log "设置 Filebrowser 可执行权限..."
     if chmod +x /usr/local/bin/filebrowser; then
         log "Filebrowser 设置权限成功。"
+
+        # 显示安装完成的版本信息
+        new_version=$(/usr/local/bin/filebrowser version 2>/dev/null | head -n1 | awk '{print $3}' || echo "未知版本")
+        log "Filebrowser 安装完成，版本：$new_version"
     else
         log "Filebrowser 设置权限失败，请检查文件路径和权限设置。"
         exit 1
     fi
-}
-# 安装 Sing-Box
-install_singbox() {
-    log "开始安装 Sing-Box"
-    arch=$(detect_architecture)
-    log "系统架构是：$arch"
-    # 定义下载 URL
-    SING_BOX_URL="https://github.com/herozmy/StoreHouse/releases/download/sing-box/sing-box-puernya-linux-$arch.tar.gz"
-
-    # 下载文件
-    log "正在下载 Sing-Box: $SING_BOX_URL"
-    wget -O "sing-box-linux-$arch.tar.gz" "$SING_BOX_URL"
-    if [ $? -ne 0 ]; then
-        log "Sing-Box 下载失败！退出脚本。"
-        exit 1
-    fi
-
-    # 解压文件
-    tar -zxvf "sing-box-linux-$arch.tar.gz"
-    if [ $? -ne 0 ]; then
-        log "解压失败，请检查文件完整性！退出脚本。"
-        exit 1
-    fi
-
-    # 检查是否已安装
-    if [ -f "/usr/local/bin/sing-box" ]; then
-        log "检测到已安装的 Sing-Box"
-        read -p "是否替换升级？(y/n): " replace_confirm
-        if [ "$replace_confirm" == "y" ]; then
-            log "正在替换升级 Sing-Box"
-            mv -f sing-box /usr/local/bin/
-            log "Sing-Box 替换升级完成"
-        else
-            log "用户取消了替换升级操作"
-        fi
-    else
-        mv -f sing-box /usr/local/bin/
-        log "Sing-Box 安装完成"
-    fi
-
-    log "设置 sing-box 可执行权限..."
-      if chmod +x /usr/local/bin/sing-box; then
-          log "设置权限成功。"
-      else
-          log "设置权限失败，请检查文件路径和权限设置。"
-          exit 1
-      fi
 
     # 清理临时文件
-    rm -f "sing-box-linux-$arch.tar.gz"
-    log "临时文件已清理"
+    rm -f /tmp/filebrowser.tar.gz
 }
+
 # 检查并恢复配置文件
 check_and_restore_config() {
     local config_type=$1
@@ -487,6 +510,37 @@ singbox_customize_settings() {
 
 # 安装mihomo
 install_mihomo() {
+    # 检查是否已安装 Mihomo
+    if [ -f "/usr/local/bin/mihomo" ]; then
+        log "检测到已安装的 Mihomo"
+
+        # 获取当前版本信息
+        current_version=$(/usr/local/bin/mihomo -v 2>/dev/null | head -n1 | awk '{print $2}' || echo "未知版本")
+        log "当前安装的版本：$current_version"
+
+        echo -e "\n${green_text}=== Mihomo 安装选项 ===${reset}"
+        echo -e "1. 跳过下载，使用现有版本"
+        echo -e "2. 下载最新版本并更新"
+        echo -e "${green_text}------------------------${reset}"
+
+        read -p "请选择操作 (1/2): " mihomo_choice
+
+        case "$mihomo_choice" in
+            1)
+                log "跳过 Mihomo 下载，使用现有版本：$current_version"
+                return 0
+                ;;
+            2)
+                log "选择更新 Mihomo 到最新版本"
+                ;;
+            *)
+                log "无效选择，默认跳过下载使用现有版本"
+                return 0
+                ;;
+        esac
+    fi
+
+    # 下载并安装 Mihomo
     arch=$(detect_architecture)
     download_url="https://github.com/herozmy/StoreHouse/releases/download/mihomo/mihomo-meta-linux-${arch}.tar.gz"
     log "开始下载 Mihomo 核心..."
@@ -504,7 +558,10 @@ install_mihomo() {
 
     chmod +x /usr/local/bin/mihomo || log "警告：未能设置 Mihomo 执行权限"
     rm -f /tmp/mihomo.tar.gz
-    log "Mihomo 安装完成，临时文件已清理"
+
+    # 显示安装完成的版本信息
+    new_version=$(/usr/local/bin/mihomo -v 2>/dev/null | head -n1 | awk '{print $2}' || echo "未知版本")
+    log "Mihomo 安装完成，版本：$new_version，临时文件已清理"
 }
 # mihomo用户自定义设置
 mihomo_customize_settings() {
@@ -1331,6 +1388,45 @@ record_singbox_core() {
 
 # reF1nd佬 R核心安装函数
 singbox_r_install() {
+    # 检查是否已安装 Sing-box
+    if [ -f "/usr/local/bin/sing-box" ]; then
+        log "检测到已安装的 Sing-box"
+
+        # 获取当前版本和核心类型信息
+        current_version=$(/usr/local/bin/sing-box version 2>/dev/null | head -n1 | awk '{print $3}' || echo "未知版本")
+        if [ -f "/mssb/sing-box/core_type" ]; then
+            current_core_type=$(cat "/mssb/sing-box/core_type")
+            log "当前安装的版本：$current_version (核心类型：$current_core_type)"
+        else
+            log "当前安装的版本：$current_version (核心类型：未知)"
+        fi
+
+        echo -e "\n${green_text}=== Sing-box reF1nd R核心 安装选项 ===${reset}"
+        echo -e "1. 跳过下载，使用现有版本"
+        echo -e "2. 下载最新版本并更新"
+        echo -e "${green_text}------------------------${reset}"
+
+        read -p "请选择操作 (1/2): " singbox_r_choice
+
+        case "$singbox_r_choice" in
+            1)
+                log "跳过 Sing-box reF1nd R核心 下载，使用现有版本"
+                # 确保记录正确的核心类型
+                record_singbox_core "sing-box-reF1nd"
+                return 0
+                ;;
+            2)
+                log "选择更新 Sing-box reF1nd R核心 到最新版本"
+                ;;
+            *)
+                log "无效选择，默认跳过下载使用现有版本"
+                record_singbox_core "sing-box-reF1nd"
+                return 0
+                ;;
+        esac
+    fi
+
+    # 下载并安装 reF1nd R核心
     arch=$(detect_architecture)
     download_url="https://github.com/herozmy/StoreHouse/releases/download/sing-box-reF1nd/sing-box-reF1nd-dev-linux-${arch}.tar.gz"
 
@@ -1339,19 +1435,62 @@ singbox_r_install() {
         error_log "下载失败，请检查网络连接"
         exit 1
     fi
-    
+
     log "下载完成，开始安装"
     tar -zxvf sing-box.tar.gz > /dev/null 2>&1
     mv sing-box /usr/local/bin/
     chmod +x /usr/local/bin/sing-box
     rm -f sing-box.tar.gz
-    
+
     # 记录核心类型
     record_singbox_core "sing-box-reF1nd"
+
+    # 显示安装完成的版本信息
+    new_version=$(/usr/local/bin/sing-box version 2>/dev/null | head -n1 | awk '{print $3}' || echo "未知版本")
+    log "Sing-box reF1nd R核心 安装完成，版本：$new_version"
 }
 
 # S核安装函数
 singbox_s_install() {
+    # 检查是否已安装 Sing-box
+    if [ -f "/usr/local/bin/sing-box" ]; then
+        log "检测到已安装的 Sing-box"
+
+        # 获取当前版本和核心类型信息
+        current_version=$(/usr/local/bin/sing-box version 2>/dev/null | head -n1 | awk '{print $3}' || echo "未知版本")
+        if [ -f "/mssb/sing-box/core_type" ]; then
+            current_core_type=$(cat "/mssb/sing-box/core_type")
+            log "当前安装的版本：$current_version (核心类型：$current_core_type)"
+        else
+            log "当前安装的版本：$current_version (核心类型：未知)"
+        fi
+
+        echo -e "\n${green_text}=== Sing-box S佬Y核心 安装选项 ===${reset}"
+        echo -e "1. 跳过下载，使用现有版本"
+        echo -e "2. 下载最新版本并更新"
+        echo -e "${green_text}------------------------${reset}"
+
+        read -p "请选择操作 (1/2): " singbox_s_choice
+
+        case "$singbox_s_choice" in
+            1)
+                log "跳过 Sing-box S佬Y核心 下载，使用现有版本"
+                # 确保记录正确的核心类型
+                record_singbox_core "sing-box-yelnoo"
+                return 0
+                ;;
+            2)
+                log "选择更新 Sing-box S佬Y核心 到最新版本"
+                ;;
+            *)
+                log "无效选择，默认跳过下载使用现有版本"
+                record_singbox_core "sing-box-yelnoo"
+                return 0
+                ;;
+        esac
+    fi
+
+    # 下载并安装 S佬Y核心
     arch=$(detect_architecture)
     download_url="https://github.com/herozmy/StoreHouse/releases/download/sing-box-yelnoo/sing-box-yelnoo-linux-${arch}.tar.gz"
 
@@ -1360,58 +1499,19 @@ singbox_s_install() {
         error_log "下载失败，请检查网络连接"
         exit 1
     fi
-    
+
     log "下载完成，开始安装"
     tar -zxvf sing-box.tar.gz > /dev/null 2>&1
     mv sing-box /usr/local/bin/
     chmod +x /usr/local/bin/sing-box
     rm -f sing-box.tar.gz
-    
+
     # 记录核心类型
     record_singbox_core "sing-box-yelnoo"
-}
 
-# P核安装函数
-singbox_p_install() {
-    arch=$(detect_architecture)
-    download_url="https://github.com/herozmy/StoreHouse/releases/download/sing-box/sing-box-puernya-linux-${arch}.tar.gz"
-
-    log "开始下载 Puer喵佬核心..."
-    if ! wget -O sing-box.tar.gz "$download_url"; then
-        error_log "下载失败，请检查网络连接"
-        exit 1
-    fi
-    
-    log "下载完成，开始安装"
-    tar -zxvf sing-box.tar.gz
-    mv sing-box /usr/local/bin/
-    chmod +x /usr/local/bin/sing-box
-    rm -f sing-box.tar.gz
-    
-    # 记录核心类型
-    record_singbox_core "sing-box-puernya"
-}
-
-# 曦灵X核心安装函数
-singbox_x_install() {
-    arch=$(detect_architecture)
-    download_url="https://github.com/herozmy/StoreHouse/releases/download/sing-box-x/sing-box-x.tar.gz"
-
-    log "开始下载 曦灵X核心..."
-    if ! wget -O sing-box.tar.gz "$download_url"; then
-        error_log "下载失败，请检查网络连接"
-        exit 1
-    fi
-    
-    log "下载完成，开始安装"
-    tar -zxvf sing-box.tar.gz > /dev/null 2>&1
-    mv sing-box_linux_amd64 sing-box
-    mv sing-box /usr/local/bin/
-    chmod +x /usr/local/bin/sing-box
-    rm -f sing-box.tar.gz
-    
-    # 记录核心类型
-    record_singbox_core "sing-box-x"
+    # 显示安装完成的版本信息
+    new_version=$(/usr/local/bin/sing-box version 2>/dev/null | head -n1 | awk '{print $3}' || echo "未知版本")
+    log "Sing-box S佬Y核心 安装完成，版本：$new_version"
 }
 
 # 修改 Supervisor 配置
@@ -1654,7 +1754,7 @@ format_route_rules() {
 
     echo -e "\n${yellow}注意：${reset}"
     echo -e "1. 请确保主路由已开启 IP 转发功能"
-    echo -e "2. 所有路由的网关都设置为本机 IP：$local_ip"
+    echo -e "2. 所有路由的 DNS 都设置为本机 IP：$local_ip"
     echo -e "3. 主路由的 DNS 服务器必须设置为本机 IP：$local_ip"
     echo -e "4. 添加路由后，相关服务将自动通过本机代理"
     echo -e "${green_text}-------------------------------------------------${reset}"
