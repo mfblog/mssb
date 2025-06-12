@@ -817,15 +817,6 @@ mosdns_configure_files() {
         log "未发现 config.yaml 文件，跳过备份步骤。"
     fi
 
-    # 复制 mssb/mosdns 目录
-    log "复制 mssb/mosdns 目录..."
-    if [ -d "/mssb/mosdns" ]; then
-        log "/mssb/mosdns 目录已存在，跳过替换。"
-    else
-        cp -r mssb/mosdns /mssb || { log "复制 mssb/mosdns 目录失败！退出脚本。"; exit 1; }
-        log "成功复制 mssb/mosdns 目录到 /mssb"
-    fi
-
     # 如果之前有备份 config.yaml，则恢复备份文件
     if [ -f "$BACKUP_YAML" ]; then
         log "恢复 config.yaml 文件到 /mssb/mosdns ..."
@@ -864,13 +855,20 @@ mosdns_configure_files() {
 cp_config_files() {
     log "复制 mssb/fb 目录..."
     check_and_copy_folder "fb"
-
+    # 复制 mssb/mosdns 目录
+    log "复制 mssb/mosdns 目录..."
+    if [ -d "/mssb/mosdns" ]; then
+        log "/mssb/mosdns 目录已存在，跳过替换。"
+    else
+        cp -r mssb/mosdns /mssb || { log "复制 mssb/mosdns 目录失败！退出脚本。"; exit 1; }
+        log "成功复制 mssb/mosdns 目录到 /mssb"
+    fi
     # 检查并恢复 mosdns 配置
     echo -e "\n${green_text}=== MosDNS 配置设置 ===${reset}"
     echo -e "1. 检查是否有备份配置"
     echo -e "2. 使用默认配置"
     echo -e "${green_text}------------------------${reset}"
-    
+
     read -p "请选择配置方式 (1/2): " mosdns_choice
     
     case "$mosdns_choice" in
