@@ -1110,6 +1110,37 @@ stop_all_services() {
     log "所有服务已停止。"
 }
 
+# 检查并设置本地 DNS
+check_and_set_local_dns() {
+    # 获取当前 DNS 设置
+    current_dns=$(cat /etc/resolv.conf | grep -E "^nameserver" | head -n 1 | awk '{print $2}')
+    
+    if [ "$current_dns" != "$local_ip" ]; then
+        echo -e "\n${yellow}提示：当前 DNS 设置不是本地 IP ($local_ip)${reset}"
+        echo -e "${yellow}建议将 DNS 设置为本地 IP 以使用 MosDNS 服务${reset}"
+        echo -e "${green_text}请选择操作：${reset}"
+        echo -e "1) 设置为本地 IP ($local_ip)"
+        echo -e "2) 保持当前设置 ($current_dns)"
+        echo -e "${green_text}-------------------------------------------------${reset}"
+        read -p "请输入选项 (1/2): " dns_choice
+
+        case $dns_choice in
+            1)
+                echo "nameserver $local_ip" > /etc/resolv.conf
+                echo -e "${green_text}已设置 DNS 为本地 IP ($local_ip)${reset}"
+                ;;
+            2)
+                echo -e "${yellow}保持当前 DNS 设置 ($current_dns)${reset}"
+                ;;
+            *)
+                echo -e "${red}无效选项，将保持当前设置${reset}"
+                ;;
+        esac
+    else
+        echo -e "${green_text}当前 DNS 已设置为本地 IP ($local_ip)${reset}"
+    fi
+}
+
 # 启动所有服务
 start_all_services() {
     log "正在启动所有服务..."
@@ -1457,6 +1488,113 @@ modify_service_config() {
     esac
 }
 
+# 检查 DNS 设置
+check_dns_settings() {
+    # 获取当前 DNS 设置
+    current_dns=$(cat /etc/resolv.conf | grep -E "^nameserver" | head -n 1 | awk '{print $2}')
+    
+    if [ "$current_dns" = "$local_ip" ]; then
+        echo -e "\n${yellow}警告：检测到当前 DNS 设置为本地 IP ($local_ip)${reset}"
+        echo -e "${yellow}建议在停止服务前修改 DNS 设置，否则可能导致无法访问网络${reset}"
+        echo -e "${green_text}请选择操作：${reset}"
+        echo -e "1) 使用阿里 DNS (223.5.5.5)"
+        echo -e "2) 使用腾讯 DNS (119.29.29.29)"
+        echo -e "3) 自定义 DNS"
+        echo -e "4) 保持当前设置"
+        echo -e "${green_text}-------------------------------------------------${reset}"
+        read -p "请输入选项 (1/2/3/4): " dns_choice
+
+        case $dns_choice in
+            1)
+                echo "nameserver 223.5.5.5" > /etc/resolv.conf
+                echo -e "${green_text}已设置 DNS 为 223.5.5.5${reset}"
+                ;;
+            2)
+                echo "nameserver 119.29.29.29" > /etc/resolv.conf
+                echo -e "${green_text}已设置 DNS 为 119.29.29.29${reset}"
+                ;;
+            3)
+                read -p "请输入自定义 DNS 地址: " custom_dns
+                if [[ $custom_dns =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+                    echo "nameserver $custom_dns" > /etc/resolv.conf
+                    echo -e "${green_text}已设置 DNS 为 $custom_dns${reset}"
+                else
+                    echo -e "${red}无效的 DNS 地址格式，将使用默认的阿里 DNS${reset}"
+                    echo "nameserver 223.5.5.5" > /etc/resolv.conf
+                fi
+                ;;
+            4)
+                echo -e "${yellow}保持当前 DNS 设置 ($current_dns)${reset}"
+                ;;
+            *)
+                echo -e "${red}无效选项，将使用默认的阿里 DNS${reset}"
+                echo "nameserver 223.5.5.5" > /etc/resolv.conf
+                ;;
+        esac
+    fi
+}
+
+# 格式化路由规则并提示
+format_route_rules() {
+    echo -e "\n${yellow}请在主路由中添加以下路由规则：${reset}"
+
+    # 主路由 DNS 设置
+    echo -e "${green_text}┌───────────────────────────────────────────────┐${reset}"
+    echo -e "${green_text}│ 主路由 DNS 设置                                 │${reset}"
+    echo -e "${green_text}├───────────────────────────────────────────────┤${reset}"
+    printf "${green_text}│ %-15s %-29s │${reset}\n" "DNS 服务器:" "$local_ip"
+    echo -e "${green_text}└───────────────────────────────────────────────┘${reset}"
+
+    # MosDNS 和 Mihomo fakeip 路由
+    echo -e "${green_text}┌───────────────────────────────────────────────┐${reset}"
+    echo -e "${green_text}│ MosDNS 和 Mihomo fakeip 路由                    │${reset}"
+    echo -e "${green_text}├───────────────────────┬───────────────────────┤${reset}"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "目标地址" "网关"
+    echo -e "${green_text}├───────────────────────┼───────────────────────┤${reset}"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "28.0.0.0/16" "$local_ip"
+    echo -e "${green_text}└───────────────────────┴───────────────────────┘${reset}"
+
+    # Telegram 路由
+    echo -e "${green_text}┌───────────────────────────────────────────────┐${reset}"
+    echo -e "${green_text}│ Telegram 路由                                   │${reset}"
+    echo -e "${green_text}├───────────────────────┬───────────────────────┤${reset}"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "目标地址" "网关"
+    echo -e "${green_text}├───────────────────────┼───────────────────────┤${reset}"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "149.154.160.0/22" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "149.154.164.0/22" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "149.154.172.0/22" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "91.108.4.0/22" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "91.108.20.0/22" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "91.108.56.0/22" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "91.108.8.0/22" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "95.161.64.0/22" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "91.108.12.0/22" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "91.108.16.0/22" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "67.198.55.0/24" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "109.239.140.0/24" "$local_ip"
+    echo -e "${green_text}└───────────────────────┴───────────────────────┘${reset}"
+
+    # Netflix 路由
+    echo -e "${green_text}┌───────────────────────────────────────────────┐${reset}"
+    echo -e "${green_text}│ Netflix 路由                                    │${reset}"
+    echo -e "${green_text}├───────────────────────┬───────────────────────┤${reset}"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "目标地址" "网关"
+    echo -e "${green_text}├───────────────────────┼───────────────────────┤${reset}"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "207.45.72.0/22" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "208.75.76.0/22" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "210.0.153.0/24" "$local_ip"
+    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "185.76.151.0/24" "$local_ip"
+    echo -e "${green_text}└───────────────────────┴───────────────────────┘${reset}"
+
+    echo -e "\n${yellow}注意：${reset}"
+    echo -e "1. 请确保主路由已开启 IP 转发功能"
+    echo -e "2. 所有路由的网关都设置为本机 IP：$local_ip"
+    echo -e "3. 主路由的 DNS 服务器必须设置为本机 IP：$local_ip"
+    echo -e "4. 添加路由后，相关服务将自动通过本机代理"
+    echo -e "${green_text}-------------------------------------------------${reset}"
+    echo -e "${green_text} routeros 具体可以参考: https://github.com/baozaodetudou/mssb/blob/main/docs/fakeip.md ${reset}"
+}
+
 # 主函数
 main() {
     green_text="\e[32m"
@@ -1477,14 +1615,20 @@ main() {
     case "$main_choice" in
         2)
             stop_all_services
+            # 检查 DNS 设置
+            check_dns_settings
             exit 0
             ;;
         3)
             uninstall_all_services
+            # 检查 DNS 设置
+            check_dns_settings
             exit 0
             ;;
         4)
             start_all_services
+            # 检查并设置本地 DNS
+            check_and_set_local_dns
             exit 0
             ;;
         5)
@@ -1595,6 +1739,12 @@ main() {
     else
         log "用户选择不添加定时任务。"
     fi
+
+    # 检查并设置本地 DNS
+    check_and_set_local_dns
+
+    # 显示路由规则提示
+    format_route_rules
 
     echo -e "${green_text}-------------------------------------------------${reset}"
     echo -e "${green_text}🎉 安装成功！以下是服务信息：${reset}"
