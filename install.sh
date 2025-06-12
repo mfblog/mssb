@@ -108,7 +108,7 @@ check_supervisor_services() {
 
 # 检查 systemd 服务状态
 check_systemd_services() {
-    echo -e "\n${yellow}检查系统服务状态...${reset}"
+    echo -e "\n${yellow}检查系统转发服务状态...${reset}"
     print_separator
     printf "${green_text}%-20s %-15s %-15s\n${reset}" "服务名称" "类型" "状态"
     print_separator
@@ -133,7 +133,9 @@ detect_proxy_mode() {
     local singbox_active=false
     local mihomo_active=false
 
-    [[ "$SUPERVISOR_STATUS" =~ ^mosdns\ +RUNNING ]] && mosdns_running=true
+    if echo "$SUPERVISOR_STATUS" | grep -qE "^mosdns\s+RUNNING"; then
+        mosdns_running=true
+    fi
 
     if echo "$SUPERVISOR_STATUS" | grep -qE "^sing-box\s+RUNNING" && \
        echo "$SUPERVISOR_STATUS" | grep -qE "^watch_sing_box\s+RUNNING" && \
@@ -167,7 +169,7 @@ detect_proxy_mode() {
 
 # 主函数
 display_system_status() {
-    check_programs
+#    check_programs
     check_supervisor_services
     check_systemd_services
     detect_proxy_mode
