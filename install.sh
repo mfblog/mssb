@@ -1753,10 +1753,8 @@ format_route_rules() {
     echo -e "${green_text}└───────────────────────┴───────────────────────┘${reset}"
 
     echo -e "\n${yellow}注意：${reset}"
-    echo -e "1. 请确保主路由已开启 IP 转发功能"
-    echo -e "2. 所有路由的 DNS 都设置为本机 IP：$local_ip"
-    echo -e "3. 主路由的 DNS 服务器必须设置为本机 IP：$local_ip"
-    echo -e "4. 添加路由后，相关服务将自动通过本机代理"
+    echo -e "1. 主路由的 DNS 服务器必须设置为本机 IP：$local_ip"
+    echo -e "2. 添加路由后，相关服务将自动通过本机代理"
     echo -e "${green_text}-------------------------------------------------${reset}"
     echo -e "${green_text} routeros 具体可以参考: https://github.com/baozaodetudou/mssb/blob/main/docs/fakeip.md ${reset}"
 }
