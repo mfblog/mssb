@@ -14,131 +14,6 @@ log() {
     echo "[$(date +"%F %T")] $1"
 }
 
-# 显示系统安装和服务状态
-display_system_status() {
-    # 检查程序是否安装
-    programs=("sing-box" "mosdns" "mihomo" "filebrowser")
-    echo -e "\n${yellow}检测本机安装情况 (本地IP: $local_ip)...${reset}"
-    echo -e "${green_text}───────────────────────────────────────────${reset}"
-    printf "${green_text}%-15s %-10s %s\n" "程序" "状态" " "${reset}"
-    echo -e "${green_text}───────────────────────────────────────────${reset}"
-
-    for program in "${programs[@]}"; do
-        if [ -f "/usr/local/bin/$program" ]; then
-            printf "${green_text}%-15s ${green_text}✔ %-8s %s\n" "$program" "已安装" "${reset}"
-        else
-            printf "${green_text}%-15s ${red}✘ %-8s %s\n" "$program" "未安装" "${reset}"
-        fi
-    done
-    echo -e "${green_text}───────────────────────────────────────────${reset}"
-
-    # 检查服务是否启用
-    echo -e "\n${yellow}检查服务状态...${reset}"
-    echo -e "${green_text}───────────────────────────────────────────────────${reset}"
-
-    if ! command -v supervisorctl &>/dev/null; then
-        echo -e "${red}警告：未检测到 Supervisor 或 supervisorctl 命令，无法检查服务状态。${reset}"
-        echo -e "${yellow}请确保已安装 Supervisor 并正确配置。${reset}"
-        echo -e "${green_text}───────────────────────────────────────────────────${reset}"
-        echo -e "${yellow}当前代理模式检测：${reset}"
-        echo -e "${yellow}ℹ️ 未检测到 MosDNS 或任何核心代理服务正在运行${reset}"
-        echo -e "${green_text}───────────────────────────────────────────────────${reset}"
-        return
-    fi
-
-    printf "${green_text}%-15s %-15s %-15s\n" "服务名称" "类型" "状态" "${reset}"
-    echo -e "${green_text}───────────────────────────────────────────────────${reset}"
-
-    core_programs=("sing-box" "mihomo" "mosdns")
-    watch_services=("watch_sing_box" "watch_mihomo" "watch_mosdns")
-
-    # 检查核心服务状态
-    for program in "${core_programs[@]}"; do
-        local type_str="未知"
-        case "$program" in
-            "sing-box"|"mihomo")
-                type_str="路由服务"
-                ;;
-            "mosdns")
-                type_str="DNS服务"
-                ;;
-        esac
-
-        if supervisorctl status | grep -qE "^${program}\s+RUNNING"; then
-            printf "${green_text}%-15s %-15s ${green_text}%-15s ${reset}\n" "$program" "$type_str" "运行中 ✅"
-        else
-            printf "${red_text}%-15s %-15s ${red_text}%-15s ${reset}\n" "$program" "$type_str" "未运行 ❌"
-        fi
-    done
-
-    # 检查看门狗服务状态
-    for watch in "${watch_services[@]}"; do
-        local type_str="监听服务"
-        if supervisorctl status | grep -qE "^${watch}\s+RUNNING"; then
-            printf "${green_text}%-15s %-15s ${green_text}%-15s ${reset}\n" "$watch" "$type_str" "运行中 ✅"
-        else
-            printf "${red_text}%-15s %-15s ${red_text}%-15s ${reset}\n" "$watch" "$type_str" "未运行 ❌"
-        fi
-    done
-
-    # 检查其他系统服务状态
-    echo -e "\n${yellow}检查系统服务状态...${reset}"
-    echo -e "${green_text}───────────────────────────────────────────────────${reset}"
-    printf "${green_text}%-15s %-15s %-15s\n" "服务名称" "类型" "状态" "${reset}"
-    echo -e "${green_text}───────────────────────────────────────────────────${reset}"
-
-    system_services=("nftables" "sing-box-router" "mihomo-router")
-
-    for service in "${system_services[@]}"; do
-        local type_str="系统服务"
-        if systemctl is-active "$service" &>/dev/null; then
-            printf "${green_text}%-15s %-15s ${green_text}%-15s ${reset}\n" "$service" "$type_str" "运行中 ✅"
-        else
-            printf "${red_text}%-15s %-15s ${red_text}%-15s ${reset}\n" "$service" "$type_str" "未运行 ❌"
-        fi
-    done
-    echo -e "${green_text}───────────────────────────────────────────────────${reset}"
-
-    # 判断并显示当前模式
-    echo -e "\n${yellow}当前代理模式检测：${reset}"
-    local mosdns_running=false
-    local singbox_active=false
-    local mihomo_active=false
-
-    if supervisorctl status mosdns | grep -qE "^mosdns\s+RUNNING"; then
-        mosdns_running=true
-    fi
-
-    if supervisorctl status sing-box | grep -qE "^sing-box\s+RUNNING" && \
-       supervisorctl status watch_sing_box | grep -qE "^watch_sing_box\s+RUNNING" && \
-       systemctl is-active sing-box-router &>/dev/null; then
-        singbox_active=true
-    fi
-
-    if supervisorctl status mihomo | grep -qE "^mihomo\s+RUNNING" && \
-       supervisorctl status watch_mihomo | grep -qE "^watch_mihomo\s+RUNNING" && \
-       systemctl is-active mihomo-router &>/dev/null; then
-        mihomo_active=true
-    fi
-
-    if $mosdns_running; then
-        if $singbox_active; then
-            echo -e "${green_text}✓ 检测到当前模式：MosDNS + Sing-box${reset}"
-        elif $mihomo_active; then
-            echo -e "${green_text}✓ 检测到当前模式：MosDNS + Mihomo${reset}"
-        else
-            echo -e "${yellow}ℹ️ MosDNS 正在运行，但未检测到完整的 Sing-box 或 Mihomo 代理组件${reset}"
-        fi
-    else
-        if $singbox_active || $mihomo_active; then
-            echo -e "${red}✗ MosDNS 未运行，代理服务可能不完整或无法正常工作${reset}"
-        else
-            echo -e "${yellow}ℹ️ 未检测到 MosDNS 或任何核心代理服务正在运行${reset}"
-        fi
-    fi
-    echo -e "${green_text}───────────────────────────────────────────────────${reset}"
-}
-
 # 系统更新和安装必要软件
 update_system() {
     log "开始更新系统..."
@@ -163,6 +38,141 @@ set_timezone() {
     fi
     log "时区设置成功"
 }
+
+# Supervisor 状态缓存，避免多次调用
+SUPERVISOR_STATUS=$(command -v supervisorctl &>/dev/null && supervisorctl status || echo "not_found")
+
+# 打印横线
+print_separator() {
+    echo -e "${green_text}───────────────────────────────────────────────────${reset}"
+}
+
+# 打印程序安装状态
+check_programs() {
+    local programs=("sing-box" "mosdns" "mihomo" "filebrowser")
+    echo -e "\n${yellow}检测本机安装情况 (本地IP: ${local_ip})...${reset}"
+    print_separator
+    printf "${green_text}%-15s %-10s\n${reset}" "程序" "状态"
+    print_separator
+
+    for program in "${programs[@]}"; do
+        if [ -x "/usr/local/bin/$program" ]; then
+            printf "${green_text}%-15s ✔ %-8s${reset}\n" "$program" "已安装"
+        else
+            printf "${red}%-15s ✘ %-8s${reset}\n" "$program" "未安装"
+        fi
+    done
+    print_separator
+}
+
+# 检查 Supervisor 管理的服务状态
+check_supervisor_services() {
+    echo -e "\n${yellow}检查服务状态...${reset}"
+    print_separator
+
+    if [[ "$SUPERVISOR_STATUS" == "not_found" ]]; then
+        echo -e "${red}警告：未检测到 Supervisor，无法检查服务状态。${reset}"
+        echo -e "${yellow}请安装并配置 Supervisor。${reset}"
+        print_separator
+        echo -e "${yellow}当前代理模式检测：未检测到 MosDNS 或核心代理服务${reset}"
+        print_separator
+        return
+    fi
+
+    printf "${green_text}%-20s %-15s %-15s\n${reset}" "服务名称" "类型" "状态"
+    print_separator
+
+    local core_programs=("sing-box" "mihomo" "mosdns")
+    local watch_services=("watch_sing_box" "watch_mihomo" "watch_mosdns")
+
+    for program in "${core_programs[@]}"; do
+        local type="未知"
+        [[ "$program" == "mosdns" ]] && type="DNS服务"
+        [[ "$program" == "sing-box" || "$program" == "mihomo" ]] && type="路由服务"
+
+        if echo "$SUPERVISOR_STATUS" | grep -qE "^${program}\s+RUNNING"; then
+            printf "${green_text}%-20s %-15s %-15s${reset}\n" "$program" "$type" "运行中 ✅"
+        else
+            printf "${red}%-20s %-15s %-15s${reset}\n" "$program" "$type" "未运行 ❌"
+        fi
+    done
+
+    for watch in "${watch_services[@]}"; do
+        if echo "$SUPERVISOR_STATUS" | grep -qE "^${watch}\s+RUNNING"; then
+            printf "${green_text}%-20s %-15s %-15s${reset}\n" "$watch" "监听服务" "运行中 ✅"
+        else
+            printf "${red}%-20s %-15s %-15s${reset}\n" "$watch" "监听服务" "未运行 ❌"
+        fi
+    done
+}
+
+# 检查 systemd 服务状态
+check_systemd_services() {
+    echo -e "\n${yellow}检查系统服务状态...${reset}"
+    print_separator
+    printf "${green_text}%-20s %-15s %-15s\n${reset}" "服务名称" "类型" "状态"
+    print_separator
+
+    local services=("nftables" "sing-box-router" "mihomo-router")
+
+    for service in "${services[@]}"; do
+        if systemctl is-active "$service" &>/dev/null; then
+            printf "${green_text}%-20s %-15s %-15s${reset}\n" "$service" "系统服务" "运行中 ✅"
+        else
+            printf "${red}%-20s %-15s %-15s${reset}\n" "$service" "系统服务" "未运行 ❌"
+        fi
+    done
+    print_separator
+}
+
+# 检测当前代理模式
+detect_proxy_mode() {
+    echo -e "\n${yellow}当前代理模式检测：${reset}"
+
+    local mosdns_running=false
+    local singbox_active=false
+    local mihomo_active=false
+
+    [[ "$SUPERVISOR_STATUS" =~ ^mosdns\ +RUNNING ]] && mosdns_running=true
+
+    if echo "$SUPERVISOR_STATUS" | grep -qE "^sing-box\s+RUNNING" && \
+       echo "$SUPERVISOR_STATUS" | grep -qE "^watch_sing_box\s+RUNNING" && \
+       systemctl is-active sing-box-router &>/dev/null; then
+        singbox_active=true
+    fi
+
+    if echo "$SUPERVISOR_STATUS" | grep -qE "^mihomo\s+RUNNING" && \
+       echo "$SUPERVISOR_STATUS" | grep -qE "^watch_mihomo\s+RUNNING" && \
+       systemctl is-active mihomo-router &>/dev/null; then
+        mihomo_active=true
+    fi
+
+    if $mosdns_running; then
+        if $singbox_active; then
+            echo -e "${green_text}✓ 当前模式：MosDNS + Sing-box${reset}"
+        elif $mihomo_active; then
+            echo -e "${green_text}✓ 当前模式：MosDNS + Mihomo${reset}"
+        else
+            echo -e "${yellow}ℹ️ MosDNS 正在运行，但未检测到完整的路由组件${reset}"
+        fi
+    else
+        if $singbox_active || $mihomo_active; then
+            echo -e "${red}✗ MosDNS 未运行，代理服务可能异常${reset}"
+        else
+            echo -e "${yellow}ℹ️ 未检测到 MosDNS 或任何核心代理服务正在运行${reset}"
+        fi
+    fi
+    print_separator
+}
+
+# 主函数
+display_system_status() {
+    check_programs
+    check_supervisor_services
+    check_systemd_services
+    detect_proxy_mode
+}
+
 
 # 检测系统 CPU 架构，并返回标准格式（适用于多数构建/下载脚本）
 detect_architecture() {
@@ -1058,6 +1068,7 @@ reload_service() {
         log "未识别的 core_name: $core_name，跳过 systemd 服务重启。"
     fi
 }
+
 # 添加任务到 crontab
 add_cron_jobs() {
     echo -e "\n${green_text}=== 定时更新任务设置 ===${reset}"
