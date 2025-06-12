@@ -14,6 +14,131 @@ log() {
     echo "[$(date +"%F %T")] $1"
 }
 
+# 显示系统安装和服务状态
+display_system_status() {
+    # 检查程序是否安装
+    programs=("sing-box" "mosdns" "mihomo" "filebrowser")
+    echo -e "\n${yellow}检测本机安装情况 (本地IP: $local_ip)...${reset}"
+    echo -e "${green_text}───────────────────────────────────────────${reset}"
+    printf "${green_text}%-15s %-10s %s\n" "程序" "状态" " "${reset}"
+    echo -e "${green_text}───────────────────────────────────────────${reset}"
+
+    for program in "${programs[@]}"; do
+        if [ -f "/usr/local/bin/$program" ]; then
+            printf "${green_text}%-15s ${green_text}✔ %-8s %s\n" "$program" "已安装" "${reset}"
+        else
+            printf "${green_text}%-15s ${red}✘ %-8s %s\n" "$program" "未安装" "${reset}"
+        fi
+    done
+    echo -e "${green_text}───────────────────────────────────────────${reset}"
+
+    # 检查服务是否启用
+    echo -e "\n${yellow}检查服务状态...${reset}"
+    echo -e "${green_text}───────────────────────────────────────────────────${reset}"
+
+    if ! command -v supervisorctl &>/dev/null; then
+        echo -e "${red}警告：未检测到 Supervisor 或 supervisorctl 命令，无法检查服务状态。${reset}"
+        echo -e "${yellow}请确保已安装 Supervisor 并正确配置。${reset}"
+        echo -e "${green_text}───────────────────────────────────────────────────${reset}"
+        echo -e "${yellow}当前代理模式检测：${reset}"
+        echo -e "${yellow}ℹ️ 未检测到 MosDNS 或任何核心代理服务正在运行${reset}"
+        echo -e "${green_text}───────────────────────────────────────────────────${reset}"
+        return
+    fi
+
+    printf "${green_text}%-15s %-15s %-15s\n" "服务名称" "类型" "状态" "${reset}"
+    echo -e "${green_text}───────────────────────────────────────────────────${reset}"
+
+    core_programs=("sing-box" "mihomo" "mosdns")
+    watch_services=("watch_sing_box" "watch_mihomo" "watch_mosdns")
+
+    # 检查核心服务状态
+    for program in "${core_programs[@]}"; do
+        local type_str="未知"
+        case "$program" in
+            "sing-box"|"mihomo")
+                type_str="路由服务"
+                ;;
+            "mosdns")
+                type_str="DNS服务"
+                ;;
+        esac
+
+        if supervisorctl status | grep -qE "^${program}\s+RUNNING"; then
+            printf "${green_text}%-15s %-15s ${green_text}%-15s ${reset}\n" "$program" "$type_str" "运行中 ✅"
+        else
+            printf "${red_text}%-15s %-15s ${red_text}%-15s ${reset}\n" "$program" "$type_str" "未运行 ❌"
+        fi
+    done
+
+    # 检查看门狗服务状态
+    for watch in "${watch_services[@]}"; do
+        local type_str="监听服务"
+        if supervisorctl status | grep -qE "^${watch}\s+RUNNING"; then
+            printf "${green_text}%-15s %-15s ${green_text}%-15s ${reset}\n" "$watch" "$type_str" "运行中 ✅"
+        else
+            printf "${red_text}%-15s %-15s ${red_text}%-15s ${reset}\n" "$watch" "$type_str" "未运行 ❌"
+        fi
+    done
+
+    # 检查其他系统服务状态
+    echo -e "\n${yellow}检查系统服务状态...${reset}"
+    echo -e "${green_text}───────────────────────────────────────────────────${reset}"
+    printf "${green_text}%-15s %-15s %-15s\n" "服务名称" "类型" "状态" "${reset}"
+    echo -e "${green_text}───────────────────────────────────────────────────${reset}"
+
+    system_services=("nftables" "sing-box-router" "mihomo-router")
+
+    for service in "${system_services[@]}"; do
+        local type_str="系统服务"
+        if systemctl is-active "$service" &>/dev/null; then
+            printf "${green_text}%-15s %-15s ${green_text}%-15s ${reset}\n" "$service" "$type_str" "运行中 ✅"
+        else
+            printf "${red_text}%-15s %-15s ${red_text}%-15s ${reset}\n" "$service" "$type_str" "未运行 ❌"
+        fi
+    done
+    echo -e "${green_text}───────────────────────────────────────────────────${reset}"
+
+    # 判断并显示当前模式
+    echo -e "\n${yellow}当前代理模式检测：${reset}"
+    local mosdns_running=false
+    local singbox_active=false
+    local mihomo_active=false
+
+    if supervisorctl status mosdns | grep -qE "^mosdns\s+RUNNING"; then
+        mosdns_running=true
+    fi
+
+    if supervisorctl status sing-box | grep -qE "^sing-box\s+RUNNING" && \
+       supervisorctl status watch_sing_box | grep -qE "^watch_sing_box\s+RUNNING" && \
+       systemctl is-active sing-box-router &>/dev/null; then
+        singbox_active=true
+    fi
+
+    if supervisorctl status mihomo | grep -qE "^mihomo\s+RUNNING" && \
+       supervisorctl status watch_mihomo | grep -qE "^watch_mihomo\s+RUNNING" && \
+       systemctl is-active mihomo-router &>/dev/null; then
+        mihomo_active=true
+    fi
+
+    if $mosdns_running; then
+        if $singbox_active; then
+            echo -e "${green_text}✓ 检测到当前模式：MosDNS + Sing-box${reset}"
+        elif $mihomo_active; then
+            echo -e "${green_text}✓ 检测到当前模式：MosDNS + Mihomo${reset}"
+        else
+            echo -e "${yellow}ℹ️ MosDNS 正在运行，但未检测到完整的 Sing-box 或 Mihomo 代理组件${reset}"
+        fi
+    else
+        if $singbox_active || $mihomo_active; then
+            echo -e "${red}✗ MosDNS 未运行，代理服务可能不完整或无法正常工作${reset}"
+        else
+            echo -e "${yellow}ℹ️ 未检测到 MosDNS 或任何核心代理服务正在运行${reset}"
+        fi
+    fi
+    echo -e "${green_text}───────────────────────────────────────────────────${reset}"
+}
+
 # 系统更新和安装必要软件
 update_system() {
     log "开始更新系统..."
@@ -28,6 +153,7 @@ update_system() {
         exit 1
     fi
 }
+
 # 设置时区
 set_timezone() {
     log "设置时区为Asia/Shanghai"
@@ -38,77 +164,6 @@ set_timezone() {
     log "时区设置成功"
 }
 
-# 检查程序是否安装
-check_installed() {
-    programs=("sing-box" "mosdns" "mihomo" "filebrowser")
-    echo -e "\n${yellow}检测本机安装情况 (本地IP: $local_ip)...${reset}"
-
-    for program in "${programs[@]}"; do
-        if [ -f "/usr/local/bin/$program" ]; then
-            echo -e "  ${green_text}✔ 已安装${reset} - $program"
-        else
-            echo -e "  ${red}✘ 未安装${reset} - $program"
-        fi
-    done
-}
-# 检查服务是否启用
-check_core_status() {
-    green_text="\e[32m"
-    red_text="\e[31m"
-    reset="\e[0m"
-
-    echo -e "\n检查服务状态..."
-    echo -e "----------------------------------------"
-
-    # 主程序服务
-    core_programs=("sing-box" "mihomo" "mosdns")
-    # 对应看门狗服务
-    watch_services=("watch_sing_box" "watch_mihomo" "watch_mosdns")
-
-    # 检查核心服务状态
-    for program in "${core_programs[@]}"; do
-        echo -e "\n服务名称: ${program}"
-
-        if supervisorctl status | grep -qE "^${program}\s+RUNNING"; then
-            case "$program" in
-                "sing-box"|"mihomo")
-                    echo -e "  类型: 路由服务 状态: ${green_text}运行中 ✅${reset}"
-                    ;;
-                "mosdns")
-                    echo -e "  类型: DNS服务 状态: ${green_text}运行中 ✅${reset}"
-                    ;;
-                *)
-                    echo -e "  类型: 未知 ${green_text}运行中 ✅${reset}"
-                    ;;
-            esac
-        else
-            case "$program" in
-                "sing-box"|"mihomo")
-                    echo -e "  类型: 路由服务 ${red_text}未运行 ❌${reset}"
-                    ;;
-                "mosdns")
-                    echo -e "  类型: DNS服务 ${red_text}未运行 ❌${reset}"
-                    ;;
-                *)
-                    echo -e "  类型: 未知 ${red_text}未运行 ❌${reset}"
-                    ;;
-            esac
-        fi
-    done
-
-    # 检查看门狗服务状态
-    for watch in "${watch_services[@]}"; do
-        echo -e "\n服务名称: ${watch}"
-
-        if supervisorctl status | grep -qE "^${watch}\s+RUNNING"; then
-            echo -e "  类型: 监听服务 状态: ${green_text}运行中 ✅${reset}"
-        else
-            echo -e "  类型: 监听服务 状态: ${red_text}未运行 ❌${reset}"
-        fi
-    done
-
-    echo -e "\n----------------------------------------"
-}
 # 检测系统 CPU 架构，并返回标准格式（适用于多数构建/下载脚本）
 detect_architecture() {
     case "$(uname -m)" in
@@ -1597,10 +1652,7 @@ format_route_rules() {
 
 # 主函数
 main() {
-    green_text="\e[32m"
-    red_text="\e[31m"
-    reset="\e[0m"
-
+    display_system_status
     # 主菜单
     echo -e "${green_text}------------------------注意：请使用 root 用户安装！！！-------------------------${reset}"
     echo -e "${green_text}请选择操作：${reset}"
@@ -1650,11 +1702,9 @@ main() {
 
     echo -e "${green_text}-------------------------------------------------${reset}"
     echo -e "${green_text}Fake-ip 网关代理方案：sing-box/mihomo + MosDNS${reset}"
-    echo "---支持 debian，其他系统未测试。理论上支持debian/ubuntu 安装前请确保系统未安装其他代理软件---"
-    echo "---完全参考 https://github.com/herozmy/StoreHouse/tree/latest ---"
+    log "请注意：本脚本支持 Debian/Ubuntu，安装前请确保系统未安装其他代理软件。参考：https://github.com/herozmy/StoreHouse/tree/latest"
     echo -e "当前机器地址:${green_text}${local_ip}${reset}"
-    check_installed
-    check_core_status
+    
     echo -e "${green_text}-------------------------------------------------${reset}"
     echo
 
