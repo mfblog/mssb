@@ -695,7 +695,7 @@
                 "tag": "geosite-speedtest@cn",
                 "type": "remote",
                 "format": "binary",
-                "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geosite/category-speedtest@cn.json",
+                "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geosite/category-speedtest@cn.srs",
                 "download_detour": "direct",
                 "update_interval": "3d"
             },
