@@ -1377,7 +1377,7 @@ stop_all_services() {
 check_and_set_local_dns() {
     # 获取当前 DNS 设置
     current_dns=$(cat /etc/resolv.conf | grep -E "^nameserver" | head -n 1 | awk '{print $2}')
-    
+
     if [ "$current_dns" != "$local_ip" ]; then
         echo -e "\n${yellow}提示：当前 DNS 设置不是本地 IP ($local_ip)${reset}"
         echo -e "${yellow}建议将 DNS 设置为本地 IP 以使用 MosDNS 服务${reset}"
@@ -1877,6 +1877,114 @@ format_route_rules() {
     echo -e "${green_text} routeros 具体可以参考: https://github.com/baozaodetudou/mssb/blob/main/docs/fakeip.md ${reset}"
 }
 
+# 扫描局域网设备并配置代理设备列表
+scan_lan_devices() {
+    echo -e "\n${green_text}=== 局域网设备扫描 ===${reset}"
+    echo -e "此功能将扫描局域网中的设备，让您选择需要代理的设备"
+    echo -e "${yellow}注意：此操作会清空并重写 /mssb/mosdns/proxy-device-list.txt 文件${reset}"
+    echo -e "${green_text}------------------------${reset}"
+
+    read -p "是否继续扫描局域网设备？(y/n): " scan_choice
+    if [[ "$scan_choice" != "y" && "$scan_choice" != "Y" ]]; then
+        log "已取消局域网设备扫描"
+        return 0
+    fi
+
+    # 检查必要工具
+    if ! command -v arp-scan &> /dev/null; then
+        log "正在安装 arp-scan 工具..."
+        apt update && apt install -y arp-scan
+        if ! command -v arp-scan &> /dev/null; then
+            log "arp-scan 安装失败，无法进行设备扫描"
+            return 1
+        fi
+    fi
+
+    # 获取当前使用的网络接口
+    local interface
+    if [ -n "$selected_interface" ]; then
+        interface="$selected_interface"
+    else
+        interface=$(ip route | grep default | awk '{print $5}' | head -n1)
+        if [ -z "$interface" ]; then
+            log "无法自动检测网络接口，请手动指定"
+            read -p "请输入网络接口名称（如 eth0, ens18）: " interface
+        fi
+    fi
+
+    log "使用网络接口：$interface"
+
+    # 扫描局域网设备
+    echo -e "${yellow}🔍 正在扫描局域网设备，请稍等...${reset}"
+    local raw_result
+    raw_result=$(arp-scan --interface="$interface" --localnet 2>/dev/null | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}")
+
+    if [ -z "$raw_result" ]; then
+        log "⚠️ 未找到设备，请检查网络接口或网络连接"
+        return 1
+    fi
+
+    # 保存IP和设备信息到数组
+    local devices=()
+    while IFS= read -r line; do
+        devices+=("$line")
+    done < <(echo "$raw_result" | awk '{printf "%s\t%s\n", $1, $2}')
+
+    # 显示设备列表
+    echo ""
+    echo -e "${green_text}📋 发现的局域网设备：${reset}"
+    for i in "${!devices[@]}"; do
+        printf "%3d. %s\n" "$((i+1))" "${devices[$i]}"
+    done
+
+    # 用户选择设备
+    echo ""
+    echo -e "${yellow}提示：可以选择多个设备，用英文逗号分隔（如 1,3,5）${reset}"
+    read -p "👉 请输入要添加到代理列表的设备编号： " selected_ids
+
+    if [ -z "$selected_ids" ]; then
+        log "未选择任何设备，操作已取消"
+        return 0
+    fi
+
+    # 创建输出目录
+    mkdir -p "/mssb/mosdns"
+    local output_file="/mssb/mosdns/proxy-device-list.txt"
+
+    # 清空输出文件
+    > "$output_file"
+
+    # 处理选择结果
+    local valid_count=0
+    IFS=',' read -ra ids <<< "$selected_ids"
+    for id in "${ids[@]}"; do
+        # 去除空格
+        id=$(echo "$id" | tr -d ' ')
+        local idx=$((id-1))
+
+        if [ "$idx" -ge 0 ] && [ "$idx" -lt "${#devices[@]}" ]; then
+            local ip=$(echo "${devices[$idx]}" | awk '{print $1}')
+            echo "$ip" >> "$output_file"
+            log "已添加设备 IP：$ip"
+            ((valid_count++))
+        else
+            log "⚠️ 无效编号: $id，跳过"
+        fi
+    done
+
+    if [ $valid_count -gt 0 ]; then
+        echo ""
+        echo -e "${green_text}✅ 已将 $valid_count 个设备的IP地址写入 $output_file${reset}"
+        echo -e "${green_text}当前代理设备列表：${reset}"
+        cat "$output_file" | while read -r ip; do
+            echo -e "  📱 $ip"
+        done
+    else
+        log "未成功添加任何设备"
+        return 1
+    fi
+}
+
 # 主函数
 main() {
     display_system_status
@@ -1889,8 +1997,9 @@ main() {
     echo -e "${green_text}4) 启用所有服务${reset}"
     echo -e "${green_text}5) 修改服务配置${reset}"
     echo -e "${green_text}6) 备份所有重要文件${reset}"
+    echo -e "${green_text}7) 扫描局域网设备并配置mosdns代理列表${reset}"
     echo -e "${green_text}-------------------------------------------------${reset}"
-    read -p "请输入选项 (1/2/3/4/5): " main_choice
+    read -p "请输入选项 (1/2/3/4/5/6/7): " main_choice
 
     case "$main_choice" in
         2)
@@ -1920,6 +2029,15 @@ main() {
             echo -e "${green_text}备份所有重要文件到/mssb/backup ${reset}"
             # 备份所有重要文件
             backup_all_config
+            echo -e "${green_text}-------------------------------------------------${reset}"
+            exit 0
+            ;;
+        7)
+            echo -e "${green_text}扫描局域网设备并配置代理列表${reset}"
+            # 检查网络接口
+            check_interfaces
+            # 扫描局域网设备
+            scan_lan_devices
             echo -e "${green_text}-------------------------------------------------${reset}"
             exit 0
             ;;
@@ -2056,6 +2174,26 @@ main() {
     echo
     echo -e "🕸️  Sing-box/Mihomo 面板 UI：${green_text}http://${local_ip}:9090/ui${reset}"
     echo -e "${green_text}-------------------------------------------------${reset}"
+
+    # 代理设备列表配置
+    echo -e "\n${green_text}=== Mosdns代理设备列表配置 ===${reset}"
+    echo -e "1. 扫描局域网设备并选择"
+    echo -e "2. 跳过配置（使用现有或默认列表）"
+    echo -e "${green_text}------------------------${reset}"
+
+    read -p "请选择代理设备配置方式 (1/2): " device_choice
+
+    case "$device_choice" in
+        1)
+            scan_lan_devices
+            ;;
+        2)
+            log "跳过代理设备列表配置，使用现有配置"
+            ;;
+        *)
+            log "无效选择，跳过代理设备列表配置"
+            ;;
+    esac
 
 
     log "脚本执行完成。"
