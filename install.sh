@@ -344,11 +344,7 @@ auto_restore_config() {
         case "$config_type" in
             "sing-box")
                 # 获取当前核心类型
-                if [ -f "/mssb/sing-box/core_type" ]; then
-                    core_type=$(cat "/mssb/sing-box/core_type")
-                else
-                    core_type="sing-box-reF1nd"  # 默认为 R核心
-                fi
+                detect_singbox_info
 
                 # 根据核心类型选择对应的备份文件
                 if [[ "$core_type" == "sing-box-reF1nd" ]]; then
@@ -436,11 +432,7 @@ backup_config() {
             fi
 
             # 获取当前核心类型
-            if [ -f "/mssb/sing-box/core_type" ]; then
-                core_type=$(cat "/mssb/sing-box/core_type")
-            else
-                core_type="sing-box-reF1nd"  # 默认为 R核心
-            fi
+            detect_singbox_info
 
             if [[ "$core_type" == "sing-box-reF1nd" ]]; then
                 backup_file="$backup_dir/sing-box-r-config-$(date +%Y%m%d-%H%M%S).json"
@@ -540,8 +532,8 @@ check_and_restore_config() {
         case "$config_type" in
             "sing-box")
                 # 获取当前核心类型
-                if [ -f "/mssb/sing-box/core_type" ]; then
-                    core_type=$(cat "/mssb/sing-box/core_type")
+                if [ -f "/mssb/.core_type" ]; then
+                    core_type=$(cat "/mssb/.core_type")
                 else
                     core_type="sing-box-reF1nd"  # 默认为 R核心
                 fi
@@ -1496,32 +1488,32 @@ detect_singbox_info() {
     current_version=$(echo "$version_output" | awk '{print $3}' || echo "未知版本")
 
     # 优先从文件获取核心类型，如果文件不存在则从命令输出智能识别
-    if [ -f "/mssb/sing-box/core_type" ]; then
-        current_core_type=$(cat "/mssb/sing-box/core_type")
-        detection_source="类型文件/mssb/sing-box/core_type"
+    if [ -f "/mssb/.core_type" ]; then
+        core_type=$(cat "/mssb/.core_type")
+        detection_source="类型文件/mssb/.core_type"
     else
         # 从版本输出中智能识别核心类型
         if echo "$version_output" | grep -q "reF1nd"; then
-            current_core_type="sing-box-reF1nd"
+            core_type="sing-box-reF1nd"
             detection_source="版本识别"
         else
             # 如果没有特殊标识，可能是Y核心或其他版本
-            current_core_type="sing-box-yelnoo"
+            core_type="sing-box-yelnoo"
             detection_source="推测可能是Y核心或其他版本"
         fi
     fi
 
     # 输出检测结果
     log "当前安装的版本: $current_version"
-    log "当前安装的版本: (核心类型：$current_core_type，来源：$detection_source)"
+    log "当前安装的版本: (核心类型：$core_type，来源：$detection_source)"
 }
 
 # 记录 Sing-box 核心版本
 record_singbox_core() {
     local core_type=$1
-    mkdir -p "/mssb/sing-box"
-    echo "$core_type" > /mssb/sing-box/core_type
-    log "已记录 Sing-box 核心类型：$core_type 在/mssb/sing-box/core_type 文件不可删除"
+    mkdir -p "/mssb"
+    echo "$core_type" > /mssb/.core_type
+    log "已记录 Sing-box 核心类型：$core_type 在/mssb/.core_type 文件不可删除"
 }
 
 # reF1nd佬 R核心安装函数
