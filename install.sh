@@ -1863,25 +1863,25 @@ format_route_rules() {
 
     # 主路由 DNS 设置
     echo -e "${green_text}┌───────────────────────────────────────────────┐${reset}"
-    echo -e "${green_text}│ 主路由 DNS 设置                                 │${reset}"
+    echo -e "${green_text}│ 主路由 DNS 设置                                │${reset}"
     echo -e "${green_text}├───────────────────────────────────────────────┤${reset}"
-    printf "${green_text}│ %-15s %-29s │${reset}\n" "DNS 服务器:" "$local_ip"
+    printf "${green_text}│ %-15s %-29s   │${reset}\n" "DNS 服务器:" "$local_ip"
     echo -e "${green_text}└───────────────────────────────────────────────┘${reset}"
 
     # MosDNS 和 Mihomo fakeip 路由
     echo -e "${green_text}┌───────────────────────────────────────────────┐${reset}"
-    echo -e "${green_text}│ MosDNS 和 Mihomo fakeip 路由                    │${reset}"
+    echo -e "${green_text}│ MosDNS 和 Mihomo fakeip 路由                   │${reset}"
     echo -e "${green_text}├───────────────────────┬───────────────────────┤${reset}"
-    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "目标地址" "网关"
+    printf "${green_text}│ %-21s   │ %-21s   │${reset}\n" "目标地址" "网关"
     echo -e "${green_text}├───────────────────────┼───────────────────────┤${reset}"
     printf "${green_text}│ %-21s │ %-21s │${reset}\n" "28.0.0.0/16" "$local_ip"
     echo -e "${green_text}└───────────────────────┴───────────────────────┘${reset}"
 
     # Telegram 路由
     echo -e "${green_text}┌───────────────────────────────────────────────┐${reset}"
-    echo -e "${green_text}│ Telegram 路由                                   │${reset}"
+    echo -e "${green_text}│ Telegram 路由                                 │${reset}"
     echo -e "${green_text}├───────────────────────┬───────────────────────┤${reset}"
-    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "目标地址" "网关"
+    printf "${green_text}│ %-21s   │ %-21s   │${reset}\n" "目标地址" "网关"
     echo -e "${green_text}├───────────────────────┼───────────────────────┤${reset}"
     printf "${green_text}│ %-21s │ %-21s │${reset}\n" "149.154.160.0/22" "$local_ip"
     printf "${green_text}│ %-21s │ %-21s │${reset}\n" "149.154.164.0/22" "$local_ip"
@@ -1901,7 +1901,7 @@ format_route_rules() {
     echo -e "${green_text}┌───────────────────────────────────────────────┐${reset}"
     echo -e "${green_text}│ Netflix 路由                                    │${reset}"
     echo -e "${green_text}├───────────────────────┬───────────────────────┤${reset}"
-    printf "${green_text}│ %-21s │ %-21s │${reset}\n" "目标地址" "网关"
+    printf "${green_text}│ %-21s   │ %-21s   │${reset}\n" "目标地址" "网关"
     echo -e "${green_text}├───────────────────────┼───────────────────────┤${reset}"
     printf "${green_text}│ %-21s │ %-21s │${reset}\n" "207.45.72.0/22" "$local_ip"
     printf "${green_text}│ %-21s │ %-21s │${reset}\n" "208.75.76.0/22" "$local_ip"
