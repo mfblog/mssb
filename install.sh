@@ -175,7 +175,6 @@ display_system_status() {
     detect_proxy_mode
 }
 
-
 # 检测系统 CPU 架构，并返回标准格式（适用于多数构建/下载脚本）
 detect_architecture() {
     case "$(uname -m)" in
@@ -263,6 +262,7 @@ install_mosdns() {
     # 清理临时文件
     rm -f /tmp/mosdns.zip
 }
+
 # 安装filebrower
 install_filebrower() {
     # 检查是否已安装 Filebrowser
@@ -334,12 +334,12 @@ install_filebrower() {
     rm -f /tmp/filebrowser.tar.gz
 }
 
-# 检查并恢复配置文件
-check_and_restore_config() {
+# 自动检查并恢复配置文件（无用户交互）
+auto_restore_config() {
     local config_type=$1
     local config_path=$2
     local backup_dir="/mssb/backup"
-    
+
     if [ -d "$backup_dir" ]; then
         case "$config_type" in
             "sing-box")
@@ -349,26 +349,280 @@ check_and_restore_config() {
                 else
                     core_type="sing-box-reF1nd"  # 默认为 R核心
                 fi
-                
+
                 # 根据核心类型选择对应的备份文件
                 if [[ "$core_type" == "sing-box-reF1nd" ]]; then
                     latest_backup=$(ls -t "$backup_dir"/sing-box-r-config-*.json 2>/dev/null | head -n1)
                 else
                     latest_backup=$(ls -t "$backup_dir"/sing-box-y-config-*.json 2>/dev/null | head -n1)
                 fi
+
+                if [ -n "$latest_backup" ]; then
+                    log "发现 sing-box 的备份配置文件：$latest_backup"
+                    mkdir -p "$(dirname "$config_path")"
+                    cp "$latest_backup" "$config_path"
+                    log "sing-box 配置文件已从备份自动恢复"
+                    return 0
+                fi
                 ;;
             "mihomo")
                 latest_backup=$(ls -t "$backup_dir"/mihomo-config-*.yaml 2>/dev/null | head -n1)
+
+                if [ -n "$latest_backup" ]; then
+                    log "发现 mihomo 的备份配置文件：$latest_backup"
+                    mkdir -p "$(dirname "$config_path")"
+                    cp "$latest_backup" "$config_path"
+                    log "mihomo 配置文件已从备份自动恢复"
+                    return 0
+                fi
                 ;;
             "mosdns")
+                # mosdns 需要恢复多个文件
+                local mosdns_dir="/mssb/mosdns"
+                local restored_count=0
+
+                # 恢复 config.yaml
                 latest_backup=$(ls -t "$backup_dir"/mosdns-config-*.yaml 2>/dev/null | head -n1)
-                ;;
-            "proxy-device-list")
+                if [ -n "$latest_backup" ]; then
+                    mkdir -p "$mosdns_dir"
+                    cp "$latest_backup" "$mosdns_dir/config.yaml"
+                    log "已恢复 mosdns config.yaml"
+                    ((restored_count++))
+                fi
+
+                # 恢复 proxy-device-list.txt
                 latest_backup=$(ls -t "$backup_dir"/mosdns-proxy-device-list-*.txt 2>/dev/null | head -n1)
+                if [ -n "$latest_backup" ]; then
+                    mkdir -p "$mosdns_dir"
+                    cp "$latest_backup" "$mosdns_dir/proxy-device-list.txt"
+                    log "已恢复 mosdns proxy-device-list.txt"
+                    ((restored_count++))
+                fi
+
+                # 恢复 mywhitelist.txt
+                latest_backup=$(ls -t "$backup_dir"/mosdns-mywhitelist-*.txt 2>/dev/null | head -n1)
+                if [ -n "$latest_backup" ]; then
+                    mkdir -p "$mosdns_dir"
+                    cp "$latest_backup" "$mosdns_dir/mywhitelist.txt"
+                    log "已恢复 mosdns mywhitelist.txt"
+                    ((restored_count++))
+                fi
+
+                if [ $restored_count -gt 0 ]; then
+                    log "mosdns 配置文件已从备份自动恢复（共恢复 $restored_count 个文件）"
+                    return 0
+                fi
                 ;;
         esac
-        
-        if [ -n "$latest_backup" ]; then
+    fi
+    return 1
+}
+
+# 备份配置文件
+backup_config() {
+    local config_type=$1
+    local config_path=$2
+    local backup_dir="/mssb/backup"
+
+    # 创建备份目录
+    mkdir -p "$backup_dir"
+
+    case "$config_type" in
+        "sing-box")
+            # 检查配置文件是否存在
+            if [ ! -f "$config_path" ]; then
+                log "sing-box 配置文件不存在，跳过备份"
+                return 1
+            fi
+
+            # 获取当前核心类型
+            if [ -f "/mssb/sing-box/core_type" ]; then
+                core_type=$(cat "/mssb/sing-box/core_type")
+            else
+                core_type="sing-box-reF1nd"  # 默认为 R核心
+            fi
+
+            if [[ "$core_type" == "sing-box-reF1nd" ]]; then
+                backup_file="$backup_dir/sing-box-r-config-$(date +%Y%m%d-%H%M%S).json"
+            else
+                backup_file="$backup_dir/sing-box-y-config-$(date +%Y%m%d-%H%M%S).json"
+            fi
+
+            # 执行备份
+            if cp "$config_path" "$backup_file"; then
+                log "sing-box 配置文件已备份到：$backup_file"
+                return 0
+            else
+                log "sing-box 配置文件备份失败"
+                return 1
+            fi
+            ;;
+        "mihomo")
+            # 检查配置文件是否存在
+            if [ ! -f "$config_path" ]; then
+                log "mihomo 配置文件不存在，跳过备份"
+                return 1
+            fi
+
+            backup_file="$backup_dir/mihomo-config-$(date +%Y%m%d-%H%M%S).yaml"
+
+            # 执行备份
+            if cp "$config_path" "$backup_file"; then
+                log "mihomo 配置文件已备份到：$backup_file"
+                return 0
+            else
+                log "mihomo 配置文件备份失败"
+                return 1
+            fi
+            ;;
+        "mosdns")
+            # mosdns 需要备份多个文件
+            local mosdns_dir="/mssb/mosdns"
+            local timestamp=$(date +%Y%m%d-%H%M%S)
+            local backup_count=0
+
+            # 备份 config.yaml
+            if [ -f "$mosdns_dir/config.yaml" ]; then
+                backup_file="$backup_dir/mosdns-config-$timestamp.yaml"
+                if cp "$mosdns_dir/config.yaml" "$backup_file"; then
+                    log "mosdns config.yaml 已备份到：$backup_file"
+                    ((backup_count++))
+                fi
+            fi
+
+            # 备份 proxy-device-list.txt
+            if [ -f "$mosdns_dir/proxy-device-list.txt" ]; then
+                backup_file="$backup_dir/mosdns-proxy-device-list-$timestamp.txt"
+                if cp "$mosdns_dir/proxy-device-list.txt" "$backup_file"; then
+                    log "mosdns proxy-device-list.txt 已备份到：$backup_file"
+                    ((backup_count++))
+                fi
+            fi
+
+            # 备份 mywhitelist.txt
+            if [ -f "$mosdns_dir/mywhitelist.txt" ]; then
+                backup_file="$backup_dir/mosdns-mywhitelist-$timestamp.txt"
+                if cp "$mosdns_dir/mywhitelist.txt" "$backup_file"; then
+                    log "mosdns mywhitelist.txt 已备份到：$backup_file"
+                    ((backup_count++))
+                fi
+            fi
+
+            if [ $backup_count -gt 0 ]; then
+                log "mosdns 配置文件备份完成（共备份 $backup_count 个文件）"
+                return 0
+            else
+                log "mosdns 没有配置文件需要备份"
+                return 1
+            fi
+            ;;
+        *)
+            log "未知的配置类型：$config_type"
+            return 1
+            ;;
+    esac
+}
+
+# 备份所有重要文件
+backup_all_config() {
+    backup_config "sing-box" "/mssb/sing-box/config.json"
+    backup_config "mihomo" "/mssb/mihomo/config.yaml"
+    backup_config "mosdns" ""
+}
+
+# 检查并恢复配置文件（保留原有交互功能，用于其他地方）
+check_and_restore_config() {
+    local config_type=$1
+    local config_path=$2
+    local backup_dir="/mssb/backup"
+
+    if [ -d "$backup_dir" ]; then
+        case "$config_type" in
+            "sing-box")
+                # 获取当前核心类型
+                if [ -f "/mssb/sing-box/core_type" ]; then
+                    core_type=$(cat "/mssb/sing-box/core_type")
+                else
+                    core_type="sing-box-reF1nd"  # 默认为 R核心
+                fi
+
+                # 根据核心类型选择对应的备份文件
+                if [[ "$core_type" == "sing-box-reF1nd" ]]; then
+                    latest_backup=$(ls -t "$backup_dir"/sing-box-r-config-*.json 2>/dev/null | head -n1)
+                else
+                    latest_backup=$(ls -t "$backup_dir"/sing-box-y-config-*.json 2>/dev/null | head -n1)
+                fi
+                if [ -n "$latest_backup" ]; then
+                    echo -e "${green_text}发现 sing-box 的备份配置文件：${reset}"
+                    echo -e "备份文件：$latest_backup"
+                    read -p "是否恢复此备份？(y/n): " restore_choice
+                    if [ "$restore_choice" = "y" ]; then
+                        mkdir -p "$(dirname "$config_path")"
+                        cp "$latest_backup" "$config_path"
+                        log "sing-box 配置文件已从备份恢复"
+                        return 0
+                    fi
+                fi
+                ;;
+            "mihomo")
+                latest_backup=$(ls -t "$backup_dir"/mihomo-config-*.yaml 2>/dev/null | head -n1)
+                if [ -n "$latest_backup" ]; then
+                    echo -e "${green_text}发现 mihomo 的备份配置文件：${reset}"
+                    echo -e "备份文件：$latest_backup"
+                    read -p "是否恢复此备份？(y/n): " restore_choice
+                    if [ "$restore_choice" = "y" ]; then
+                        mkdir -p "$(dirname "$config_path")"
+                        cp "$latest_backup" "$config_path"
+                        log "mihomo 配置文件已从备份恢复"
+                        return 0
+                    fi
+                fi
+                ;;
+            "mosdns")
+                # mosdns 需要检查多个备份文件
+                local mosdns_dir="/mssb/mosdns"
+                local config_backup=$(ls -t "$backup_dir"/mosdns-config-*.yaml 2>/dev/null | head -n1)
+                local proxy_backup=$(ls -t "$backup_dir"/mosdns-proxy-device-list-*.txt 2>/dev/null | head -n1)
+                local whitelist_backup=$(ls -t "$backup_dir"/mosdns-mywhitelist-*.txt 2>/dev/null | head -n1)
+
+                if [ -n "$config_backup" ] || [ -n "$proxy_backup" ] || [ -n "$whitelist_backup" ]; then
+                    echo -e "${green_text}发现 mosdns 的备份配置文件：${reset}"
+                    [ -n "$config_backup" ] && echo -e "config.yaml: $config_backup"
+                    [ -n "$proxy_backup" ] && echo -e "proxy-device-list.txt: $proxy_backup"
+                    [ -n "$whitelist_backup" ] && echo -e "mywhitelist.txt: $whitelist_backup"
+
+                    read -p "是否恢复这些备份？(y/n): " restore_choice
+                    if [ "$restore_choice" = "y" ]; then
+                        mkdir -p "$mosdns_dir"
+                        local restored_count=0
+
+                        if [ -n "$config_backup" ]; then
+                            cp "$config_backup" "$mosdns_dir/config.yaml"
+                            log "已恢复 mosdns config.yaml"
+                            ((restored_count++))
+                        fi
+
+                        if [ -n "$proxy_backup" ]; then
+                            cp "$proxy_backup" "$mosdns_dir/proxy-device-list.txt"
+                            log "已恢复 mosdns proxy-device-list.txt"
+                            ((restored_count++))
+                        fi
+
+                        if [ -n "$whitelist_backup" ]; then
+                            cp "$whitelist_backup" "$mosdns_dir/mywhitelist.txt"
+                            log "已恢复 mosdns mywhitelist.txt"
+                            ((restored_count++))
+                        fi
+
+                        log "mosdns 配置文件已从备份恢复（共恢复 $restored_count 个文件）"
+                        return 0
+                    fi
+                fi
+                ;;
+        esac
+
+        # 对于 sing-box 和 mihomo 的单文件恢复
+        if [ "$config_type" != "mosdns" ] && [ -n "$latest_backup" ]; then
             echo -e "${green_text}发现 $config_type 的备份配置文件：${reset}"
             echo -e "备份文件：$latest_backup"
             read -p "是否恢复此备份？(y/n): " restore_choice
@@ -383,53 +637,6 @@ check_and_restore_config() {
     return 1
 }
 
-# singbox配置文件复制（初始安装或更新安装时使用）
-singbox_configure_files() {
-    log "检查是否存在 /mssb/sing-box/config.json ..."
-    CONFIG_JSON="/mssb/sing-box/config.json"
-    backup_dir="/mssb/backup"
-    mkdir -p "$backup_dir"
-    
-    # 获取当前核心类型
-    if [ -f "/mssb/sing-box/core_type" ]; then
-        core_type=$(cat "/mssb/sing-box/core_type")
-    else
-        core_type="sing-box-reF1nd"  # 默认为 R核心
-    fi
-    
-    # 根据核心类型设置备份文件名
-    if [[ "$core_type" == "sing-box-reF1nd" ]]; then
-        BACKUP_JSON="$backup_dir/sing-box-r-config-$(date +%Y%m%d-%H%M%S).json"
-        SOURCE_CONFIG="/mssb/sing-box/sing-box-r.json"
-    else
-        BACKUP_JSON="$backup_dir/sing-box-y-config-$(date +%Y%m%d-%H%M%S).json"
-        SOURCE_CONFIG="/mssb/sing-box/sing-box-y.json"
-    fi
-
-    # 如果 config.json 存在，则进行备份
-    if [ -f "$CONFIG_JSON" ]; then
-        log "发现 config.json 文件，备份到 $backup_dir 目录..."
-        cp "$CONFIG_JSON" "$BACKUP_JSON" || { log "备份 config.json 失败！退出脚本。"; exit 1; }
-    else
-        log "未发现 config.json 文件，跳过备份步骤。"
-    fi
-
-    # 复制 mssb/sing-box 目录
-    log "复制 mssb/sing-box 目录..."
-    cp -r mssb/sing-box /mssb || { log "复制 mssb/sing-box 目录失败！退出脚本。"; exit 1; }
-    log "成功复制 mssb/sing-box 目录到 /mssb"
-
-    # 复制对应核心的配置文件
-    log "复制 $core_type 的配置文件..."
-    if [ -f "$SOURCE_CONFIG" ]; then
-        cp "$SOURCE_CONFIG" "$CONFIG_JSON" || { log "复制配置文件失败！退出脚本。"; exit 1; }
-        log "成功复制 $core_type 配置文件到 /mssb/sing-box/config.json"
-    else
-        log "错误：找不到源配置文件 $SOURCE_CONFIG"
-        exit 1
-    fi
-}
-
 # singbox用户自定义设置（用于配置设置）
 singbox_customize_settings() {
     echo -e "\n${green_text}=== Sing-box 配置设置 ===${reset}"
@@ -438,13 +645,8 @@ singbox_customize_settings() {
     echo -e "3. 手动配置"
     echo -e "${green_text}------------------------${reset}"
     
-    # 检查并尝试恢复备份
-    if check_and_restore_config "sing-box" "/mssb/sing-box/config.json"; then
-        return
-    fi
-    
     read -p "请选择配置方式 (1/2/3): " config_choice
-    
+
     case "$config_choice" in
         1)
             echo -e "${yellow}正在检查备份配置...${reset}"
@@ -559,6 +761,7 @@ install_mihomo() {
     new_version=$(/usr/local/bin/mihomo -v 2>/dev/null | head -n1 | awk '{print $2}' || echo "未知版本")
     log "Mihomo 安装完成，版本：$new_version，临时文件已清理"
 }
+
 # mihomo用户自定义设置
 mihomo_customize_settings() {
     echo -e "\n${green_text}=== Mihomo 配置设置 ===${reset}"
@@ -566,11 +769,6 @@ mihomo_customize_settings() {
     echo -e "2. 生成新配置"
     echo -e "3. 手动配置"
     echo -e "${green_text}------------------------${reset}"
-    
-    # 检查并尝试恢复备份
-    if check_and_restore_config "mihomo" "/mssb/mihomo/config.yaml"; then
-        return
-    fi
     
     read -p "请选择配置方式 (1/2/3): " config_choice
     
@@ -644,6 +842,7 @@ check_ui() {
         git_ui
     fi
 }
+
 # 下载UI源码
 git_ui(){
     if git clone --depth=1 https://github.com/Zephyruso/zashboard.git -b gh-pages /mssb/${core_name}/ui; then
@@ -666,15 +865,15 @@ check_resolved(){
                 # 如果找到被注释的 DNSStubListener，取消注释并改为 no
                 sed -i 's/^#DNSStubListener=.*/DNSStubListener=no/' /etc/systemd/resolved.conf
                 systemctl restart systemd-resolved.service
-                green "53端口占用已解除"
+                echo -e "${green_text}53端口占用已解除${reset}"
             else
-                green "未找到53端口占用配置，无需操作"
+                echo -e "${yellow}未找到53端口占用配置，无需操作${reset}"
             fi
         elif [ "$dns_stub_listener" = "DNSStubListener=yes" ]; then
             # 如果找到 DNSStubListener=yes，则修改为 no
             sed -i 's/^DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
             systemctl restart systemd-resolved.service
-            green "53端口占用已解除"
+            echo -e "${green_text}53端口占用已解除${reset}"
         elif [ "$dns_stub_listener" = "DNSStubListener=no" ]; then
             # 如果 DNSStubListener 已为 no，提示用户无需修改
             echo -e "${yellow}53端口未被占用，无需操作${reset}"
@@ -683,6 +882,7 @@ check_resolved(){
         echo -e "${yellow} /etc/systemd/resolved.conf 不存在，无需操作${reset}"
     fi
 }
+
 # tproxy转发服务安装
 install_tproxy() {
     check_resolved
@@ -854,53 +1054,34 @@ check_and_copy_folder() {
         log "成功复制 mssb/$folder_name 目录到 /mssb/"
     fi
 }
+
 # mosdns配置文件复制
 mosdns_configure_files() {
-    log "检查是否存在 /mssb/mosdns/config.yaml ..."
+    log "开始处理 mosdns 配置文件..."
     CONFIG_YAML="/mssb/mosdns/config.yaml"
-    backup_dir="/mssb/backup"
-    mkdir -p "$backup_dir"
-    BACKUP_YAML="$backup_dir/mosdns-config-$(date +%Y%m%d-%H%M%S).yaml"
+    echo -e "\n${yellow}=== 运营商 DNS 配置 ===${reset}"
+    echo -e "默认已设置第一、第二解析为阿里公共 DNS：${green_text}223.5.5.5${reset}"
+    echo -e "当前第三解析配置的运营商 DNS 为：${green_text}221.130.33.60${reset}"
+    echo -e "建议修改为您所在运营商的 DNS 服务器地址，否则可能影响解析速度"
+    echo -e "常见运营商 DNS：可以参考 https://ipw.cn/doc/else/dns.html"
+    echo -e "  阿里：223.5.5.5, 223.6.6.6"
+    echo -e "  腾讯：119.29.29.29, 119.28.28.28"
+    echo -e "${green_text}------------------------${reset}"
 
-    # 如果 config.yaml 存在，则进行备份
-    if [ -f "$CONFIG_YAML" ]; then
-        log "发现 config.yaml 文件，备份到 $backup_dir 目录..."
-        cp "$CONFIG_YAML" "$BACKUP_YAML" || { log "备份 config.yaml 失败！退出脚本。"; exit 1; }
-    else
-        log "未发现 config.yaml 文件，跳过备份步骤。"
-    fi
-
-    # 如果之前有备份 config.yaml，则恢复备份文件
-    if [ -f "$BACKUP_YAML" ]; then
-        log "恢复 config.yaml 文件到 /mssb/mosdns ..."
-        cp "$BACKUP_YAML" "$CONFIG_YAML" || { log "恢复 config.yaml 失败！退出脚本。"; exit 1; }
-        log "恢复完成"
-    else
-        # 使用默认配置，并提示用户修改 DNS
-        echo -e "\n${yellow}=== 运营商 DNS 配置 ===${reset}"
-        echo -e "默认已设置第一、第二解析为阿里公共 DNS：${green_text}223.5.5.5${reset}"
-        echo -e "当前第三解析配置的运营商 DNS 为：${green_text}221.130.33.60${reset}"
-        echo -e "建议修改为您所在运营商的 DNS 服务器地址，否则可能影响解析速度"
-        echo -e "常见运营商 DNS：可以参考 https://ipw.cn/doc/else/dns.html"
-        echo -e "  阿里：223.5.5.5, 223.6.6.6"
-        echo -e "  腾讯：119.29.29.29, 119.28.28.28"
-        echo -e "${green_text}------------------------${reset}"
-        
-        read -p "请输入您的运营商 DNS 地址（直接回车使用腾讯作为第三解析 119.29.29.29）：" dns_addr
-        if [ -n "$dns_addr" ]; then
-            # 验证输入的 IP 地址格式
-            if [[ $dns_addr =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-                # 替换配置文件中的 DNS 地址
-                sed -i "s/addr: \"221.130.33.60\"/addr: \"$dns_addr\"/" "$CONFIG_YAML"
-                log "已更新运营商 DNS 地址为：$dns_addr"
-            else
-                log "输入的 DNS 地址格式不正确，将使用默认值 119.29.29.29"
-                sed -i "s/addr: \"221.130.33.60\"/addr: \"119.29.29.29\"/" "$CONFIG_YAML"
-            fi
+    read -p "请输入您的运营商 DNS 地址（直接回车使用腾讯作为第三解析 119.29.29.29）：" dns_addr
+    if [ -n "$dns_addr" ]; then
+        # 验证输入的 IP 地址格式
+        if [[ $dns_addr =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            # 替换配置文件中的 DNS 地址
+            sed -i "s/addr: \"221.130.33.60\"/addr: \"$dns_addr\"/" "$CONFIG_YAML"
+            log "已更新运营商 DNS 地址为：$dns_addr"
         else
-            log "使用默认 DNS 地址：119.29.29.29"
+            log "输入的 DNS 地址格式不正确，将使用默认值 119.29.29.29"
             sed -i "s/addr: \"221.130.33.60\"/addr: \"119.29.29.29\"/" "$CONFIG_YAML"
         fi
+    else
+        log "使用默认 DNS 地址：119.29.29.29"
+        sed -i "s/addr: \"221.130.33.60\"/addr: \"119.29.29.29\"/" "$CONFIG_YAML"
     fi
 }
 
@@ -908,14 +1089,11 @@ mosdns_configure_files() {
 cp_config_files() {
     log "复制 mssb/fb 目录..."
     check_and_copy_folder "fb"
+
     # 复制 mssb/mosdns 目录
     log "复制 mssb/mosdns 目录..."
-    if [ -d "/mssb/mosdns" ]; then
-        log "/mssb/mosdns 目录已存在，跳过替换。"
-    else
-        cp -r mssb/mosdns /mssb || { log "复制 mssb/mosdns 目录失败！退出脚本。"; exit 1; }
-        log "成功复制 mssb/mosdns 目录到 /mssb"
-    fi
+    cp -r mssb/mosdns /mssb || { log "复制 mssb/mosdns 目录失败！退出脚本。"; exit 1; }
+    log "成功复制 mssb/mosdns 目录到 /mssb"
     # 检查并恢复 mosdns 配置
     echo -e "\n${green_text}=== MosDNS 配置设置 ===${reset}"
     echo -e "1. 检查是否有备份配置"
@@ -927,18 +1105,11 @@ cp_config_files() {
     case "$mosdns_choice" in
         1)
             # 检查是否有备份配置
-            if check_and_restore_config "mosdns" "/mssb/mosdns/config.yaml"; then
-                log "已从备份恢复 mosdns config.yaml"
+            if check_and_restore_config "mosdns" ""; then
+                log "已从备份恢复 mosdns 配置"
             else
-                log "未找到 mosdns config.yaml 备份，将使用默认配置"
+                log "未找到 mosdns 备份，将使用默认配置"
                 mosdns_configure_files
-            fi
-            
-            # 检查并恢复 proxy-device-list.txt
-            if check_and_restore_config "proxy-device-list" "/mssb/mosdns/proxy-device-list.txt"; then
-                log "已从备份恢复 proxy-device-list.txt"
-            else
-                log "未找到 proxy-device-list.txt 备份，将使用默认配置"
             fi
             ;;
         2)
@@ -1046,37 +1217,18 @@ cp_config_files() {
     }
 }
 
+# singbox配置文件复制
+singbox_configure_files() {
+    # 复制 mssb/sing-box 目录
+    log "复制 mssb/sing-box 目录..."
+    check_and_copy_folder "sing-box"
+}
+
 # mihomo配置文件复制
 mihomo_configure_files() {
-    log "检查是否存在 /mssb/mihomo/config.yaml ..."
-    CONFIG_YAML="/mssb/mihomo/config.yaml"
-    backup_dir="/mssb/backup"
-    mkdir -p "$backup_dir"
-    BACKUP_YAML="$backup_dir/mihomo-config-$(date +%Y%m%d-%H%M%S).yaml"
-
-    # 如果 config.yaml 存在，则进行备份
-    if [ -f "$CONFIG_YAML" ]; then
-        log "发现 config.yaml 文件，备份到 $backup_dir 目录..."
-        cp "$CONFIG_YAML" "$BACKUP_YAML" || { log "备份 config.yaml 失败！退出脚本。"; exit 1; }
-    else
-        log "未发现 config.yaml 文件，跳过备份步骤。"
-    fi
-
     # 复制 mssb/mihomo 目录
     log "复制 mssb/mihomo 目录..."
-    if [ -d "/mssb/mihomo" ]; then
-        log "/mssb/mihomo 目录已存在，跳过替换。"
-    else
-        cp -r mssb/mihomo /mssb || { log "复制 mssb/mihomo 目录失败！退出脚本。"; exit 1; }
-        log "成功复制 mssb/mihomo 目录到 /mssb"
-    fi
-
-    # 如果之前有备份 config.yaml，则恢复备份文件
-    if [ -f "$BACKUP_YAML" ]; then
-        log "恢复 config.yaml 文件到 /mssb/mihomo ..."
-        cp "$BACKUP_YAML" "$CONFIG_YAML" || { log "恢复 config.yaml 失败！退出脚本。"; exit 1; }
-        log "恢复完成"
-    fi
+    check_and_copy_folder "mihomo"
 }
 
 # 服务启动和重载
@@ -1302,46 +1454,8 @@ uninstall_all_services() {
     
     # 停止所有服务
     stop_all_services
-    
-    # 创建备份目录
-    backup_dir="/mssb/backup"
-    mkdir -p "$backup_dir"
-    
-    # 检查当前使用的核心类型
-    if [ -f "/mssb/sing-box/core_type" ]; then
-        core_type=$(cat "/mssb/sing-box/core_type")
-        log "检测到当前使用的核心类型：$core_type"
-        
-        # 根据核心类型备份配置文件
-        if [[ "$core_type" == "sing-box-reF1nd" ]]; then
-            if [ -f "/mssb/sing-box/config.json" ]; then
-                log "备份 sing-box R核心配置文件..."
-                cp "/mssb/sing-box/config.json" "$backup_dir/sing-box-r-config-$(date +%Y%m%d-%H%M%S).json"
-            fi
-        else
-            if [ -f "/mssb/sing-box/config.json" ]; then
-                log "备份 sing-box Y核心配置文件..."
-                cp "/mssb/sing-box/config.json" "$backup_dir/sing-box-y-config-$(date +%Y%m%d-%H%M%S).json"
-            fi
-        fi
-    else
-        log "未检测到核心类型记录"
-    fi
-    
-    if [ -f "/mssb/mihomo/config.yaml" ]; then
-        log "备份 mihomo 配置文件..."
-        cp "/mssb/mihomo/config.yaml" "$backup_dir/mihomo-config-$(date +%Y%m%d-%H%M%S).yaml"
-    fi
-    
-    if [ -f "/mssb/mosdns/proxy-device-list.txt" ]; then
-        log "备份 mosdns proxy-device-list.txt..."
-        cp "/mssb/mosdns/proxy-device-list.txt" "$backup_dir/mosdns-proxy-device-list-$(date +%Y%m%d-%H%M%S).txt"
-    fi
-
-    if [ -f "/mssb/mosdns/config.yaml" ]; then
-        log "备份 mosdns config.yaml..."
-        cp "/mssb/mosdns/config.yaml" "$backup_dir/mosdns-config-$(date +%Y%m%d-%H%M%S).yaml"
-    fi
+    # 备份所有重要文件
+    backup_all_config
     
     # 删除服务文件
     rm -f /etc/systemd/system/sing-box-router.service
@@ -1552,7 +1666,7 @@ modify_supervisor_config() {
             supervisor_password=""
             ;;
         *)
-            echo -e "${red_text}无效的选项${reset}"
+            echo -e "${red}无效的选项${reset}"
             return 1
             ;;
     esac
@@ -1570,7 +1684,7 @@ modify_supervisor_config() {
         supervisorctl reload
         echo -e "${green_text}Supervisor 配置已更新${reset}"
     else
-        echo -e "${red_text}Supervisor 配置文件不存在${reset}"
+        echo -e "${red}Supervisor 配置文件不存在${reset}"
         return 1
     fi
 }
@@ -1609,19 +1723,19 @@ modify_filebrowser_config() {
                             filebrowser users update admin --password "$new_password" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
                             echo -e "${green_text}Filebrowser 密码已更新${reset}"
                         else
-                            echo -e "${red_text}密码不能为空，将使用默认密码${reset}"
+                            echo -e "${red}密码不能为空，将使用默认密码${reset}"
                             filebrowser users update admin --password "admin" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
                         fi
                         ;;
                     *)
-                        echo -e "${red_text}无效的选项，将使用默认密码${reset}"
+                        echo -e "${red}无效的选项，将使用默认密码${reset}"
                         filebrowser users update admin --password "admin" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
                         ;;
                 esac
 
                 supervisorctl start filebrowser
             else
-                echo -e "${red_text}Filebrowser 配置文件不存在${reset}"
+                echo -e "${red}Filebrowser 配置文件不存在${reset}"
                 return 1
             fi
             ;;
@@ -1633,12 +1747,12 @@ modify_filebrowser_config() {
                 supervisorctl start filebrowser
                 echo -e "${green_text}Filebrowser 已禁用密码登录${reset}"
             else
-                echo -e "${red_text}Filebrowser 配置文件不存在${reset}"
+                echo -e "${red}Filebrowser 配置文件不存在${reset}"
                 return 1
             fi
             ;;
         *)
-            echo -e "${red_text}无效的选项${reset}"
+            echo -e "${red}无效的选项${reset}"
             return 1
             ;;
     esac
@@ -1660,7 +1774,7 @@ modify_service_config() {
             modify_filebrowser_config
             ;;
         *)
-            echo -e "${red_text}无效的选项${reset}"
+            echo -e "${red}无效的选项${reset}"
             return 1
             ;;
     esac
@@ -1778,10 +1892,11 @@ main() {
     echo -e "${green_text}------------------------注意：请使用 root 用户安装！！！-------------------------${reset}"
     echo -e "${green_text}请选择操作：${reset}"
     echo -e "${green_text}1) 安装/更新代理转发服务${reset}"
-    echo -e "${red_text}2) 停止所有转发服务${reset}"
-    echo -e "${red_text}3) 停止所有服务并卸载 + 删除所有相关文件${reset}"
+    echo -e "${red}2) 停止所有转发服务${reset}"
+    echo -e "${red}3) 停止所有服务并卸载 + 删除所有相关文件（重要文件自动备份）${reset}"
     echo -e "${green_text}4) 启用所有服务${reset}"
     echo -e "${green_text}5) 修改服务配置${reset}"
+    echo -e "${green_text}6) 备份所有重要文件${reset}"
     echo -e "${green_text}-------------------------------------------------${reset}"
     read -p "请输入选项 (1/2/3/4/5): " main_choice
 
@@ -1809,6 +1924,13 @@ main() {
             modify_service_config
             exit 0
             ;;
+        6)
+            echo -e "${green_text}备份所有重要文件到/mssb/backup ${reset}"
+            # 备份所有重要文件
+            backup_all_config
+            echo -e "${green_text}-------------------------------------------------${reset}"
+            exit 0
+            ;;
         1)
             echo -e "${green_text}✅ 继续安装/更新代理服务...${reset}"
             ;;
@@ -1822,10 +1944,13 @@ main() {
     set_timezone
 
     echo -e "${green_text}-------------------------------------------------${reset}"
-    echo -e "${green_text}Fake-ip 网关代理方案：sing-box/mihomo + MosDNS${reset}"
+    ≈
     log "请注意：本脚本支持 Debian/Ubuntu，安装前请确保系统未安装其他代理软件。参考：https://github.com/herozmy/StoreHouse/tree/latest"
     echo -e "当前机器地址:${green_text}${local_ip}${reset}"
-    
+    echo -e "${green_text}-------------------------------------------------${reset}"
+    echo -e "${green_text}备份所有重要文件到/mssb/backup ${reset}"
+    # 备份所有重要文件
+    backup_all_config
     echo -e "${green_text}-------------------------------------------------${reset}"
     echo
 
@@ -1847,10 +1972,8 @@ main() {
             echo -e "${yellow}说明: Sing-box 曦灵X核心${reset} <支持订阅> ${green_text}停更不在支持${reset}"
             echo -e "${green_text}-------------------------------------------------${reset}"
             read -p "请输入选项 (1/2): " singbox_choice
-
             install_filebrower
             install_mosdns
-
             case "$singbox_choice" in
                 1)
                     log "你选择了 Sing-box reF1nd佬 R核心"
@@ -1865,7 +1988,6 @@ main() {
                     singbox_r_install
                     ;;
             esac
-
             cp_config_files
             singbox_configure_files
             singbox_customize_settings
