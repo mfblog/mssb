@@ -245,7 +245,7 @@ plugins:
       upstreams:
         - addr: "223.5.5.5"
         - addr: "quic://223.5.5.5"
-        - addr: "202.102.128.68"
+        - addr: "221.130.33.60"
           upstream_query_timeout: 5
 
 #转发请求至sing-box/mihome dns请求fakeip

@@ -879,7 +879,7 @@ mosdns_configure_files() {
         # 使用默认配置，并提示用户修改 DNS
         echo -e "\n${yellow}=== 运营商 DNS 配置 ===${reset}"
         echo -e "默认已设置第一、第二解析为阿里公共 DNS：${green_text}223.5.5.5${reset}"
-        echo -e "当前第三解析配置的运营商 DNS 为：${green_text}202.102.128.68${reset}"
+        echo -e "当前第三解析配置的运营商 DNS 为：${green_text}221.130.33.60${reset}"
         echo -e "建议修改为您所在运营商的 DNS 服务器地址，否则可能影响解析速度"
         echo -e "常见运营商 DNS：可以参考 https://ipw.cn/doc/else/dns.html"
         echo -e "  阿里：223.5.5.5, 223.6.6.6"
@@ -891,15 +891,15 @@ mosdns_configure_files() {
             # 验证输入的 IP 地址格式
             if [[ $dns_addr =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
                 # 替换配置文件中的 DNS 地址
-                sed -i "s/addr: \"202.102.128.68\"/addr: \"$dns_addr\"/" "$CONFIG_YAML"
+                sed -i "s/addr: \"221.130.33.60\"/addr: \"$dns_addr\"/" "$CONFIG_YAML"
                 log "已更新运营商 DNS 地址为：$dns_addr"
             else
                 log "输入的 DNS 地址格式不正确，将使用默认值 119.29.29.29"
-                sed -i "s/addr: \"202.102.128.68\"/addr: \"119.29.29.29\"/" "$CONFIG_YAML"
+                sed -i "s/addr: \"221.130.33.60\"/addr: \"119.29.29.29\"/" "$CONFIG_YAML"
             fi
         else
             log "使用默认 DNS 地址：119.29.29.29"
-            sed -i "s/addr: \"202.102.128.68\"/addr: \"119.29.29.29\"/" "$CONFIG_YAML"
+            sed -i "s/addr: \"221.130.33.60\"/addr: \"119.29.29.29\"/" "$CONFIG_YAML"
         fi
     fi
 }
