@@ -49,16 +49,6 @@ mihomo_install() {
     log "Mihomo 安装完成，临时文件已清理"
 }
 
-# 下载 UI 源码函数
-git_ui() {
-    if git clone --depth=1 https://github.com/Zephyruso/zashboard.git -b gh-pages /mssb/${core_name}/ui; then
-        echo -e "UI 源码拉取${green_text}成功${reset}。"
-    else
-        echo "拉取源码失败，请手动下载源码并解压至 /mssb/${core_name}/ui"
-        echo "地址: https://github.com/Zephyruso/zashboard.git"
-    fi
-}
-
 # 主逻辑
 log "开始更新 mihomo..."
 
@@ -68,8 +58,19 @@ core_name="mihomo"
 # 安装核心
 mihomo_install
 
-# 拉取 UI
-git_ui
+# 更新 UI
+log "准备更新 UI..."
+mkdir -p /mssb/mihomo/ui/
+rm -rf /tmp/ui
+if git clone --depth=1 https://github.com/Zephyruso/zashboard.git -b gh-pages /tmp/ui; then
+    cp -r /tmp/ui/* /mssb/mihomo/ui/
+    log "UI 文件克隆并复制成功。"
+else
+    log "UI 文件克隆失败，请检查 GitHub URL 或网络连接。"
+    echo "拉取源码失败，请手动下载源码并解压至 /mssb/${core_name}/ui"
+    echo "地址: https://github.com/Zephyruso/zashboard.git"
+    exit 1
+fi
 
 # 重启服务
 log "正在通过 Supervisor 重启 mihomo 服务..."

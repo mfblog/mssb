@@ -826,9 +826,14 @@ check_ui() {
     ui_path="/mssb/${core_name}/ui"
 
     if [ -d "$ui_path" ]; then
-        echo "检测到已有 UI，正在更新 WEBUI..."
-        rm -rf "$ui_path"
-        git_ui
+      # 选择是否更新
+      read -p "检测到已有 UI，是否更新？(y/n): " update_ui
+      if [[ "$update_ui" == "y" || "$update_ui" == "Y" ]]; then
+          echo "正在更新 UI..."
+          git_ui
+      else
+          echo "已取消 UI 更新。"
+      fi
     else
         echo "未检测到 UI，首次安装 WEBUI..."
         git_ui
@@ -837,11 +842,42 @@ check_ui() {
 
 # 下载UI源码
 git_ui(){
-    if git clone --depth=1 https://github.com/Zephyruso/zashboard.git -b gh-pages /mssb/${core_name}/ui; then
-        echo -e "UI 源码拉取${green_text}成功${reset}。"
+    local ui_path="/mssb/${core_name}/ui"
+    local temp_ui_path="/tmp/zashboard-ui-$$"
+
+    echo "正在下载 UI 源码到临时目录..."
+
+    # 先下载到临时目录
+    if git clone --depth=1 https://github.com/Zephyruso/zashboard.git -b gh-pages "$temp_ui_path"; then
+        echo -e "UI 源码下载${green_text}成功${reset}，正在替换..."
+
+        # 下载成功，删除现有UI（如果存在）
+        if [ -d "$ui_path" ]; then
+            echo "删除现有 UI..."
+            rm -rf "$ui_path"
+        fi
+
+        # 创建目标目录
+        mkdir -p "$(dirname "$ui_path")"
+
+        # 移动新UI到目标位置
+        if mv "$temp_ui_path" "$ui_path"; then
+            echo -e "UI 更新${green_text}成功${reset}。"
+        else
+            echo -e "${red}UI 替换失败${reset}"
+            echo "请检查磁盘空间和权限"
+        fi
+
+        # 清理临时文件
+        rm -rf "$temp_ui_path" 2>/dev/null
     else
-        echo "拉取源码失败，请手动下载源码并解压至 /mssb/${core_name}/ui."
-        echo "地址: https://github.com/Zephyruso/zashboard.git"
+        echo -e "${red}UI 源码下载失败${reset}，保持现有 UI 不变"
+        echo "请检查网络连接或手动下载源码并解压至 $ui_path"
+        echo "下载地址: https://github.com/Zephyruso/zashboard.git"
+
+        # 清理可能存在的临时文件
+        rm -rf "$temp_ui_path" 2>/dev/null
+        return 1
     fi
 }
 
