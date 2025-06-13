@@ -1151,16 +1151,19 @@ cp_config_files() {
     esac
 
     # Filebrowser 配置设置
-    # 启动 filebrowser 到后台
-    filebrowser -c /mssb/fb/fb.json -d /mssb/fb/fb.db &
-    # 记录进程 PID
-    FB_PID=$!
-    # 等待 2 秒让它初始化数据库
-    sleep 1
-    # 杀掉进程
-    kill $FB_PID 2>/dev/null
-    # 确保进程被杀死
-    wait $FB_PID 2>/dev/null
+    if [ ! -f "/mssb/fb/fb.db" ]; then
+        log "Filebrowser 数据库不存在，创建默认数据库..."
+        # 启动 filebrowser 到后台
+        filebrowser -c /mssb/fb/fb.json -d /mssb/fb/fb.db &
+        # 记录进程 PID
+        FB_PID=$!
+        # 等待 2 秒让它初始化数据库
+        sleep 1
+        # 杀掉进程
+        kill $FB_PID 2>/dev/null
+        # 确保进程被杀死
+        wait $FB_PID 2>/dev/null
+    fi
 
     echo -e "\n${green_text}=== Filebrowser 配置设置 ===${reset}"
     echo -e "1. 启用密码登录（默认， 默认用户密码安装完提示，进入后可自行修改）"
