@@ -113,7 +113,10 @@ tail -f /var/log/supervisor/*.log
 ```
 
 * 文件中未列出的 IP 只使用 mosdns 加速，不通过代理。
-
+* 由于mosdns存在缓存针对一下ddns域名需要加进 mywhitelist.txt 不然由于ip更新缓存不更新会导致访问失败
+```text
+/mssb/mosdns/mywhitelist.txt
+```
 ---
 
 ### 项目来源和参考
