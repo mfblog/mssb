@@ -4,8 +4,8 @@
 
 > ⚠️ 本项目为自用版本，可能存在部分 bug，敬请见谅。
 > 
-> 主分支 Mosdns + Singbox/Mihomo https://github.com/baozaodetudou/mssb
-> 次分支 adguard + Mosdns + Singbox/Mihomo https://github.com/baozaodetudou/mssb/tree/ami
+### 主分支 Mosdns + Singbox/Mihomo https://github.com/baozaodetudou/mssb
+### 次分支 adguard + Mosdns + Singbox/Mihomo https://github.com/baozaodetudou/mssb/tree/ami
 
 封装 `mosdns` 和 `singbox/mihomo` 两个服务，旨在实现高效的分流代理功能。
 
