@@ -1899,7 +1899,7 @@ format_route_rules() {
 
     # Netflix 路由
     echo -e "${green_text}┌───────────────────────────────────────────────┐${reset}"
-    echo -e "${green_text}│ Netflix 路由                                   │${reset}"
+    echo -e "${green_text}│ Netflix 路由                                  │${reset}"
     echo -e "${green_text}├───────────────────────┬───────────────────────┤${reset}"
     printf "${green_text}│ %-21s     │ %-21s   │${reset}\n" "目标地址" "网关"
     echo -e "${green_text}├───────────────────────┼───────────────────────┤${reset}"
