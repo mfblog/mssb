@@ -1379,11 +1379,39 @@ uninstall_all_services() {
     log "卸载的核心类型：$core_type"
 }
 
+# 智能检测 Sing-box 核心类型和版本
+detect_singbox_info() {
+    # 获取版本输出
+    version_output=$(/usr/local/bin/sing-box version 2>/dev/null | head -n1)
+    current_version=$(echo "$version_output" | awk '{print $3}' || echo "未知版本")
+
+    # 优先从文件获取核心类型，如果文件不存在则从命令输出智能识别
+    if [ -f "/mssb/sing-box/core_type" ]; then
+        current_core_type=$(cat "/mssb/sing-box/core_type")
+        detection_source="类型文件/mssb/sing-box/core_type"
+    else
+        # 从版本输出中智能识别核心类型
+        if echo "$version_output" | grep -q "reF1nd"; then
+            current_core_type="sing-box-reF1nd"
+            detection_source="版本识别"
+        else
+            # 如果没有特殊标识，可能是Y核心或其他版本
+            current_core_type="sing-box-yelnoo"
+            detection_source="推测可能是Y核心或其他版本"
+        fi
+    fi
+
+    # 输出检测结果
+    log "当前安装的版本: $current_version"
+    log "当前安装的版本: (核心类型：$current_core_type，来源：$detection_source)"
+}
+
 # 记录 Sing-box 核心版本
 record_singbox_core() {
     local core_type=$1
+    mkdir -p "/mssb/sing-box"
     echo "$core_type" > /mssb/sing-box/core_type
-    log "已记录 Sing-box 核心类型：$core_type 在/mssb/sing-box/core_type文件夹"
+    log "已记录 Sing-box 核心类型：$core_type 在/mssb/sing-box/core_type 文件不可删除"
 }
 
 # reF1nd佬 R核心安装函数
@@ -1393,13 +1421,7 @@ singbox_r_install() {
         log "检测到已安装的 Sing-box"
 
         # 获取当前版本和核心类型信息
-        current_version=$(/usr/local/bin/sing-box version 2>/dev/null | head -n1 | awk '{print $3}' || echo "未知版本")
-        if [ -f "/mssb/sing-box/core_type" ]; then
-            current_core_type=$(cat "/mssb/sing-box/core_type")
-            log "当前安装的版本：$current_version (核心类型：$current_core_type)"
-        else
-            log "当前安装的版本：$current_version (核心类型：未知)"
-        fi
+        detect_singbox_info
 
         echo -e "\n${green_text}=== Sing-box reF1nd R核心 安装选项 ===${reset}"
         echo -e "1. 跳过下载，使用现有版本"
@@ -1457,13 +1479,7 @@ singbox_s_install() {
         log "检测到已安装的 Sing-box"
 
         # 获取当前版本和核心类型信息
-        current_version=$(/usr/local/bin/sing-box version 2>/dev/null | head -n1 | awk '{print $3}' || echo "未知版本")
-        if [ -f "/mssb/sing-box/core_type" ]; then
-            current_core_type=$(cat "/mssb/sing-box/core_type")
-            log "当前安装的版本：$current_version (核心类型：$current_core_type)"
-        else
-            log "当前安装的版本：$current_version (核心类型：未知)"
-        fi
+        detect_singbox_info
 
         echo -e "\n${green_text}=== Sing-box S佬Y核心 安装选项 ===${reset}"
         echo -e "1. 跳过下载，使用现有版本"
