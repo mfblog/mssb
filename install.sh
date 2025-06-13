@@ -2115,7 +2115,6 @@ main() {
     set_timezone
 
     echo -e "${green_text}-------------------------------------------------${reset}"
-    ≈
     log "请注意：本脚本支持 Debian/Ubuntu，安装前请确保系统未安装其他代理软件。参考：https://github.com/herozmy/StoreHouse/tree/latest"
     echo -e "当前机器地址:${green_text}${local_ip}${reset}"
     echo -e "${green_text}-------------------------------------------------${reset}"
