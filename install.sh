@@ -416,12 +416,8 @@ singbox_configure_files() {
 
     # 复制 mssb/sing-box 目录
     log "复制 mssb/sing-box 目录..."
-    if [ -d "/mssb/sing-box" ]; then
-        log "/mssb/sing-box 目录已存在，跳过替换。"
-    else
-        cp -r mssb/sing-box /mssb || { log "复制 mssb/sing-box 目录失败！退出脚本。"; exit 1; }
-        log "成功复制 mssb/sing-box 目录到 /mssb"
-    fi
+    cp -r mssb/sing-box /mssb || { log "复制 mssb/sing-box 目录失败！退出脚本。"; exit 1; }
+    log "成功复制 mssb/sing-box 目录到 /mssb"
 
     # 复制对应核心的配置文件
     log "复制 $core_type 的配置文件..."
