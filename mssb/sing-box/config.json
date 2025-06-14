@@ -679,7 +679,7 @@
                 "tag": "geosite-pt",
                 "type": "remote",
                 "format": "binary",
-                "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geosite/category-pt.srs",
+                "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-pt.srs",
                 "download_detour": "direct",
                 "update_interval": "3d"
             },
@@ -687,7 +687,7 @@
                 "tag": "geosite-speedtest@cn",
                 "type": "remote",
                 "format": "binary",
-                "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geosite/category-speedtest@cn.srs",
+                "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-speedtest@cn.srs",
                 "download_detour": "direct",
                 "update_interval": "3d"
             },
@@ -695,7 +695,7 @@
                 "tag": "geosite-speedtest",
                 "type": "remote",
                 "format": "binary",
-                "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geosite/category-speedtest.srs",
+                "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-speedtest.srs",
                 "download_detour": "direct",
                 "update_interval": "3d"
             }
