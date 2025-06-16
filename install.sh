@@ -2227,12 +2227,16 @@ main() {
           update_project
           exit 0
           ;;
+        00)
+            echo -e "${green_text}退出程序${reset}"
+            exit 0
+            ;;
         1)
             echo -e "${green_text}✅ 继续安装/更新代理服务...${reset}"
             ;;
         *)
-            log "无效选项，退出脚本。"
-            exit 1
+            echo -e "${red}无效选项，请重新选择或输入 00 或者 快捷键Ctrl+C 退出${reset}"
+            main
             ;;
     esac
 
