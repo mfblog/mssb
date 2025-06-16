@@ -531,12 +531,8 @@ check_and_restore_config() {
     if [ -d "$backup_dir" ]; then
         case "$config_type" in
             "sing-box")
-                # 获取当前核心类型
-                if [ -f "/mssb/.core_type" ]; then
-                    core_type=$(cat "/mssb/.core_type")
-                else
-                    core_type="sing-box-reF1nd"  # 默认为 R核心
-                fi
+                # 获取当前版本和核心类型信息
+                detect_singbox_info
 
                 # 根据核心类型选择对应的备份文件
                 if [[ "$core_type" == "sing-box-reF1nd" ]]; then
@@ -1487,6 +1483,8 @@ uninstall_all_services() {
     stop_all_services
     # 备份所有重要文件
     backup_all_config
+    # 获取当前版本和核心类型信息
+    detect_singbox_info
     
     # 删除服务文件
     rm -f /etc/systemd/system/sing-box-router.service
@@ -2093,6 +2091,21 @@ EOF
     fi
 }
 
+# 删除全局 mssb 命令
+remove_mssb_command() {
+    if [ -f "/usr/local/bin/mssb" ]; then
+        rm -f /usr/local/bin/mssb
+        if [ $? -eq 0 ]; then
+            echo -e "${green_text}✅ 全局命令 'mssb' 删除成功！${reset}"
+        else
+            echo -e "${red}❌ 删除全局命令失败，请检查权限${reset}"
+            return 1
+        fi
+    else
+        echo -e "${yellow}⚠️  全局命令 'mssb' 不存在${reset}"
+    fi
+}
+
 # 显示服务信息
 display_service_info() {
     echo -e "${green_text}-------------------------------------------------${reset}"
@@ -2123,6 +2136,7 @@ main() {
     echo -e "${green_text}8) 显示服务信息${reset}"
     echo -e "${green_text}9) 显示路由规则提示${reset}"
     echo -e "${green_text}10) 创建全局 mssb 命令${reset}"
+    echo -e "${green_text}11) 删除全局 mssb 命令${reset}"
     echo -e "${green_text}-------------------------------------------------${reset}"
     read -p "请输入选项 (1/2/3/4/5/6/7/8/9/10): " main_choice
 
@@ -2179,6 +2193,11 @@ main() {
         10)
             echo -e "${green_text}创建全局 mssb 命令${reset}"
             create_mssb_command
+            exit 0
+            ;;
+        11)
+            echo -e "${green_text}删除全局 mssb 命令${reset}"
+            remove_mssb_command
             exit 0
             ;;
         1)
