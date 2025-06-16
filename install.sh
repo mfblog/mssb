@@ -2046,6 +2046,20 @@ scan_lan_devices() {
     fi
 }
 
+# 显示服务信息
+display_service_info() {
+    echo -e "${green_text}-------------------------------------------------${reset}"
+        echo -e "${green_text}🎉 服务web访问路径：${reset}"
+        echo -e "🌐 Mosdns 统计界面：${green_text}http://${local_ip}:9099/graphic${reset}"
+        echo
+        echo -e "📦 Supervisor 管理界面：${green_text}http://${local_ip}:9001${reset}"
+        echo
+        echo -e "🗂️  文件管理服务 Filebrowser：${green_text}http://${local_ip}:8088${reset}"
+        echo
+        echo -e "🕸️  Sing-box/Mihomo 面板 UI：${green_text}http://${local_ip}:9090/ui${reset}"
+        echo -e "${green_text}-------------------------------------------------${reset}"
+}
+
 # 主函数
 main() {
     display_system_status
@@ -2059,8 +2073,10 @@ main() {
     echo -e "${green_text}5) 修改服务配置${reset}"
     echo -e "${green_text}6) 备份所有重要文件${reset}"
     echo -e "${green_text}7) 扫描局域网设备并配置mosdns代理列表${reset}"
+    echo -e "${green_text}8) 显示服务信息${reset}"
+    echo -e "${green_text}9) 显示路由规则提示${reset}"
     echo -e "${green_text}-------------------------------------------------${reset}"
-    read -p "请输入选项 (1/2/3/4/5/6/7): " main_choice
+    read -p "请输入选项 (1/2/3/4/5/6/7/8/9): " main_choice
 
     case "$main_choice" in
         2)
@@ -2100,6 +2116,16 @@ main() {
             # 扫描局域网设备
             scan_lan_devices
             echo -e "${green_text}-------------------------------------------------${reset}"
+            exit 0
+            ;;
+        8)
+            echo -e "${green_text}显示服务信息${reset}"
+            display_service_info
+            exit 0
+            ;;
+        9)
+            echo -e "${green_text}显示路由规则提示${reset}"
+            format_route_rules
             exit 0
             ;;
         1)
