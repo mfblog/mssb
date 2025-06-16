@@ -1251,6 +1251,29 @@ singbox_configure_files() {
     # 复制 mssb/sing-box 目录
     log "复制 mssb/sing-box 目录..."
     check_and_copy_folder "sing-box"
+    # 获取当前核心类型
+    detect_singbox_info
+
+    # 根据核心类型复制对应的配置文件
+    if [ "$core_type" == "sing-box-reF1nd" ]; then
+        log "检测到 R核心，复制 sing-box-r.json 配置文件"
+        if [ -f "/mssb/sing-box/sing-box-r.json" ]; then
+            cp /mssb/sing-box/sing-box-r.json /mssb/sing-box/config.json
+            log "已复制 sing-box-r.json 为 config.json"
+        else
+            log "警告：找不到 sing-box-r.json 文件"
+        fi
+    elif [ "$core_type" = "sing-box-yelnoo" ]; then
+        log "检测到 Y核心，复制 y.json 配置文件"
+        if [ -f "/mssb/sing-box/sing-box-y.json" ]; then
+            cp /mssb/sing-box/sing-box-y.json /mssb/sing-box/config.json
+            log "已复制 sing-box-y.json 为 config.json"
+        else
+            log "警告：找不到 sing-box-y.json 文件"
+        fi
+    else
+        log "未知核心类型：$core_type，使用默认配置文件"
+    fi
 }
 
 # mihomo配置文件复制
