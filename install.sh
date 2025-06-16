@@ -2157,7 +2157,7 @@ main() {
     echo -e "${green_text}8) 显示服务信息${reset}"
     echo -e "${green_text}9) 显示路由规则提示${reset}"
     echo -e "${green_text}10) 创建全局 mssb 命令${reset}"
-    echo -e "${green_text}11) 删除全局 mssb 命令${reset}"
+    echo -e "${red}11) 删除全局 mssb 命令${reset}"
     echo -e "${green_text}12) 更新项目${reset}"
     echo -e "${green_text}-------------------------------------------------${reset}"
     read -p "请输入选项 (1/2/3/4/5/6/7/8/9/10): " main_choice
@@ -2218,7 +2218,7 @@ main() {
             exit 0
             ;;
         11)
-            echo -e "${green_text}删除全局 mssb 命令${reset}"
+            echo -e "${red}删除全局 mssb 命令${reset}"
             remove_mssb_command
             exit 0
             ;;
