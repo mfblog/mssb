@@ -39,9 +39,6 @@ set_timezone() {
     log "时区设置成功"
 }
 
-# Supervisor 状态缓存，避免多次调用
-SUPERVISOR_STATUS=$(command -v supervisorctl &>/dev/null && supervisorctl status || echo "not_found")
-
 # 打印横线
 print_separator() {
     echo -e "${green_text}───────────────────────────────────────────────────${reset}"
@@ -69,6 +66,9 @@ check_programs() {
 check_supervisor_services() {
     echo -e "\n${yellow}检查服务状态...${reset}"
     print_separator
+    # Supervisor 状态缓存，避免多次调用
+    SUPERVISOR_STATUS=$(command -v supervisorctl &>/dev/null && supervisorctl status || echo "not_found")
+
 
     if [[ "$SUPERVISOR_STATUS" == "not_found" ]]; then
         echo -e "${red}警告：未检测到 Supervisor，无法检查服务状态。${reset}"
@@ -128,6 +128,8 @@ check_systemd_services() {
 # 检测当前代理模式
 detect_proxy_mode() {
     echo -e "\n${yellow}当前代理模式检测：${reset}"
+    # Supervisor 状态缓存，避免多次调用
+    SUPERVISOR_STATUS=$(command -v supervisorctl &>/dev/null && supervisorctl status || echo "not_found")
 
     local mosdns_running=false
     local singbox_active=false
