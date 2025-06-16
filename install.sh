@@ -2046,6 +2046,53 @@ scan_lan_devices() {
     fi
 }
 
+# 创建全局 mssb 命令
+create_mssb_command() {
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local script_path="$script_dir/install.sh"
+
+    # 创建 mssb 命令脚本
+    cat > /usr/local/bin/mssb << EOF
+#!/bin/bash
+# MSSB 全局命令
+# 自动切换到脚本目录并执行 install.sh
+
+SCRIPT_DIR="$script_dir"
+SCRIPT_PATH="$script_path"
+
+# 检查脚本是否存在
+if [ ! -f "\$SCRIPT_PATH" ]; then
+    echo -e "\033[31m错误：找不到 install.sh 脚本文件\033[0m"
+    echo "预期位置：\$SCRIPT_PATH"
+    echo "请确保脚本文件存在或重新安装 MSSB"
+    exit 1
+fi
+
+# 切换到脚本目录并执行
+echo -e "\033[32m正在启动 MSSB 管理脚本...\033[0m"
+echo "脚本位置：\$SCRIPT_DIR"
+cd "\$SCRIPT_DIR" || {
+    echo -e "\033[31m错误：无法切换到脚本目录\033[0m"
+    exit 1
+}
+
+# 执行脚本并传递所有参数
+bash "\$SCRIPT_PATH" "\$@"
+EOF
+
+    # 设置执行权限
+    chmod +x /usr/local/bin/mssb
+
+    if [ $? -eq 0 ]; then
+        echo -e "${green_text}✅ 全局命令 'mssb' 创建成功！${reset}"
+        echo -e "${green_text}现在您可以在任意位置输入 'mssb' 来运行此脚本${reset}"
+        echo -e "${yellow}脚本目录：$script_dir${reset}"
+    else
+        echo -e "${red}❌ 创建全局命令失败，请检查权限${reset}"
+        return 1
+    fi
+}
+
 # 显示服务信息
 display_service_info() {
     echo -e "${green_text}-------------------------------------------------${reset}"
@@ -2075,8 +2122,9 @@ main() {
     echo -e "${green_text}7) 扫描局域网设备并配置mosdns代理列表${reset}"
     echo -e "${green_text}8) 显示服务信息${reset}"
     echo -e "${green_text}9) 显示路由规则提示${reset}"
+    echo -e "${green_text}10) 创建全局 mssb 命令${reset}"
     echo -e "${green_text}-------------------------------------------------${reset}"
-    read -p "请输入选项 (1/2/3/4/5/6/7/8/9): " main_choice
+    read -p "请输入选项 (1/2/3/4/5/6/7/8/9/10): " main_choice
 
     case "$main_choice" in
         2)
@@ -2126,6 +2174,11 @@ main() {
         9)
             echo -e "${green_text}显示路由规则提示${reset}"
             format_route_rules
+            exit 0
+            ;;
+        10)
+            echo -e "${green_text}创建全局 mssb 命令${reset}"
+            create_mssb_command
             exit 0
             ;;
         1)
@@ -2281,6 +2334,9 @@ main() {
             ;;
     esac
 
+    # 创建全局 mssb 命令
+    echo -e "\n${green_text}正在创建全局 mssb 命令...${reset}"
+    create_mssb_command
 
     log "脚本执行完成。"
 }
