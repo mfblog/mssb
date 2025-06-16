@@ -2106,6 +2106,27 @@ remove_mssb_command() {
     fi
 }
 
+# 更新项目
+update_project() {
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    echo -e "${green_text}正在更新项目...${reset}"
+    echo "项目目录：$script_dir"
+
+    cd "$script_dir" || {
+        echo -e "${red}❌ 无法切换到项目目录${reset}"
+        return 1
+    }
+
+    git pull
+
+    if [ $? -eq 0 ]; then
+        echo -e "${green_text}✅ 项目更新成功！${reset}"
+    else
+        echo -e "${red}❌ 项目更新失败${reset}"
+        return 1
+    fi
+}
+
 # 显示服务信息
 display_service_info() {
     echo -e "${green_text}-------------------------------------------------${reset}"
@@ -2137,6 +2158,7 @@ main() {
     echo -e "${green_text}9) 显示路由规则提示${reset}"
     echo -e "${green_text}10) 创建全局 mssb 命令${reset}"
     echo -e "${green_text}11) 删除全局 mssb 命令${reset}"
+    echo -e "${green_text}12) 更新项目${reset}"
     echo -e "${green_text}-------------------------------------------------${reset}"
     read -p "请输入选项 (1/2/3/4/5/6/7/8/9/10): " main_choice
 
@@ -2200,6 +2222,11 @@ main() {
             remove_mssb_command
             exit 0
             ;;
+        12)
+          echo -e "${green_text}更新项目${reset}"
+          update_project
+          exit 0
+          ;;
         1)
             echo -e "${green_text}✅ 继续安装/更新代理服务...${reset}"
             ;;
