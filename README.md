@@ -20,6 +20,8 @@
 * `zashboard`：`singbox/mihomo` 的 Web UI 界面。
 
 感谢各位大佬的贡献，特别是 PH 和 hero 两位大佬的支持。
+大概流程如下，感谢群友提供
+![fl.png](docs/png/fl.png)
 
 ## 项目功能
 
