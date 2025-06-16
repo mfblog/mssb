@@ -2141,105 +2141,8 @@ display_service_info() {
         echo -e "${green_text}-------------------------------------------------${reset}"
 }
 
-# 主函数
-main() {
-    display_system_status
-    # 主菜单
-    echo -e "${green_text}------------------------注意：请使用 root 用户安装！！！-------------------------${reset}"
-    echo -e "${green_text}请选择操作：${reset}"
-    echo -e "${green_text}1) 安装/更新代理转发服务${reset}"
-    echo -e "${red}2) 停止所有转发服务${reset}"
-    echo -e "${red}3) 停止所有服务并卸载 + 删除所有相关文件（重要文件自动备份）${reset}"
-    echo -e "${green_text}4) 启用所有服务${reset}"
-    echo -e "${green_text}5) 修改服务配置${reset}"
-    echo -e "${green_text}6) 备份所有重要文件${reset}"
-    echo -e "${green_text}7) 扫描局域网设备并配置mosdns代理列表${reset}"
-    echo -e "${green_text}8) 显示服务信息${reset}"
-    echo -e "${green_text}9) 显示路由规则提示${reset}"
-    echo -e "${green_text}10) 创建全局 mssb 命令${reset}"
-    echo -e "${red}11) 删除全局 mssb 命令${reset}"
-    echo -e "${green_text}12) 更新项目${reset}"
-    echo -e "${green_text}-------------------------------------------------${reset}"
-    read -p "请输入选项 (1/2/3/4/5/6/7/8/9/10): " main_choice
-
-    case "$main_choice" in
-        2)
-            stop_all_services
-            # 检查 DNS 设置
-            check_dns_settings
-            exit 0
-            ;;
-        3)
-            uninstall_all_services
-            # 检查 DNS 设置
-            check_dns_settings
-            exit 0
-            ;;
-        4)
-            start_all_services
-            # 检查并设置本地 DNS
-            check_and_set_local_dns
-            exit 0
-            ;;
-        5)
-            # 修改服务配置
-            modify_service_config
-            exit 0
-            ;;
-        6)
-            echo -e "${green_text}备份所有重要文件到/mssb/backup ${reset}"
-            # 备份所有重要文件
-            backup_all_config
-            echo -e "${green_text}-------------------------------------------------${reset}"
-            exit 0
-            ;;
-        7)
-            echo -e "${green_text}扫描局域网设备并配置代理列表${reset}"
-            # 检查网络接口
-            check_interfaces
-            # 扫描局域网设备
-            scan_lan_devices
-            echo -e "${green_text}-------------------------------------------------${reset}"
-            exit 0
-            ;;
-        8)
-            echo -e "${green_text}显示服务信息${reset}"
-            display_service_info
-            exit 0
-            ;;
-        9)
-            echo -e "${green_text}显示路由规则提示${reset}"
-            format_route_rules
-            exit 0
-            ;;
-        10)
-            echo -e "${green_text}创建全局 mssb 命令${reset}"
-            create_mssb_command
-            exit 0
-            ;;
-        11)
-            echo -e "${red}删除全局 mssb 命令${reset}"
-            remove_mssb_command
-            exit 0
-            ;;
-        12)
-          echo -e "${green_text}更新项目${reset}"
-          update_project
-          exit 0
-          ;;
-        00)
-            echo -e "${green_text}退出程序${reset}"
-            exit 0
-            ;;
-        1)
-            echo -e "${green_text}✅ 继续安装/更新代理服务...${reset}"
-            ;;
-        *)
-            echo -e "${red}无效选项，请重新选择或输入 00 或者 快捷键Ctrl+C 退出${reset}"
-            main
-            ;;
-    esac
-
+# 安装更新主服务
+install_update_server() {
     update_system
     set_timezone
 
@@ -2389,6 +2292,113 @@ main() {
     create_mssb_command
 
     log "脚本执行完成。"
+}
+
+# 主函数
+main() {
+    # 主菜单
+    echo -e "${green_text}------------------------注意：请使用 root 用户安装！！！-------------------------${reset}"
+    echo -e "${green_text}请注意：本脚本支持 Debian/Ubuntu，安装前请确保系统未安装其他代理软件。${reset}"
+    echo -e "${green_text}脚本参考: https://github.com/herozmy/StoreHouse/tree/latest。${reset}"
+    echo -e "${red} 服务管理请使用脚本管理，不要单独停用某个服务会导致转发失败cpu暴涨 ${reset}"
+    echo -e "当前机器地址:${green_text}${local_ip}${reset}"
+    echo -e "${green_text}请选择操作：${reset}"
+    echo -e "${green_text}1) 安装/更新代理转发服务${reset}"
+    echo -e "${red}2) 停止所有转发服务${reset}"
+    echo -e "${red}3) 停止所有服务并卸载 + 删除所有相关文件（重要文件自动备份）${reset}"
+    echo -e "${green_text}4) 启用所有服务${reset}"
+    echo -e "${green_text}5) 修改服务配置${reset}"
+    echo -e "${green_text}6) 备份所有重要文件${reset}"
+    echo -e "${green_text}7) 扫描局域网设备并配置mosdns代理列表${reset}"
+    echo -e "${green_text}8) 显示服务信息${reset}"
+    echo -e "${green_text}9) 显示路由规则提示${reset}"
+    echo -e "${green_text}10) 创建全局 mssb 命令${reset}"
+    echo -e "${red}11) 删除全局 mssb 命令${reset}"
+    echo -e "${green_text}12) 更新项目${reset}"
+    echo -e "${green_text}-------------------------------------------------${reset}"
+    read -p "请输入选项 (1/2/3/4/5/6/7/8/9/10/11/12/00): " main_choice
+
+    case "$main_choice" in
+        2)
+            stop_all_services
+            # 检查 DNS 设置
+            check_dns_settings
+            main
+            ;;
+        3)
+            uninstall_all_services
+            # 检查 DNS 设置
+            check_dns_settings
+            main
+            ;;
+        4)
+            start_all_services
+            # 检查并设置本地 DNS
+            check_and_set_local_dns
+            main
+            ;;
+        5)
+            # 修改服务配置
+            modify_service_config
+            main
+            ;;
+        6)
+            echo -e "${green_text}备份所有重要文件到/mssb/backup ${reset}"
+            # 备份所有重要文件
+            backup_all_config
+            echo -e "${green_text}-------------------------------------------------${reset}"
+            main
+            ;;
+        7)
+            echo -e "${green_text}扫描局域网设备并配置代理列表${reset}"
+            # 检查网络接口
+            check_interfaces
+            # 扫描局域网设备
+            scan_lan_devices
+            echo -e "${green_text}-------------------------------------------------${reset}"
+            main
+            ;;
+        8)
+            echo -e "${green_text}显示服务信息${reset}"
+            display_system_status
+            display_service_info
+            main
+            ;;
+        9)
+            echo -e "${green_text}显示路由规则提示${reset}"
+            format_route_rules
+            main
+            ;;
+        10)
+            echo -e "${green_text}创建全局 mssb 命令${reset}"
+            create_mssb_command
+            main
+            ;;
+        11)
+            echo -e "${red}删除全局 mssb 命令${reset}"
+            remove_mssb_command
+            main
+            ;;
+        12)
+          echo -e "${green_text}更新项目${reset}"
+          update_project
+          main
+          ;;
+        00)
+            echo -e "${green_text}退出程序${reset}"
+            exit 0
+            ;;
+        1)
+            echo -e "${green_text}✅ 继续安装/更新代理服务...${reset}"
+            install_update_server
+            main
+            ;;
+        *)
+            echo -e "${red}无效选项，请重新选择或输入 00 或者 快捷键Ctrl+C 退出${reset}"
+            main
+            ;;
+    esac
+
 }
 
 
