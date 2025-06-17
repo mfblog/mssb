@@ -2182,8 +2182,8 @@ install_update_server() {
     echo
 
     echo -e "${green_text}请选择安装方案：${reset}"
-    echo "1) 方案1：Sing-box (支持订阅) + MosDNS"
-    echo "2) 方案2：Mihomo + MosDNS"
+    echo "1) 方案1：Sing-box(魔改内核支持订阅) + MosDNS"
+    echo "2) 方案2：Mihomo(原生就支持订阅) + MosDNS"
     echo -e "${green_text}-------------------------------------------------${reset}"
     read -p "请输入选项 (1/2): " choice
     case "$choice" in
