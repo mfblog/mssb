@@ -975,12 +975,24 @@ EOF
     echo -e "${green_text}nftables规则写入完成${reset}"
     sleep 1
 
+    # 检查 nft 命令路径
+    local nft_cmd=""
+    if command -v nft &>/dev/null; then
+        nft_cmd="nft"
+    elif [ -x "/usr/sbin/nft" ]; then
+        nft_cmd="/usr/sbin/nft"
+    else
+        log "错误：找不到 nft 命令！"
+        return 1
+    fi
+    log "使用 nft 命令：$nft_cmd"
+
     # 验证配置文件语法
-    if nft -c -f /etc/nftables.conf; then
+    if $nft_cmd -c -f /etc/nftables.conf; then
         log "nftables 配置文件语法检查通过"
 
         echo "清空 nftables 规则"
-        if nft flush ruleset; then
+        if $nft_cmd flush ruleset; then
             log "成功清空现有 nftables 规则"
         else
             log "警告：清空 nftables 规则失败，继续执行"
@@ -988,7 +1000,7 @@ EOF
         sleep 1
 
         echo "新规则生效"
-        if nft -f /etc/nftables.conf; then
+        if $nft_cmd -f /etc/nftables.conf; then
             log "成功加载新的 nftables 规则"
         else
             log "错误：加载 nftables 规则失败！"
@@ -1483,14 +1495,25 @@ start_all_services() {
     
     # 检查并启动 nftables
     if [ -f "/etc/nftables.conf" ]; then
+        # 检查 nft 命令路径
+        local nft_cmd=""
+        if command -v nft &>/dev/null; then
+            nft_cmd="nft"
+        elif [ -x "/usr/sbin/nft" ]; then
+            nft_cmd="/usr/sbin/nft"
+        else
+            log "错误：找不到 nft 命令，跳过 nftables 启动"
+            return 1
+        fi
+
         # 备份当前配置
         cp /etc/nftables.conf /etc/nftables.conf.bak
-        
+
         # 检查配置语法
-        if nft -c -f /etc/nftables.conf; then
-            nft flush ruleset
+        if $nft_cmd -c -f /etc/nftables.conf; then
+            $nft_cmd flush ruleset
             sleep 1
-            nft -f /etc/nftables.conf
+            $nft_cmd -f /etc/nftables.conf
             systemctl enable --now nftables || log "nftables 服务启动失败"
         else
             log "nftables 配置有语法错误，已取消加载"
