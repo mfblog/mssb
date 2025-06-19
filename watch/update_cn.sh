@@ -74,9 +74,9 @@ main() {
     # https://github.com/MetaCubeX/meta-rules-dat/blob/sing/geo/geosite/cn.srs
     # https://github.com/MetaCubeX/meta-rules-dat/blob/sing/geo/geosite/geolocation-!cn.srs
     # https://github.com/MetaCubeX/meta-rules-dat/blob/sing/geo/geoip/cn.srs
-    proxy_list_url="https://github.com/MetaCubeX/meta-rules-dat/blob/sing/geo/geosite/geolocation-!cn.srs"
-    direct_list_url="https://github.com/MetaCubeX/meta-rules-dat/blob/sing/geo/geosite/cn.srs"
-    cn_ip_cidr_url="https://github.com/MetaCubeX/meta-rules-dat/blob/sing/geo/geoip/cn.srs"
+    proxy_list_url="https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geosite/geolocation-!cn.srs"
+    direct_list_url="https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geosite/cn.srs"
+    cn_ip_cidr_url="https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geoip/cn.srs"
 
     # 设置本地文件路径
     geosite_geolocation_noncn_file="/mssb/mosdns/unpack/geolocation-!cn.srs"
