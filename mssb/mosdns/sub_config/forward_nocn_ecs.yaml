@@ -7,7 +7,7 @@ plugins:
       concurrent: 1
       upstreams:
         - addr: "https://8.8.8.8/dns-query"
-          #socks5: "127.0.0.1:7891"
+          socks5: "127.0.0.1:7891"
 
   - tag: sequence_google_node
     type: sequence
@@ -22,10 +22,10 @@ plugins:
     type: udp_server
     args:
       entry: sequence_google_node
-      listen: 127.0.0.1:4444
+      listen: ":4444"
 
   - tag: tcp_google_ecs
     type: tcp_server
     args:
       entry: sequence_google_node
-      listen: 127.0.0.1:4444
+      listen: ":4444"
