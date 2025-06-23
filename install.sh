@@ -1871,8 +1871,9 @@ install_update_server() {
         mihomo_configure_files
         # 自动写入订阅链接
         if [ -n "$sub_urls" ]; then
-            sed -i "s|url: '机场订阅'|url: '$sub_urls'|" /mssb/mihomo/config.yaml
-            log "订阅链接已写入"
+            first_url=$(echo "$sub_urls" | awk '{print $1}')
+            sed -i "s|url: '机场订阅'|url: '$first_url'|" /mssb/mihomo/config.yaml
+            log "订阅链接第一个已写入"
         fi
     fi
     check_ui
