@@ -1740,8 +1740,18 @@ install_update_server() {
         if [ -n "$sub_urls" ]; then
             first_url=$(echo "$sub_urls" | awk '{print $1}')
             sed -i "s|url: '机场订阅'|url: '$first_url'|" /mssb/mihomo/config.yaml
-            sed -i "s|interface-name: eth0|interface-name: $selected_interface|" /mssb/mihomo/config.yaml
             log "订阅链接第一个已写入"
+            log "准备写入 interface-name: '$selected_interface' 到 /mssb/mihomo/config.yaml"
+            # 优化sed，支持前后有空格，并加单引号
+            sed -i "s|^\s*interface-name:\s*eth0|interface-name: '$selected_interface'|" /mssb/mihomo/config.yaml
+            # 检查是否替换成功
+            if grep -q "interface-name: '$selected_interface'" /mssb/mihomo/config.yaml; then
+                log "interface-name 已成功替换为: '$selected_interface'"
+            else
+                log "interface-name 替换失败，当前内容如下："
+                grep interface-name /mssb/mihomo/config.yaml || log "未找到 interface-name 行"
+            fi
+            
         fi
     fi
     check_ui
