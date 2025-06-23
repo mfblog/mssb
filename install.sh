@@ -1727,7 +1727,7 @@ install_update_server() {
         # 自动写入订阅链接
         if [ -n "$sub_urls" ]; then
             cd "$(dirname "$0")"
-            python3 update_sub.py -v $sub_urls
+            python3 update_sub.py -v "$sub_urls"
             log "订阅链接处理完成"
         fi
     else
