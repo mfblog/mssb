@@ -3,6 +3,8 @@
 ## 项目简介
 
 > ⚠️ 本项目为自用版本，可能存在部分 bug，敬请见谅。
+> ⚠️ 重要提示： 2025.6.23 之前的是 v1 版本，现在是 v2 版本。
+> 如果你当前使用的是 v1 版本，建议使用 3先停止所有服务并手动删除目录/mssb后重新安装本脚本。
 > 
 ### 主分支 Mosdns + Singbox/Mihomo https://github.com/baozaodetudou/mssb
 ### 次分支 adguard + Mosdns + Singbox/Mihomo https://github.com/baozaodetudou/mssb/tree/ami
