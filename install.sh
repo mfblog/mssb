@@ -1740,6 +1740,7 @@ install_update_server() {
         if [ -n "$sub_urls" ]; then
             first_url=$(echo "$sub_urls" | awk '{print $1}')
             sed -i "s|url: '机场订阅'|url: '$first_url'|" /mssb/mihomo/config.yaml
+            sed -i "s|interface-name: eth0|interface-name: $selected_interface|" /mssb/mihomo/config.yaml
             log "订阅链接第一个已写入"
         fi
     fi
