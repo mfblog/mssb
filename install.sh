@@ -1564,7 +1564,8 @@ update_project() {
     git pull
 
     if [ $? -eq 0 ]; then
-        echo -e "${green_text}✅ 项目更新成功！${reset}"
+        echo -e "${green_text}✅ 项目更新成功，正在重启脚本...${reset}"
+        exec "$0" "$@"
     else
         echo -e "${red}❌ 项目更新失败${reset}"
         return 1
