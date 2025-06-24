@@ -1565,6 +1565,10 @@ update_project() {
 
     if [ $? -eq 0 ]; then
         echo -e "${green_text}✅ 项目更新成功，正在重启脚本...${reset}"
+        # 检查并赋予可执行权限
+        if [ ! -x "$0" ]; then
+            chmod +x "$0"
+        fi
         exec "$0" "$@"
     else
         echo -e "${red}❌ 项目更新失败${reset}"
