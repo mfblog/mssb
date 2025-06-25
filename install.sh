@@ -1814,7 +1814,9 @@ install_update_server() {
         mihomo_configure_files
         # 自动写入订阅链接
         if [ -n "$sub_urls" ]; then
-            edit_mihomo_proxy_providers $sub_urls
+            install_latest_yq
+            read -ra arr <<< "$sub_urls"
+            edit_mihomo_proxy_providers "${arr[@]}"
             log "已写入订阅到 proxy-providers"
         fi
 
