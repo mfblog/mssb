@@ -1345,6 +1345,9 @@ edit_mihomo_proxy_providers() {
     echo "[yq] 开始清空 proxy-providers..."
     yq -i 'del(.proxy-providers) | .proxy-providers = {}' "$config_file"
     local idx=0
+    # 检查 yq 是否支持 --no-escape
+    yq --no-escape '.' /dev/null 2>/dev/null
+    local yq_no_escape=$?
     for item in "${providers[@]}"; do
         if [[ "$item" == *"|"* ]]; then
             tag="${item%%|*}"
@@ -1355,15 +1358,31 @@ edit_mihomo_proxy_providers() {
             url="$item"
         fi
         echo "[yq] 正在写入 tag: $tag, url: $url"
-        yq -i ".proxy-providers.\"$tag\".url = \"$url\"" "$config_file"
-        yq -i ".proxy-providers.\"$tag\".type = \"http\"" "$config_file"
-        yq -i ".proxy-providers.\"$tag\".interval = 3600" "$config_file"
-        yq -i ".proxy-providers.\"$tag\".health-check.enable = true" "$config_file"
-        yq -i ".proxy-providers.\"$tag\".health-check.url = \"http://detectportal.firefox.com/success.txt\"" "$config_file"
-        yq -i ".proxy-providers.\"$tag\".health-check.interval = 6" "$config_file"
-        yq -i ".proxy-providers.\"$tag\".path = \"./proxy_providers/${tag}.yaml\"" "$config_file"
+        if [ $yq_no_escape -eq 0 ]; then
+            yq -i --no-escape ".proxy-providers.\"$tag\".url = \"$url\"" "$config_file"
+            yq -i --no-escape ".proxy-providers.\"$tag\".type = \"http\"" "$config_file"
+            yq -i --no-escape ".proxy-providers.\"$tag\".interval = 3600" "$config_file"
+            yq -i --no-escape ".proxy-providers.\"$tag\".health-check.enable = true" "$config_file"
+            yq -i --no-escape ".proxy-providers.\"$tag\".health-check.url = \"http://detectportal.firefox.com/success.txt\"" "$config_file"
+            yq -i --no-escape ".proxy-providers.\"$tag\".health-check.interval = 6" "$config_file"
+            yq -i --no-escape ".proxy-providers.\"$tag\".path = \"./proxy_providers/${tag}.yaml\"" "$config_file"
+        else
+            yq -i ".proxy-providers.\"$tag\".url = \"$url\"" "$config_file"
+            yq -i ".proxy-providers.\"$tag\".type = \"http\"" "$config_file"
+            yq -i ".proxy-providers.\"$tag\".interval = 3600" "$config_file"
+            yq -i ".proxy-providers.\"$tag\".health-check.enable = true" "$config_file"
+            yq -i ".proxy-providers.\"$tag\".health-check.url = \"http://detectportal.firefox.com/success.txt\"" "$config_file"
+            yq -i ".proxy-providers.\"$tag\".health-check.interval = 6" "$config_file"
+            yq -i ".proxy-providers.\"$tag\".path = \"./proxy_providers/${tag}.yaml\"" "$config_file"
+        fi
         echo "[yq] 已写入 $tag 到 proxy-providers"
     done
+    # 写完所有 tag 后，自动调整顺序
+    yq -i '{
+    NodeParam: .NodeParam,
+    proxy-providers: .["proxy-providers"]
+    } + del(.NodeParam, .["proxy-providers"])' "$config_file"
+    echo "[yq] 已自动调整 proxy-providers 顺序"
     echo "[yq] 已全部更新 $config_file 的 proxy-providers 部分"
 }
 # ========== END yq自动安装和mihomo订阅编辑函数 ==========
