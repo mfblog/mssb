@@ -1313,6 +1313,56 @@ uninstall_dns_settings() {
     fi
 }
 
+# ========== yq自动安装和mihomo订阅编辑函数 ==========
+install_latest_yq() {
+    # 如果已存在且可用则跳过
+    if command -v yq >/dev/null 2>&1; then
+        echo "yq 已存在，版本: $(yq --version)"
+        return 0
+    fi
+    arch=$(uname -m)
+    case "$arch" in
+        x86_64) arch="amd64" ;;
+        aarch64) arch="arm64" ;;
+        armv7l) arch="arm" ;;
+        *) echo "不支持的架构: $arch"; return 1 ;;
+    esac
+    os=$(uname | tr '[:upper:]' '[:lower:]')
+    yq_url="https://github.com/mikefarah/yq/releases/latest/download/yq_${os}_${arch}"
+    echo "正在下载 yq: $yq_url"
+    curl -L "$yq_url" -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+    if yq --version >/dev/null 2>&1; then
+        echo "yq 安装成功，版本: $(yq --version)"
+    else
+        echo "yq 安装失败"
+        return 1
+    fi
+}
+
+edit_mihomo_proxy_providers() {
+    local config_file="/mssb/mihomo/config.yaml"
+    local providers=("$@")
+    # 构造 yq 表达式
+    local yq_expr="del(.proxy-providers) | .proxy-providers = {}"
+    local idx=0
+    for item in "${providers[@]}"; do
+        if [[ "$item" == *"|"* ]]; then
+            tag="${item%%|*}"
+            url="${item#*|}"
+        else
+            idx=$((idx+1))
+            tag="✈️机场${idx}"
+            url="$item"
+        fi
+        yq_expr="$yq_expr | .proxy-providers.\"$tag\".url = \"$url\""
+        yq_expr="$yq_expr | .proxy-providers.\"$tag\" += *NodeParam"
+        yq_expr="$yq_expr | .proxy-providers.\"$tag\".path = \"./proxy_providers/${tag}.yaml\""
+    done
+    yq -i "$yq_expr" "$config_file"
+    echo "已更新 $config_file 的 proxy-providers 部分"
+}
+# ========== END yq自动安装和mihomo订阅编辑函数 ==========
+
 # 格式化路由规则并提示
 format_route_rules() {
     echo -e "\n${yellow}请在主路由中添加以下路由规则：${reset}"
@@ -1757,31 +1807,24 @@ install_update_server() {
         fi
     else
         install_filebrower
+        install_latest_yq
         install_mosdns
         install_mihomo
         cp_config_files
         mihomo_configure_files
         # 自动写入订阅链接
         if [ -n "$sub_urls" ]; then
-            if echo "$sub_urls" | grep -q '|'; then
-                # 有tag|url格式，取第一个|后面的url
-                first_url=$(echo "$sub_urls" | awk -F' ' '{print $1}' | awk -F'|' '{print $2}')
-            else
-                # 只有url
-                first_url=$(echo "$sub_urls" | awk '{print $1}')
-            fi
-            sed -i "s|url: '机场订阅'|url: '$first_url'|" /mssb/mihomo/config.yaml
-            log "订阅链接第一个已写入"
-            log "准备写入 interface-name: $selected_interface 到 /mssb/mihomo/config.yaml"
-            # 优化sed，支持前后有空格，并加单引号
-            sed -i "s|^\s*interface-name:\s*eth0|interface-name: $selected_interface|" /mssb/mihomo/config.yaml
-            # 检查是否替换成功
-            if grep -q "interface-name: $selected_interface" /mssb/mihomo/config.yaml; then
-                log "interface-name 已成功替换为: $selected_interface"
-            else
-                log "interface-name 替换失败，当前内容如下："
-                grep interface-name /mssb/mihomo/config.yaml || log "未找到 interface-name 行"
-            fi
+            edit_mihomo_proxy_providers $sub_urls
+            log "已写入订阅到 proxy-providers"
+        fi
+
+        log "准备写入 interface-name: $selected_interface 到 /mssb/mihomo/config.yaml"
+        sed -i "s|^\s*interface-name:\s*eth0|interface-name: $selected_interface|" /mssb/mihomo/config.yaml
+        if grep -q "interface-name: $selected_interface" /mssb/mihomo/config.yaml; then
+            log "interface-name 已成功替换为: $selected_interface"
+        else
+            log "interface-name 替换失败，当前内容如下："
+            grep interface-name /mssb/mihomo/config.yaml || log "未找到 interface-name 行"
         fi
     fi
     check_ui
