@@ -54,9 +54,26 @@
     },
     "inbounds": [
         {
+            "type": "http",
+            "listen": "::",
+            "listen_port": 7890,
+            "tls": {},
+            "users": [],
+            "set_system_proxy": false
+        },
+        {
+            "type": "socks",
+            "listen": "::",
+            "listen_port": 7891,
+            "tcp_multi_path": false,
+            "tcp_fast_open": false,
+            "udp_fragment": false,
+            "users": []
+        },
+        {
             "type": "mixed",
             "listen": "::",
-            "listen_port": 10000
+            "listen_port": 7892
         },
         {
             "type": "direct",
@@ -82,15 +99,6 @@
             "listen": "::",
             "sniff_override_destination": true,
             "listen_port": 7877
-        },
-        {
-            "type": "socks",
-            "listen": "0.0.0.0",
-            "listen_port": 7891,
-            "tcp_multi_path": false,
-            "tcp_fast_open": false,
-            "udp_fragment": false,
-            "users": []
         }
     ],
     "providers": [
