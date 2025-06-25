@@ -44,11 +44,17 @@ if __name__ == "__main__":
     print(args.value)
 
     providers_value = []
-    for index, url in enumerate(args.value.split(' '), start=1):
-        # 构建 outbound_providers 的新值
+    # 支持格式："tag1|url1 tag2|url2 ..."
+    for item in args.value.split(' '):
+        if not item.strip():
+            continue
+        if '|' not in item:
+            print(f"警告: '{item}' 格式不正确，需为 tag|url，已跳过")
+            continue
+        tag, url = item.split('|', 1)
         providers_value.append({
             "type": "remote",
-            "tag": f"✈️机场{index}",
+            "tag": tag,
             "url": url,
             "update_interval": "7h",
             "download_detour": "direct"

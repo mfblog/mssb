@@ -1740,7 +1740,19 @@ install_update_server() {
         # 自动写入订阅链接
         if [ -n "$sub_urls" ]; then
             cd "$(dirname "$0")"
-            python3 update_sub.py -v "$sub_urls"
+            # 判断是否有tag|url格式
+            if echo "$sub_urls" | grep -q '|'; then
+                python3 update_sub.py -v "$sub_urls"
+            else
+                # 没有tag，自动生成tag
+                new_sub_urls=""
+                index=1
+                for url in $sub_urls; do
+                    new_sub_urls+="✈️机场${index}|${url} "
+                    index=$((index+1))
+                done
+                python3 update_sub.py -v "${new_sub_urls% }"
+            fi
             log "订阅链接处理完成"
         fi
     else
@@ -1751,7 +1763,13 @@ install_update_server() {
         mihomo_configure_files
         # 自动写入订阅链接
         if [ -n "$sub_urls" ]; then
-            first_url=$(echo "$sub_urls" | awk '{print $1}')
+            if echo "$sub_urls" | grep -q '|'; then
+                # 有tag|url格式，取第一个|后面的url
+                first_url=$(echo "$sub_urls" | awk -F' ' '{print $1}' | awk -F'|' '{print $2}')
+            else
+                # 只有url
+                first_url=$(echo "$sub_urls" | awk '{print $1}')
+            fi
             sed -i "s|url: '机场订阅'|url: '$first_url'|" /mssb/mihomo/config.yaml
             log "订阅链接第一个已写入"
             log "准备写入 interface-name: $selected_interface 到 /mssb/mihomo/config.yaml"
@@ -1764,7 +1782,6 @@ install_update_server() {
                 log "interface-name 替换失败，当前内容如下："
                 grep interface-name /mssb/mihomo/config.yaml || log "未找到 interface-name 行"
             fi
-            
         fi
     fi
     check_ui
@@ -1870,7 +1887,11 @@ load_or_init_env() {
 
     # 订阅链接
     if [ "$core_name" = "sing-box" ]; then
-        read -p "请输入订阅链接（多个用空格分隔）: " sub_urls
+        echo -e "${yellow}机场订阅支持两种格式：${reset}"
+        echo -e "  1. 只输入订阅链接（多个用空格分隔）：https://a.com https://b.com"
+        echo -e "  2. 输入tag和链接（多个用空格分隔）：机场A|https://a.com 机场B|https://b.com"
+        echo -e "     （tag可自定义，显示在面板上）"
+        read -p "请输入订阅链接: " sub_urls
     else
         read -p "请输入订阅链接: " sub_urls
     fi
