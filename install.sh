@@ -1355,7 +1355,11 @@ edit_mihomo_proxy_providers() {
             url="$item"
         fi
         yq_expr="$yq_expr | .proxy-providers.\"$tag\".url = \"$url\""
-        yq_expr="$yq_expr | .proxy-providers.\"$tag\" += *NodeParam"
+        yq_expr="$yq_expr | .proxy-providers.\"$tag\".type = \"http\""
+        yq_expr="$yq_expr | .proxy-providers.\"$tag\".interval = 3600"
+        yq_expr="$yq_expr | .proxy-providers.\"$tag\".health-check.enable = true"
+        yq_expr="$yq_expr | .proxy-providers.\"$tag\".health-check.url = 'http://detectportal.firefox.com/success.txt'"
+        yq_expr="$yq_expr | .proxy-providers.\"$tag\".health-check.interval = 6"
         yq_expr="$yq_expr | .proxy-providers.\"$tag\".path = \"./proxy_providers/${tag}.yaml\""
     done
     yq -i "$yq_expr" "$config_file"
