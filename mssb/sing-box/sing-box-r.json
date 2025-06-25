@@ -151,7 +151,7 @@
                 "🇯🇵 日本节点",
                 "🇺🇲 美国节点"
             ],
-            "default": "🚀 节点选择"
+            "default": "direct"
         },
         {
             "tag": "🎬 PT站点",
@@ -452,7 +452,7 @@
         "default_domain_resolver": {
             "server": "nodedns"
         },
-        "final": "🚀 节点选择",
+        "final": "🐟 漏网之鱼",
         "auto_detect_interface": true,
         "default_mark": 1,
         "rules": [
@@ -490,7 +490,9 @@
             },
             {
                 "domain_suffix": [
-                    "tanhuatv.site"
+                    "test-ipv6.com",
+                    "test-ipv6.com",
+                    "ipv6-test.com"
                 ],
                 "outbound": "自定义规则"
             },
@@ -538,18 +540,6 @@
                 "outbound": "🧩 Microsoft"
             },
             {
-                "rule_set": "geosite-geolocation-!cn",
-                "outbound": "🚀 节点选择"
-            },
-            {
-                "rule_set": "geoip-cn",
-                "outbound": "direct"
-            },
-            {
-                "ip_is_private": true,
-                "outbound": "direct"
-            },
-            {
                 "rule_set": "geosite-pt",
                 "outbound": "🎬 PT站点"
             },
@@ -561,6 +551,18 @@
                     "playletpt.xyz"
                 ],
                 "outbound": "🎬 PT站点"
+            },
+            {
+                "rule_set": "geoip-cn",
+                "outbound": "direct"
+            },
+            {
+                "ip_is_private": true,
+                "outbound": "direct"
+            },
+            {
+                "rule_set": "geosite-geolocation-!cn",
+                "outbound": "🚀 节点选择"
             }
         ],
         "rule_set": [
