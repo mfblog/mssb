@@ -1377,12 +1377,6 @@ edit_mihomo_proxy_providers() {
         fi
         echo "[yq] 已写入 $tag 到 proxy-providers"
     done
-    # 写完所有 tag 后，自动调整顺序
-    yq -i '{
-    NodeParam: .NodeParam,
-    proxy-providers: .["proxy-providers"]
-    } + del(.NodeParam, .["proxy-providers"])' "$config_file"
-    echo "[yq] 已自动调整 proxy-providers 顺序"
     echo "[yq] 已全部更新 $config_file 的 proxy-providers 部分"
 }
 # ========== END yq自动安装和mihomo订阅编辑函数 ==========
