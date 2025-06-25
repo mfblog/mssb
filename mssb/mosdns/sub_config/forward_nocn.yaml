@@ -10,7 +10,7 @@ plugins:
           socks5: "127.0.0.1:7891"
         - addr: "https://8.8.8.8/dns-query"
           socks5: "127.0.0.1:7891"
-          upstream_query_timeout: 1000
+          upstream_query_timeout: 700
 
 #国内域名 内部使用
   - tag: sequence_google_in

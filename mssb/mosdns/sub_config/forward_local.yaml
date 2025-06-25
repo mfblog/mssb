@@ -9,7 +9,7 @@ plugins:
         - addr: "223.5.5.5"
         - addr: "quic://223.5.5.5"
         - addr: "221.130.33.60"
-          upstream_query_timeout: 5
+          upstream_query_timeout: 300
 
 #国内域名 内部使用
   - tag: sequence_local_in
