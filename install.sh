@@ -1342,8 +1342,8 @@ install_latest_yq() {
 edit_mihomo_proxy_providers() {
     local config_file="/mssb/mihomo/config.yaml"
     local providers=("$@")
-    # 构造 yq 表达式
-    local yq_expr="del(.proxy-providers) | .proxy-providers = {}"
+    echo "[yq] 开始清空 proxy-providers..."
+    yq -i 'del(.proxy-providers) | .proxy-providers = {}' "$config_file"
     local idx=0
     for item in "${providers[@]}"; do
         if [[ "$item" == *"|"* ]]; then
@@ -1354,16 +1354,17 @@ edit_mihomo_proxy_providers() {
             tag="✈️机场${idx}"
             url="$item"
         fi
-        yq_expr="$yq_expr | .proxy-providers.\"$tag\".url = \"$url\""
-        yq_expr="$yq_expr | .proxy-providers.\"$tag\".type = \"http\""
-        yq_expr="$yq_expr | .proxy-providers.\"$tag\".interval = 3600"
-        yq_expr="$yq_expr | .proxy-providers.\"$tag\".health-check.enable = true"
-        yq_expr="$yq_expr | .proxy-providers.\"$tag\".health-check.url = 'http://detectportal.firefox.com/success.txt'"
-        yq_expr="$yq_expr | .proxy-providers.\"$tag\".health-check.interval = 6"
-        yq_expr="$yq_expr | .proxy-providers.\"$tag\".path = \"./proxy_providers/${tag}.yaml\""
+        echo "[yq] 正在写入 tag: $tag, url: $url"
+        yq -i ".proxy-providers.\"$tag\".url = \"$url\"" "$config_file"
+        yq -i ".proxy-providers.\"$tag\".type = \"http\"" "$config_file"
+        yq -i ".proxy-providers.\"$tag\".interval = 3600" "$config_file"
+        yq -i ".proxy-providers.\"$tag\".health-check.enable = true" "$config_file"
+        yq -i ".proxy-providers.\"$tag\".health-check.url = \"http://detectportal.firefox.com/success.txt\"" "$config_file"
+        yq -i ".proxy-providers.\"$tag\".health-check.interval = 6" "$config_file"
+        yq -i ".proxy-providers.\"$tag\".path = \"./proxy_providers/${tag}.yaml\"" "$config_file"
+        echo "[yq] 已写入 $tag 到 proxy-providers"
     done
-    yq -i "$yq_expr" "$config_file"
-    echo "已更新 $config_file 的 proxy-providers 部分"
+    echo "[yq] 已全部更新 $config_file 的 proxy-providers 部分"
 }
 # ========== END yq自动安装和mihomo订阅编辑函数 ==========
 
@@ -1818,7 +1819,6 @@ install_update_server() {
         mihomo_configure_files
         # 自动写入订阅链接
         if [ -n "$sub_urls" ]; then
-            install_latest_yq
             read -ra arr <<< "$sub_urls"
             edit_mihomo_proxy_providers "${arr[@]}"
             log "已写入订阅到 proxy-providers"
