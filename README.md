@@ -250,7 +250,7 @@ mosdns 可以选择是否启用指定 client 科学开关（默认启用）：
 
 - [https://github.com/herozmy/StoreHouse/tree/latest](https://github.com/herozmy/StoreHouse/tree/latest)
 - 感谢英雄佬的脚本教程
-- 感谢 Phil Horse 大佬的 mosdns 的优化摸噶
+- 感谢 Phil Horse 大佬的 mosdns 的优化和功能更新
 - 感谢 Jimmy Dada 大佬提供 mosdns 前端页面
 - 感谢 mosdns/singbox/mihomo 的各位开发大佬们
 
