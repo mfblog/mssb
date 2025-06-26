@@ -1871,7 +1871,7 @@ install_update_server() {
         if [ -n "$icon_header" ]; then
             if [[ "$icon_header" =~ ^https?:// ]]; then
                 log "检测到icon_header，正在替换icon地址..."
-                sed -i "s|https://github.com/Koolson/Qure/raw/master/IconSet/Color|$icon_header|g" /mssb/mihomo/config.yaml
+                sed -i "s|https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color|$icon_header|g" /mssb/mihomo/config.yaml
                 log "icon地址已替换为: $icon_header"
             else
                 log "icon_header格式不正确，必须以http://或https://开头，已跳过替换。"
