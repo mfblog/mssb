@@ -144,7 +144,7 @@ proxy-groups:
   - {name: 高级节点, <<: *UrlTest, filter: "(专线|专用|高级|直连|急速|高倍率|游戏|game|Game|GAME|IEPL|IPLC|AIA|CTM|CC|iepl|iplc|aia|ctm|cc|AC)", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/VIP.png}
   - {name: 游戏节点, <<: *UrlTest, filter: "^(?=.*((?i)游戏|🎮|(\b(GAME)\b)))(?!.*((?i)回国|校园)).*$", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Game.png}
   - {name: 香港节点, <<: *UrlTest, filter: "(?i)港|hk|hongkong|hong kong", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Hong_Kong.png}
-  - {name: 台湾节点, <<: *UrlTest, filter: "(?i)台|tw|taiwan", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Taiwan.png}
+  - {name: 台湾节点, <<: *UrlTest, filter: "(?i)台|tw|taiwan", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/China.png}
   - {name: 日本节点, <<: *UrlTest, filter: "(?i)日本|jp|japan", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/JP.png}
   - {name: 新加坡节点, <<: *UrlTest, filter: "(?i)新|sg|singapore", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Singapore.png}
   - {name: 美国节点, <<: *UrlTest, filter: "(?i)美|us|unitedstates|united states", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/United_States.png}
