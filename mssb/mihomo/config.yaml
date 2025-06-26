@@ -208,11 +208,12 @@ rules:
 
   - RULE-SET,Speedtest,网络测试
   - RULE-SET,PT,PT下载
-#PT 站点补全
-  - DOMAIN,agsvpt.com,PT下载
-  - DOMAIN,azusa.wiki,PT下载
-  - DOMAIN,discfan.net,PT下载
-  - DOMAIN,playletpt.xyz,PT下载
+  #PT 站点补全
+  - DOMAIN-SUFFIX,piggo.me,PT下载
+  - DOMAIN-SUFFIX,agsvpt.com,PT下载
+  - DOMAIN-SUFFIX,azusa.wiki,PT下载
+  - DOMAIN-SUFFIX,discfan.net,PT下载
+  - DOMAIN-SUFFIX,playletpt.xyz,PT下载
   - RULE-SET,Myself_Direct,全球直连
   - RULE-SET,Myself_Proxy,节点选择
   - RULE-SET,SteamCN,全球直连
