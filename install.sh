@@ -1866,6 +1866,19 @@ install_update_server() {
             log "interface-name 替换失败，当前内容如下："
             grep interface-name /mssb/mihomo/config.yaml || log "未找到 interface-name 行"
         fi
+
+        # 新增：icon_header替换逻辑
+        if [ -n "$icon_header" ]; then
+            if [[ "$icon_header" =~ ^https?:// ]]; then
+                log "检测到icon_header，正在替换icon地址..."
+                sed -i "s|https://github.com/Koolson/Qure/raw/master/IconSet/Color|$icon_header|g" /mssb/mihomo/config.yaml
+                log "icon地址已替换为: $icon_header"
+            else
+                log "icon_header格式不正确，必须以http://或https://开头，已跳过替换。"
+            fi
+        else
+            log "未设置icon_header或格式不兼容，仅支持https://github.com/baozaodetudou/icons项目搭建的"
+        fi
     fi
     check_ui
     install_tproxy
@@ -1979,6 +1992,13 @@ load_or_init_env() {
         read -p "请输入订阅链接: " sub_urls
     fi
 
+    # 新增icon_header字段
+    echo -e "\n${green_text}=== 图标本地化设置（可选） ===${reset}"
+    echo -e "如需本地化图标加速，可先参考 https://github.com/baozaodetudou/icons 部署本地服务"
+    echo -e "格式示例：http://baidu.com:5000/images/header（留空则不替换, 后边不要带/）"
+    read -p "请输入icon_header（留空默认不替换）: " icon_header
+    icon_header=${icon_header:-}
+
     # 定时任务细分
     read -p "是否启用 MosDNS 自动更新？(y/n, 默认y): " enable_mosdns_cron
     enable_mosdns_cron=${enable_mosdns_cron:-y}
@@ -2061,6 +2081,8 @@ update_ui_mode=$update_ui_mode
 dns_after_install=$dns_after_install
 # 卸载后本机DNS恢复
 dns_after_uninstall=$dns_after_uninstall
+# 用来替换mihomo配置文件里icon的请求，默认为空，提示页面可以安装https://github.com/baozaodetudou/icons进行本地化访问
+icon_header=$icon_header
 EOF
     source "$env_file"
 }
