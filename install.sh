@@ -1982,15 +1982,11 @@ load_or_init_env() {
     fb_login_mode=$([ "$fb_login" = "2" ] && echo "noauth" || echo "auth")
 
     # 订阅链接
-    if [ "$core_name" = "sing-box" ]; then
-        echo -e "${yellow}机场订阅支持两种格式：${reset}"
-        echo -e "  1. 只输入订阅链接（多个用空格分隔）：https://a.com https://b.com"
-        echo -e "  2. 输入tag和链接（多个用空格分隔）：机场A|https://a.com 机场B|https://b.com"
-        echo -e "     （tag可自定义，显示在面板上）"
-        read -p "请输入订阅链接: " sub_urls
-    else
-        read -p "请输入订阅链接: " sub_urls
-    fi
+    echo -e "${yellow}机场订阅支持两种格式：${reset}"
+    echo -e "  1. 只输入订阅链接（多个用空格分隔）：https://a.com https://b.com"
+    echo -e "  2. 输入tag和链接（多个用空格分隔）：机场A|https://a.com 机场B|https://b.com"
+    echo -e "     （tag可自定义，显示在面板上）"
+    read -p "请输入订阅链接: " sub_urls
 
     # 新增icon_header字段
     echo -e "\n${green_text}=== 图标本地化设置（可选） ===${reset}"
