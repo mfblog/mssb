@@ -51,29 +51,24 @@ bind-address: "*"
 allow-lan: true
 # 高级路由标记
 routing-mark: 1
-
 # 控制面板
 external-controller: :9090
 external-ui: /mssb/mihomo/ui
 external-ui-url: 'https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip'
-
 geox-url:
   geoip: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
   geosite: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
   mmdb: 'https://gitlab.com/Masaiki/GeoIP2-CN/-/raw/release/Country.mmdb'
   asn: 'https://gitlab.com/Loon0x00/loon_data/-/raw/main/geo/GeoLite2-ASN.mmdb'
-
 profile:
   store-selected: true
   store-fake-ip: true
-
 sniffer:
   # 搭配mosdns要关闭不能打开不然转发失败
   enable: false
 tun:
   # 搭配mosdns要关闭不能打开不然转发失败
   enable: false
-
 dns:
   enable: true
   # 默认端口也不能修改
@@ -89,7 +84,6 @@ dns:
     - 127.0.0.1:8888
   nameserver:
     - 127.0.0.1:7777
-
 # 锚点 - 节点订阅的参数 [每小时更新一次订阅节点，每 6 秒一次健康检查]
 NodeParam: &NodeParam {type: http, interval: 3600, health-check: {enable: true, url: 'http://detectportal.firefox.com/success.txt', interval: 6}}
 
@@ -102,7 +96,6 @@ proxy-providers:
 
 # 锚点 - 节点筛选组
 FilterAll: &FilterAll '^(?=.*(.))(?!.*((?i)群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|(\b(USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author)\b|(\d{4}-\d{2}-\d{2}|\d+G)))).*$'
-
 # 策略组参数锚点
 # 锚点 - 时延优选参数 [每 30 秒一次惰性健康检查，容差 20ms，时延超过 2 秒判定为失败，失败 3 次则自动触发健康检查]
 UrlTest: &UrlTest {type: url-test, interval: 30, tolerance: 20, lazy: true, url: 'http://detectportal.firefox.com/success.txt', disable-udp: false, timeout: 2000, max-failed-times: 3, hidden: true, include-all-providers: true}
@@ -114,42 +107,39 @@ UrlTest: &UrlTest {type: url-test, interval: 30, tolerance: 20, lazy: true, url:
 # RuleProviders: &RuleProviders {type: http, behavior: classical, interval: 86400, format: yaml}
 
 proxy-groups:
-  - {name: 节点选择, type: select, icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Filter.png, proxies: [手动切换, 全球直连, 台湾节点, 香港节点, 日本节点, 新加坡节点, 美国节点, 韩国节点, 省流节点, 高级节点, 游戏节点, 机场节点]}
-  - {name: 漏网之鱼, type: select, icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Unlock.png, proxies: [全球直连, 手动切换, 台湾节点, 香港节点, 日本节点, 新加坡节点, 美国节点, 韩国节点, 省流节点, 高级节点, 游戏节点, 机场节点]}
-  - {name: 游戏平台, type: select, icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Game.png, proxies: [节点选择, 全球直连, 高级节点, 游戏节点]}
-  - {name: 苹果服务, type: select, icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Apple.png, proxies: [全球直连, 节点选择, 台湾节点, 香港节点, 日本节点, 新加坡节点, 美国节点, 韩国节点, 省流节点, 高级节点, 游戏节点, 机场节点]}
-  - {name: 国外媒体, type: select, icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Netflix.png, proxies: [节点选择, 台湾节点, 香港节点, 全球直连, 日本节点, 新加坡节点, 美国节点, 韩国节点, 省流节点, 高级节点, 游戏节点, 机场节点]}
-  - {name: 国内媒体, type: select, icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/WeTV.png, proxies: [全球直连, 节点选择]}
-  - {name: TikTok, type: select, icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/TikTok.png, proxies: [节点选择, 台湾节点, 香港节点, 全球直连, 日本节点, 新加坡节点, 美国节点, 韩国节点, 省流节点, 高级节点, 游戏节点, 机场节点]}
-  - {name: 网络测试, type: select, icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Speedtest.png, proxies: [全球直连, 节点选择, 台湾节点, 香港节点, 日本节点, 新加坡节点, 美国节点, 韩国节点, 省流节点, 高级节点, 游戏节点, 机场节点]}
-  - {name: Telegram, type: select, icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Telegram_X.png, proxies: [节点选择, 台湾节点, 香港节点, 全球直连, 日本节点, 新加坡节点, 美国节点, 韩国节点, 省流节点, 高级节点, 游戏节点, 机场节点] }
-
-  - {name: 手动切换, type: select, icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Clubhouse.png, proxies: [台湾节点, 香港节点, 全球直连, 日本节点, 新加坡节点, 美国节点, 韩国节点, 省流节点, 高级节点, 游戏节点, 机场节点]}
+  - {name: 节点选择, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Filter.png', proxies: [香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 全球直连, 机场节点]}
+  - {name: 漏网之鱼, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Unlock.png', proxies: [节点选择, 全球直连, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 机场节点]}
+  - {name: 手动切换, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Clubhouse.png', proxies: [台湾节点, 香港节点, 全球直连, 日本节点, 新加坡节点, 美国节点, 韩国节点, 省流节点, 高级节点, 游戏节点, 机场节点]}
+  - {name: 人工智能, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/AI.png', proxies: [香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 全球直连, 机场节点]}
+  - {name: 国外媒体, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Netflix.png', proxies: [节点选择, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 全球直连, 机场节点]}
+  - {name: 国内媒体, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/WeTV.png', proxies: [全球直连, 节点选择]}
+  - {name: PT下载, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Download.png', proxies: [全球直连, 节点选择]}
+  - {name: 游戏平台, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Game.png', proxies: [节点选择, 全球直连, 高级节点, 游戏节点]}
+  - {name: 苹果服务, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Apple.png', proxies: [全球直连, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 手动切换]}
+  - {name: 微软服务, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Microsoft.png', proxies: [全球直连, 节点选择],}
+  - {name: TikTok, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/TikTok.png', proxies: [节点选择, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 全球直连, 机场节点]}
+  - {name: 网络测试, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Speedtest.png', proxies: [全球直连, 节点选择, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 机场节点]}
   #  - {name: 🎥 奈飞视频, type: select, proxies: [香港节点, 台湾节点, 日本节点, 新加坡节点, 美国节点, 韩国节点]}
   #  - {name: 📽️ 迪士尼+, type: select, proxies: [香港节点, 台湾节点, 日本节点, 新加坡节点, 美国节点, 韩国节点]}
   #  - {name: 📹 油管视频, type: select, proxies: [节点选择, 香港节点, 台湾节点, 日本节点, 新加坡节点, 美国节点, 韩国节点]}
-  #  - {name: 📺 哔哩哔哩, type: select, proxies: [全球直连, 节点选择, 香港节点, 日本节点, 新加坡节点]}
-  - {name: 人工智能, type: select, icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/AI.png, proxies: [手动切换, 台湾节点, 香港节点, 全球直连, 日本节点, 新加坡节点, 美国节点, 韩国节点, 省流节点, 高级节点, 游戏节点, 机场节点]}
-  - {name: PT下载, type: select, icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Download.png, proxies: [全球直连, 节点选择, 台湾节点, 香港节点, 日本节点, 新加坡节点, 美国节点, 韩国节点, 省流节点, 高级节点, 游戏节点, 机场节点]}
-  - {name: 微软服务, type: select, proxies: [全球直连, 节点选择], icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Microsoft.png}
-  - {name: 亚马逊, type: select, proxies: [全球直连, 节点选择], icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Amazon.png}
-  #  - {name: 📢 谷歌中国, type: select, proxies: [全球直连, 节点选择]}
+  - {name: 亚马逊, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Amazon.png', proxies: [全球直连, 节点选择]}
+  - {name: Telegram, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Telegram_X.png', proxies: [节点选择, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点]}
   #  - {name: ☁️ Cloudflare, type: select, proxies: [全球直连, 节点选择]}
-  #  - {name: 🖥️ 直连软件, type: select, proxies: [全球直连]}
+  - {name: 直连软件, type: select, proxies: [全球直连, 节点选择], icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/App_Store.png'}
   #  - {name: 🔒 私有网络, type: select, proxies: [全球直连]}
-  - {name: 全球直连, type: select, proxies: [DIRECT], icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Direct.png}
   #  - {name: ⛔ 禁止代理, type: select, proxies: [全球直连]}
   #  - {name: ✅ 允许代理, type: select, proxies: [节点选择]}
-  - {name: 省流节点, <<: *UrlTest, filter: "(0.[1-5]|低倍率|省流|大流量)", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Proxy.png}
-  - {name: 高级节点, <<: *UrlTest, filter: "(专线|专用|高级|直连|急速|高倍率|游戏|game|Game|GAME|IEPL|IPLC|AIA|CTM|CC|iepl|iplc|aia|ctm|cc|AC)", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/VIP.png}
-  - {name: 游戏节点, <<: *UrlTest, filter: "^(?=.*((?i)游戏|🎮|(\b(GAME)\b)))(?!.*((?i)回国|校园)).*$", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Game.png}
-  - {name: 香港节点, <<: *UrlTest, filter: "(?i)港|hk|hongkong|hong kong", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Hong_Kong.png}
-  - {name: 台湾节点, <<: *UrlTest, filter: "(?i)台|tw|taiwan", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/China.png}
-  - {name: 日本节点, <<: *UrlTest, filter: "(?i)日本|jp|japan", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/JP.png}
-  - {name: 新加坡节点, <<: *UrlTest, filter: "(?i)新|sg|singapore", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Singapore.png}
-  - {name: 美国节点, <<: *UrlTest, filter: "(?i)美|us|unitedstates|united states", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/United_States.png}
-  - {name: 韩国节点, <<: *UrlTest, filter: "(?i)韩|kr|korea", icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Korea.png}
-  - {name: 机场节点, type: select, include-all-providers: true, filter: *FilterAll, icon: https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Airport.png}
+  - {name: 省流节点, !!merge <<: *UrlTest, filter: "(0.[1-5]|低倍率|省流|大流量)", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Proxy.png'}
+  - {name: 高级节点, !!merge <<: *UrlTest, filter: "(专线|专用|高级|直连|急速|高倍率|IEPL|IPLC|AIA|CTM|CC|iepl|iplc|aia|ctm|cc|AC)", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/VIP.png'}
+  - {name: 游戏节点, !!merge <<: *UrlTest, filter: "^(?=.*((?i)游戏|\U0001F3AE|(\b(GAME)\b)))(?!.*((?i)回国|校园)).*$", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Game.png'}
+  - {name: 香港节点, !!merge <<: *UrlTest, filter: "(?i)港|hk|hongkong|hong kong", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Hong_Kong.png'}
+  - {name: 新加坡节点, !!merge <<: *UrlTest, filter: "(?i)新|sg|singapore", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Singapore.png'}
+  - {name: 韩国节点, !!merge <<: *UrlTest, filter: "(?i)韩|kr|korea", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Korea.png'}
+  - {name: 台湾节点, !!merge <<: *UrlTest, filter: "(?i)台|tw|taiwan", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/China.png'}
+  - {name: 日本节点, !!merge <<: *UrlTest, filter: "(?i)日本|jp|japan", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/JP.png'}
+  - {name: 美国节点, !!merge <<: *UrlTest, filter: "(?i)美|us|unitedstates|united states", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/United_States.png'}
+  - {name: 机场节点, type: select, include-all-providers: true, filter: *FilterAll, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Airport.png'}
+  - {name: 全球直连, type: select, proxies: [DIRECT], icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Direct.png'}
 #  - {name: 🇹🇭 泰国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)泰|th|thailand"}
 #  - {name: 🇩🇪 德国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)德|de|germany"}
 #  - {name: 🇬🇧 英国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)英|uk|united kingdom"}
@@ -169,7 +159,7 @@ rule-providers:
   Private: {type: http, behavior: classical, format: text, path: ./RuleSet/Lan.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Lan/Lan.list", interval: 21600, proxy: 香港节点}
   Direct: {type: http, behavior: classical, format: text, path: ./RuleSet/Direct.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Direct/Direct.list", interval: 21600, proxy: 香港节点}
   PT: {type: http, behavior: classical, format: text, path: ./RuleSet/PT.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/PrivateTracker/PrivateTracker.list", interval: 21600, proxy: 香港节点}
-#  Applications: {type: http, behavior: classical, format: text, path: ./RuleSet/Applications.list, url: "https://cdn.jsdelivr.net/gh/DustinWin/ruleset_geodata@clash-ruleset/applications.list", interval: 21600, proxy: 香港节点}
+  Applications: {type: http, behavior: classical, format: text, path: ./RuleSet/Applications.list, url: "https://cdn.jsdelivr.net/gh/DustinWin/ruleset_geodata@clash-ruleset/applications.list", interval: 21600, proxy: 香港节点}
   Speedtest: {type: http, behavior: classical, format: text, path: ./RuleSet/Speedtest.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/Speedtest/Speedtest.list", interval: 21600, proxy: 香港节点}
   Apple: {type: http, behavior: classical, format: text, path: ./RuleSet/Apple.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.list", interval: 21600, proxy: 香港节点}
   OpenAI: {type: http, behavior: classical, format: text, path: ./RuleSet/OpenAI.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/OpenAI/OpenAI.list", interval: 21600, proxy: 香港节点}
@@ -179,7 +169,6 @@ rule-providers:
   Copilot: {type: http, behavior: classical, format: text, path: ./RuleSet/Copilot.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/Copilot/Copilot.list", interval: 21600, proxy: 香港节点}
   AmazonCN: {type: http, behavior: classical, format: text, path: ./RuleSet/AmazonCN.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AmazonCN/AmazonCN.list", interval: 21600, proxy: 香港节点}
 #  Cloudflarecn: {type: http, behavior: classical, format: text, path: ./RuleSet/Cloudflarecn.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Cloudflarecn/Cloudflarecn.list", interval: 21600}
-#  GoogleCN: {type: http, behavior: classical, format: text, path: ./RuleSet/GoogleCN.list, url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/GoogleCN.list", interval: 21600}
 #  OneDrive: {type: http, behavior: classical, format: text, path: ./RuleSet/OneDrive.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/OneDrive/OneDrive.list", interval: 21600}
   Microsoft: {type: http, behavior: classical, format: text, path: ./RuleSet/Microsoft.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.list", interval: 21600, proxy: 香港节点}
   Amazon: {type: http, behavior: classical, format: text, path: ./RuleSet/Amazon.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Amazon/Amazon.list", interval: 21600, proxy: 香港节点}
@@ -192,17 +181,21 @@ rule-providers:
 #  YouTube: {type: http, behavior: classical, format: text, path: ./RuleSet/YouTube.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/YouTube/YouTube.list", interval: 21600}
 #  Netflix: {type: http, behavior: classical, format: text, path: ./RuleSet/Netflix.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Netflix/Netflix.list", interval: 21600}
 #  Disney: {type: http, behavior: classical, format: text, path: ./RuleSet/Disney.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Disney/Disney.list", interval: 21600}
-#  BiliBili: {type: http, behavior: classical, format: text, path: ./RuleSet/BiliBili.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/BiliBili/BiliBili.list", interval: 21600}
   ChinaMedia: {type: http, behavior: classical, format: text, path: ./RuleSet/ChinaMedia.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMedia/ChinaMedia.list", interval: 21600, proxy: 香港节点}
   TikTok: {type: http, behavior: classical, format: text, path: ./RuleSet/TikTok.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TikTok/TikTok.list", interval: 21600, proxy: 香港节点}
   GlobalMedia: {type: http, behavior: classical, format: text, path: ./RuleSet/GlobalMedia.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GlobalMedia/GlobalMedia.list", interval: 21600, proxy: 香港节点}
   Docker: {type: http, behavior: classical, format: text, path: ./RuleSet/Docker.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Docker/Docker.list", interval: 21600, proxy: 香港节点}
   GitHub: {type: http, behavior: classical, format: text, path: ./RuleSet/GitHub.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GitHub/GitHub.list", interval: 21600, proxy: 香港节点}
   Proxy: {type: http, behavior: classical, format: text, path: ./RuleSet/Proxy.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.list", interval: 21600, proxy: 香港节点}
-  ChinaMaxNoIP: {type: http, behavior: classical, format: text, path: ./RuleSet/ChinaMax.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMaxNoIP/ChinaMaxNoIP.list", interval: 21600, proxy: 香港节点}
+#  ChinaMaxNoIP: {type: http, behavior: classical, format: text, path: ./RuleSet/ChinaMax.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMaxNoIP/ChinaMaxNoIP.list", interval: 21600, proxy: 香港节点}
 #  ChinaASN: {type: http, behavior: classical, format: text, path: ./RuleSet/ChinaASN.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/ChinaASN/ChinaASN_Resolve.list", interval: 21600, proxy: 香港节点}
+  ChinaMaxNoIP: {type: http, behavior: domain, format: mrs, url: "https://github.com/666OS/YYDS/raw/main/mihomo/rules/cn.mrs", interval: 21600, proxy: 香港节点}
 
 rules:
+  - RULE-SET,Direct,全球直连
+  - DOMAIN-SUFFIX,fx168news.com,节点选择
+  - DOMAIN-SUFFIX,test-ipv6.com,全球直连
+  - DOMAIN-SUFFIX,ipv6ready.me,全球直连
   - DOMAIN-SUFFIX,dnsany.com,全球直连
   - DOMAIN-SUFFIX,cmvideo.cn,全球直连
   - DOMAIN-SUFFIX,chinamobile.com,全球直连
@@ -210,20 +203,21 @@ rules:
   - DOMAIN-SUFFIX,gitv.tv,全球直连
   - DOMAIN-SUFFIX,cctv.cn,全球直连
   - DOMAIN-SUFFIX,yangshipin.cn,全球直连
-  - IP-CIDR,183.206.0.0/15,全球直连,no-resolve
   - IP-CIDR,8.8.8.8/32,节点选择
   - IP-CIDR,1.1.1.1/32,节点选择
-  - RULE-SET,SteamCN,全球直连
-#   自行测试当地是否能够直连，不能直连删掉下面这行
-#  - DOMAIN,beesport.livednow.com,全球直连
+
+  - RULE-SET,Speedtest,网络测试
+  - RULE-SET,PT,PT下载
+#PT 站点补全
+  - DOMAIN,agsvpt.com,PT下载
+  - DOMAIN,azusa.wiki,PT下载
+  - DOMAIN,discfan.net,PT下载
+  - DOMAIN,playletpt.xyz,PT下载
   - RULE-SET,Myself_Direct,全球直连
   - RULE-SET,Myself_Proxy,节点选择
   - RULE-SET,SteamCN,全球直连
   - RULE-SET,Private,全球直连
-  - RULE-SET,Direct,全球直连
-  - RULE-SET,PT,PT下载
-#  - RULE-SET,Applications,🖥️ 直连软件
-  - RULE-SET,Speedtest,网络测试
+  - RULE-SET,Applications,直连软件
   - RULE-SET,Apple,苹果服务
   - RULE-SET,OpenAI,人工智能
 #  - RULE-SET,Bing,人工智能
@@ -241,7 +235,6 @@ rules:
 #  - RULE-SET,YouTube,📹 油管视频
 #  - RULE-SET,Netflix,🎥 奈飞视频
 #  - RULE-SET,Disney,📽️ 迪士尼+
-#  - RULE-SET,BiliBili,📺 哔哩哔哩
   - RULE-SET,ChinaMedia,国内媒体
   - RULE-SET,TikTok,TikTok
   - RULE-SET,GlobalMedia,国外媒体
@@ -249,6 +242,5 @@ rules:
   - RULE-SET,GitHub,节点选择
   - RULE-SET,Proxy,节点选择
   - RULE-SET,ChinaMaxNoIP,全球直连
-#  - RULE-SET,ChinaASN,全球直连
   - GEOIP,CN,全球直连
   - MATCH,漏网之鱼
