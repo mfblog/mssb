@@ -524,15 +524,26 @@ EOF
             log "警告：替换网卡名失败，请手动检查 /etc/nftables.conf"
         fi
         # 判断 /etc/nftables.conf 文件中是否包含 $dns，如果没有则将默认的 221.130.33.60 替换为 $dns
+        # 设置默认 DNS 地址为 119.29.29.29，如果未指定 dns_addr
+        local dns="${dns_addr:-119.29.29.29}"
+
+        # 如果 /etc/nftables.conf 中已包含该 DNS 地址，跳过替换
         if grep -q "$dns" "/etc/nftables.conf"; then
             log "nftables 配置文件中已存在 DNS 地址 $dns，无需替换"
         else
-            if sed -i "s/221.130.33.60/${dns}/g" "/etc/nftables.conf"; then
-                log "已将默认 DNS 地址 221.130.33.60 替换为: $dns"
+            # 校验是否是合法的 IPv4 格式
+            if [[ $dns =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+                # 尝试将旧的 DNS 地址替换为新的
+                if sed -i "s/221\.130\.33\.60/${dns}/g" "/etc/nftables.conf"; then
+                    log "已将默认 DNS 地址 221.130.33.60 替换为: $dns"
+                else
+                    log "⚠️ 警告：替换 nftables 配置文件中的 DNS 地址失败，请手动检查 /etc/nftables.conf"
+                fi
             else
-                log "警告：替换 nftables 配置文件中的 DNS 地址失败，请手动检查 /etc/nftables.conf"
+                log "❌ 错误：无效的 DNS 地址格式: $dns"
             fi
         fi
+
     else
         log "错误：复制 nftables 模板文件失败！"
         return 1
