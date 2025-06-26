@@ -58,23 +58,24 @@
 
 ## 服务端口分配
 
-| 服务 | 端口 | 描述 |
-|------|------|------|
-| filebrowser | 8088 | 文件管理界面 |
-| supervisor | 9001 | 进程管理界面 |
-| mosdns | 53 | DNS 服务入口 |
-| mosdns | 7777 | 解析节点域名 |
-| mosdns | 8888 | sing-box使用 |
-| mosdns | 2222 | 内部的国内dns服务器 |
-| mosdns | 3333 | 转发国外请求到内部带过期缓存的服务 |
-| mosdns | 4444 | 带过期缓存的内部使用/外部使用的国外dns服务器 |
-| mosdns | 5656 | 主分流服务器 |
-| http代理 | 7890 | singbox/mihomo 端口 |
-| socks5代理 | 7891 | singbox/mihomo 端口 |
-| 混合端口 | 7892 | singbox/mihomo 端口 |
+| 服务 | 端口 | 描述                         |
+|------|------|----------------------------|
+| filebrowser | 8088 | 文件管理界面                     |
+| supervisor | 9001 | 进程管理界面                     |
+| mosdns | 53 | DNS 服务入口                   |
+| mosdns | 7777 | 解析节点域名                     |
+| mosdns | 8888 | sing-box使用                 |
+| mosdns | 2222 | 内部的国内dns服务器                |
+| mosdns | 3333 | 转发国外请求到内部带过期缓存的服务          |
+| mosdns | 4444 | 带过期缓存的内部使用/外部使用的国外dns服务器   |
+| mosdns | 5656 | 主分流服务器                     |
+| http代理 | 7890 | singbox/mihomo 端口          |
+| socks5代理 | 7891 | singbox/mihomo 端口          |
+| 混合端口 | 7892 | singbox/mihomo 端口          |
 | DNS 接口 | 6666 | singbox/mihomo 与 mosdns 对接 |
-| TProxy透明代理 | 7896 | singbox/mihomo 与 mosdns 对接 |
-| Web UI (zashboard) | 9090 | singbox/mihomo Web 界面 |
+| TProxy透明代理 | 7896 | nftable 策略使用               |
+| redirect代理 | 7877 | nftable 策略使用  |
+| Web UI (zashboard) | 9090 | singbox/mihomo Web 界面      |
 
 ## 🎉 服务 Web 访问路径
 
