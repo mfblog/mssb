@@ -140,32 +140,32 @@ proxy-groups:
 
 rule-providers:
   # 域名规则
-  Spotify: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/spotify.mrs}
-  Docker: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/docker.mrs}
-  Telegram: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/telegram.mrs}
-  OpenAI: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/openai.mrs}
-  Gemini: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/google-deepmind.mrs}
-  AIChat: { <<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ai-chat-!cn.mrs}
-  AIChatCN: { <<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ai-cn.mrs}
-  YouTube: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/youtube.mrs}
-  Google: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/google.mrs}
-  GitHub: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/github.mrs}
-  Apple: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/apple.mrs}
-  AppleCN: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/apple-cn.mrs}
-  Microsoft: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/microsoft.mrs}
-  TikTok: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/tiktok.mrs}
-  China: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/cn.mrs}
-  Foreign: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/geolocation-!cn.mrs}
-  PT: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-pt.mrs}
-  ChinaSpeedtest: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-speedtest@cn.mrs}
-  ForeignSpeedtest: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-speedtest.mrs}
-  SteamCN: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/steam@cn.mrs}
-  Steam: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/steam.mrs}
-  Private: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/private.mrs}
+  Spotify: {<<: *DomainMrs, path: ./rules/spotify.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/spotify.mrs}
+  Docker: {<<: *DomainMrs, path: ./rules/docker.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/docker.mrs}
+  Telegram: {<<: *DomainMrs, path: ./rules/telegram.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/telegram.mrs}
+  OpenAI: {<<: *DomainMrs, path: ./rules/openai.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/openai.mrs}
+  Gemini: {<<: *DomainMrs, path: ./rules/google-deepmind.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/google-deepmind.mrs}
+  AIChat: { <<: *DomainMrs, path: ./rules/category-ai-chat-!cn.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ai-chat-!cn.mrs}
+  AIChatCN: { <<: *DomainMrs, path: ./rules/category-ai-cn.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ai-cn.mrs}
+  YouTube: {<<: *DomainMrs, path: ./rules/youtube.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/youtube.mrs}
+  Google: {<<: *DomainMrs, path: ./rules/google.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/google.mrs}
+  GitHub: {<<: *DomainMrs, path: ./rules/github.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/github.mrs}
+  Apple: {<<: *DomainMrs, path: ./rules/apple.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/apple.mrs}
+  AppleCN: {<<: *DomainMrs, path: ./rules/apple-cn.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/apple-cn.mrs}
+  Microsoft: {<<: *DomainMrs, path: ./rules/microsoft.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/microsoft.mrs}
+  TikTok: {<<: *DomainMrs, path: ./rules/tiktok.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/tiktok.mrs}
+#  China: {<<: *DomainMrs, path: ./rules/cn.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/cn.mrs}
+  Foreign: {<<: *DomainMrs, path: ./rules/geolocation-!cn.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/geolocation-!cn.mrs}
+  PT: {<<: *DomainMrs, path: ./rules/category-pt.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-pt.mrs}
+  ChinaSpeedtest: {<<: *DomainMrs, path: ./rules/category-speedtest@cn.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-speedtest@cn.mrs}
+  ForeignSpeedtest: {<<: *DomainMrs, path: ./rules/category-speedtest.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-speedtest.mrs}
+  SteamCN: {<<: *DomainMrs, path: ./rules/steam@cn.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/steam@cn.mrs}
+  Steam: {<<: *DomainMrs, path: ./rules/steam.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/steam.mrs}
+  Private: {<<: *DomainMrs, path: ./rules/private.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/private.mrs}
   # IP规则
-  NetflixIP: {<<: *IPcidrMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/netflix.mrs}
-  TelegramIP: {<<: *IPcidrMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/telegram.mrs}
-  ChinaIP: {<<: *IPcidrMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs}
+  NetflixIP: {<<: *IPcidrMrs, path: ./rules/netflixip.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/netflix.mrs}
+  TelegramIP: {<<: *IPcidrMrs, path: ./rules/telegramip.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/telegram.mrs}
+  ChinaIP: {<<: *IPcidrMrs, path: ./rules/cnip.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs}
 
 rules:
   # 常用必备
@@ -199,7 +199,7 @@ rules:
   - RULE-SET,Apple,苹果服务
   - RULE-SET,Microsoft,微软服务
   - RULE-SET,TikTok,TikTok
-  - RULE-SET,China,全球直连
+#  - RULE-SET,China,全球直连
   - RULE-SET,ChinaSpeedtest,全球直连
   - RULE-SET,Foreign,节点选择
   - RULE-SET,ForeignSpeedtest,网络测试
