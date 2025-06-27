@@ -1903,7 +1903,9 @@ install_update_server() {
 
     # 检查并设置本地 DNS
     check_and_set_local_dns
-
+    #check_ui
+    sleep 1
+    check_ui
     # 显示路由规则提示
     format_route_rules
 
