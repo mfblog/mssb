@@ -793,6 +793,9 @@ cp_config_files() {
 # singbox配置文件复制
 singbox_configure_files() {
     # 复制 mssb/sing-box 目录
+    if [ -d "/mssb/sing-box" ]; then
+            rm -rf /mssb/sing-box
+        fi
     log "复制 mssb/sing-box 目录..."
     check_and_copy_folder "sing-box"
 
@@ -821,6 +824,10 @@ singbox_configure_files() {
 # mihomo配置文件复制
 mihomo_configure_files() {
     # 复制 mssb/mihomo 目录
+    # 判断 /mssb/mihomo 是否存在，存在则删除
+    if [ -d "/mssb/mihomo" ]; then
+        rm -rf /mssb/mihomo
+    fi
     log "复制 mssb/mihomo 目录..."
     check_and_copy_folder "mihomo"
 }
