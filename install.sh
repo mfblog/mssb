@@ -795,7 +795,7 @@ singbox_configure_files() {
     # 复制 mssb/sing-box 目录
     if [ -d "/mssb/sing-box" ]; then
             rm -rf /mssb/sing-box
-        fi
+    fi
     log "复制 mssb/sing-box 目录..."
     check_and_copy_folder "sing-box"
 
