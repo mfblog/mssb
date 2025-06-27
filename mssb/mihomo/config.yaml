@@ -1,3 +1,27 @@
+# 锚点 - 筛选组
+FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG)).*$'
+FilterSG: &FilterSG '^(?=.*(?i)(坡|🇸🇬|SG|Sing|SIN|XSP)).*$'
+FilterJP: &FilterJP '^(?=.*(?i)(日|🇯🇵|JP|Japan|NRT|HND|KIX|CTS|FUK)).*$'
+FilterKR: &FilterKR '^(?=.*(?i)(韩|🇰🇷|韓|首尔|南朝鲜|KR|KOR|Korea|South)).*$'
+FilterUS: &FilterUS '^(?=.*(?i)(美|🇺🇸|US|USA|JFK|LAX|ORD|ATL|DFW|SFO|MIA|SEA|IAD)).*$'
+FilterTW: &FilterTW '^(?=.*(?i)(台|🇼🇸|🇹🇼|TW|tai|TPE|TSA|KHH)).*$'
+FilterEU: &FilterEU '^(?=.*(?i)(奥|比|保|克罗地亚|塞|捷|丹|爱沙|芬|法|德|希|匈|爱尔|意|拉|立|卢|马其它|荷|波|葡|罗|斯洛伐|斯洛文|西|瑞|英|🇧🇪|🇨🇿|🇩🇰|🇫🇮|🇫🇷|🇩🇪|🇮🇪|🇮🇹|🇱🇹|🇱🇺|🇳🇱|🇵🇱|🇸🇪|🇬🇧|CDG|FRA|AMS|MAD|BCN|FCO|MUC|BRU)).*$'
+FilterOther: &FilterOther '^(?!.*(DIRECT|美|港|坡|台|新|日|韩|奥|比|保|克罗地亚|塞|捷|丹|爱沙|芬|法|德|希|匈|爱尔|意|拉|立|卢|马其它|荷|波|葡|罗|斯洛伐|斯洛文|西|瑞|英|🇭🇰|🇼🇸|🇹🇼|🇸🇬|🇯🇵|🇰🇷|🇺🇸|🇬🇧|🇦🇹|🇧🇪|🇨🇿|🇩🇰|🇫🇮|🇫🇷|🇩🇪|🇮🇪|🇮🇹|🇱🇹|🇱🇺|🇳🇱|🇵🇱|🇸🇪|HK|TW|SG|JP|KR|US|GB|CDG|FRA|AMS|MAD|BCN|FCO|MUC|BRU|HKG|TPE|TSA|KHH|SIN|XSP|NRT|HND|KIX|CTS|FUK|JFK|LAX|ORD|ATL|DFW|SFO|MIA|SEA|IAD|LHR|LGW))'
+FilterVIP: &FilterVIP '(专线|专用|高级|直连|急速|高倍率|IEPL|IPLC|AIA|CTM|CC|iepl|iplc|aia|ctm|cc|AC|x3|X3|x5|X5)'
+FilterBIG: &FilterBIG '(0.[1-5]|低倍率|省流|大流量)'
+FilterGame: &FilterGame "^(?=.*((?i)游戏|\U0001F3AE|(\b(GAME)\b)))(?!.*((?i)回国|校园)).*$"
+FilterAll: &FilterAll '^(?!.*(DIRECT|群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|过滤|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'
+# 锚点 - 规则集
+DomainMrs: &DomainMrs {type: http, interval: 86400, behavior: domain, format: mrs}
+DomainText: &DomainText {type: http, interval: 86400, behavior: domain, format: text}
+domainYaml: &domainYaml {type: http, interval: 86400, behavior: domain, format: yaml}
+IPcidrMrs: &IPcidrMrs {type: http, interval: 86400, behavior: ipcidr, format: mrs}
+IPcidrText: &IPcidrText {type: http, interval: 86400, behavior: ipcidr, format: text}
+ClassicalText: &ClassicalText {type: http, interval: 86400, behavior: classical, format: text}
+ClassicalYaml: &ClassicalYaml {type: http, interval: 86400, behavior: classical, format: yaml}
+# 锚点 - 时延优选参数 [每 30 秒一次惰性健康检查，容差 20ms，时延超过 2 秒判定为失败，失败 3 次则自动触发健康检查]
+UrlTest: &UrlTest {type: url-test, interval: 30, tolerance: 20, lazy: true, url: 'http://detectportal.firefox.com/success.txt', disable-udp: false, timeout: 2000, max-failed-times: 3, hidden: true, include-all-providers: true}
+
 ## ----全局配置------
 
 # 运行模式
@@ -84,118 +108,72 @@ dns:
     - 127.0.0.1:8888
   nameserver:
     - 127.0.0.1:7777
-# 锚点 - 节点订阅的参数 [每小时更新一次订阅节点，每 6 秒一次健康检查]
-NodeParam: &NodeParam {type: http, interval: 3600, health-check: {enable: true, url: 'http://detectportal.firefox.com/success.txt', interval: 6}}
-
-# 锚点 - 节点订阅
-proxy-providers:
-  机场名称1:
-    url: '机场订阅'
-    <<: *NodeParam
-    path: './proxy_providers/sub.yaml'
-
-# 锚点 - 节点筛选组
-FilterAll: &FilterAll '^(?=.*(.))(?!.*((?i)群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|(\b(USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author)\b|(\d{4}-\d{2}-\d{2}|\d+G)))).*$'
-# 策略组参数锚点
-# 锚点 - 时延优选参数 [每 30 秒一次惰性健康检查，容差 20ms，时延超过 2 秒判定为失败，失败 3 次则自动触发健康检查]
-UrlTest: &UrlTest {type: url-test, interval: 30, tolerance: 20, lazy: true, url: 'http://detectportal.firefox.com/success.txt', disable-udp: false, timeout: 2000, max-failed-times: 3, hidden: true, include-all-providers: true}
-# 锚点 - 故障转移参数 [每 6 秒一次惰性健康检查，时延超过 2 秒判定为失败，失败 3 次则自动触发健康检查]
-# FallBack: &FallBack {type: fallback, interval: 6, lazy: true, url: 'http://detectportal.firefox.com/success.txt', disable-udp: false, timeout: 2000, max-failed-times: 3, hidden: true, include-all-providers: true}
-# 锚点 - 负载均衡参数 [每 6 秒一次惰性健康检查，时延超过 2 秒判定为失败，失败 3 次则自动触发健康检查]
-# LoadBalance: &LoadBalance {type: load-balance, interval: 6, lazy: true, url: 'http://detectportal.firefox.com/success.txt', disable-udp: false, strategy: consistent-hashing, timeout: 2000, max-failed-times: 3, hidden: true, include-all-providers: true}
-# 锚点 - 规则参数 [每天更新一次订阅规则，更新规则时使用香港策略，]
-# RuleProviders: &RuleProviders {type: http, behavior: classical, interval: 86400, format: yaml}
 
 proxy-groups:
   - {name: 节点选择, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Filter.png', proxies: [香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 全球直连, 机场节点]}
+  - {name: 手动切换, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Clubhouse.png', proxies: [ 台湾节点, 香港节点, 全球直连, 日本节点, 新加坡节点, 美国节点, 韩国节点, 省流节点, 高级节点, 游戏节点, 机场节点]}
   - {name: 漏网之鱼, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Unlock.png', proxies: [节点选择, 全球直连, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 机场节点]}
-  - {name: 手动切换, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Clubhouse.png', proxies: [台湾节点, 香港节点, 全球直连, 日本节点, 新加坡节点, 美国节点, 韩国节点, 省流节点, 高级节点, 游戏节点, 机场节点]}
+  - {name: 网络测试, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Speedtest.png', proxies: [ 全球直连, 节点选择, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 机场节点]}
   - {name: 人工智能, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/AI.png', proxies: [香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 全球直连, 机场节点]}
-  - {name: 国外媒体, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Netflix.png', proxies: [节点选择, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 全球直连, 机场节点]}
-  - {name: 国内媒体, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/WeTV.png', proxies: [全球直连, 节点选择]}
-  - {name: PT下载, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Download.png', proxies: [全球直连, 节点选择]}
-  - {name: 游戏平台, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Game.png', proxies: [节点选择, 全球直连, 高级节点, 游戏节点]}
+  - {name: 游戏平台, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Game.png', proxies: [ 节点选择, 全球直连, 高级节点, 游戏节点]}
+  - {name: Netflix, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Netflix.png', proxies: [节点选择, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 全球直连, 机场节点]}
+  - {name: YouTube, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/YouTube.png', proxies: [节点选择, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 全球直连, 机场节点]}
   - {name: 苹果服务, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Apple.png', proxies: [全球直连, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 手动切换]}
-  - {name: 微软服务, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Microsoft.png', proxies: [全球直连, 节点选择],}
+  - {name: Google, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Google_Search.png', proxies: [香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 手动切换]}
+  - {name: 微软服务, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Microsoft.png', proxies: [全球直连, 节点选择]}
+  - {name: GitHub, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/GitHub.png', proxies: [节点选择, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 全球直连, 机场节点]}
   - {name: TikTok, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/TikTok.png', proxies: [节点选择, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 全球直连, 机场节点]}
-  - {name: 网络测试, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Speedtest.png', proxies: [全球直连, 节点选择, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 机场节点]}
-  #  - {name: 🎥 奈飞视频, type: select, proxies: [香港节点, 台湾节点, 日本节点, 新加坡节点, 美国节点, 韩国节点]}
-  #  - {name: 📽️ 迪士尼+, type: select, proxies: [香港节点, 台湾节点, 日本节点, 新加坡节点, 美国节点, 韩国节点]}
-  #  - {name: 📹 油管视频, type: select, proxies: [节点选择, 香港节点, 台湾节点, 日本节点, 新加坡节点, 美国节点, 韩国节点]}
-  - {name: 亚马逊, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Amazon.png', proxies: [全球直连, 节点选择]}
+  - {name: Spotify, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Spotify.png', proxies: [节点选择, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点, 省流节点, 高级节点, 手动切换, 全球直连, 机场节点]}
+  - {name: PT站点, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Media.png', proxies: [ 全球直连, 节点选择]}
   - {name: Telegram, type: select, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Telegram_X.png', proxies: [节点选择, 香港节点, 新加坡节点, 韩国节点, 台湾节点, 日本节点, 美国节点]}
-  #  - {name: ☁️ Cloudflare, type: select, proxies: [全球直连, 节点选择]}
-  - {name: 直连软件, type: select, proxies: [全球直连, 节点选择], icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/App_Store.png'}
-  #  - {name: 🔒 私有网络, type: select, proxies: [全球直连]}
-  #  - {name: ⛔ 禁止代理, type: select, proxies: [全球直连]}
-  #  - {name: ✅ 允许代理, type: select, proxies: [节点选择]}
-  - {name: 省流节点, !!merge <<: *UrlTest, filter: "(0.[1-5]|低倍率|省流|大流量)", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Proxy.png'}
-  - {name: 高级节点, !!merge <<: *UrlTest, filter: "(专线|专用|高级|直连|急速|高倍率|IEPL|IPLC|AIA|CTM|CC|iepl|iplc|aia|ctm|cc|AC)", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/VIP.png'}
-  - {name: 游戏节点, !!merge <<: *UrlTest, filter: "^(?=.*((?i)游戏|\U0001F3AE|(\b(GAME)\b)))(?!.*((?i)回国|校园)).*$", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Game.png'}
-  - {name: 香港节点, !!merge <<: *UrlTest, filter: "(?i)港|hk|hongkong|hong kong", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Hong_Kong.png'}
-  - {name: 新加坡节点, !!merge <<: *UrlTest, filter: "(?i)新|sg|singapore", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Singapore.png'}
-  - {name: 韩国节点, !!merge <<: *UrlTest, filter: "(?i)韩|kr|korea", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Korea.png'}
-  - {name: 台湾节点, !!merge <<: *UrlTest, filter: "(?i)台|tw|taiwan", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/China.png'}
-  - {name: 日本节点, !!merge <<: *UrlTest, filter: "(?i)日本|jp|japan", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/JP.png'}
-  - {name: 美国节点, !!merge <<: *UrlTest, filter: "(?i)美|us|unitedstates|united states", icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/United_States.png'}
-  - {name: 机场节点, type: select, include-all-providers: true, filter: *FilterAll, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Airport.png'}
+  - {name: 高级节点, !!merge <<: *UrlTest, filter: *FilterVIP, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/VIP.png'}
+  - {name: 游戏节点, !!merge <<: *UrlTest, filter: *FilterGame, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Game.png'}
+  - {name: 香港节点, !!merge <<: *UrlTest, filter: *FilterHK, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Hong_Kong.png'}
+  - {name: 新加坡节点, !!merge <<: *UrlTest, filter: *FilterSG, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Singapore.png'}
+  - {name: 韩国节点, !!merge <<: *UrlTest, filter: *FilterKR, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Korea.png'}
+  - {name: 台湾节点, !!merge <<: *UrlTest, filter: *FilterTW, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/China.png'}
+  - {name: 日本节点, !!merge <<: *UrlTest, filter: *FilterJP, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/JP.png'}
+  - {name: 美国节点, !!merge <<: *UrlTest, filter: *FilterUS, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/United_States.png'}
+  - {name: 省流节点, !!merge <<: *UrlTest, filter: *FilterBIG, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Proxy.png' }
+  - {name: 机场节点, type: select, include-all-providers: true, filter: *FilterAll, icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Airport.png' }
   - {name: 全球直连, type: select, proxies: [DIRECT], icon: 'https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Direct.png'}
-#  - {name: 🇹🇭 泰国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)泰|th|thailand"}
-#  - {name: 🇩🇪 德国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)德|de|germany"}
-#  - {name: 🇬🇧 英国节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)英|uk|united kingdom"}
-#  - {name: 🇨🇦 加拿大节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)加拿大|ca|canada"}
-#  - {name: 🇦🇺 澳大利亚节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)澳大利亚|au|australia"}
-#  - {name: 🇲🇾 马来西亚节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)马来西亚|my|malaysia"}
-#  - {name: 🇮🇳 印度节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)印度|in|india"}
-#  - {name: 🇹🇷 土耳其节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)土耳其|tr|turkey"}
-#  - {name: 🇦🇷 阿根廷节点, <<: *UrlTest, tolerance: 100, lazy: true, include-all-providers: true, filter: "(?i)阿根廷|ar|argentina"}
 
 rule-providers:
-  SteamCN: {type: http, behavior: classical, format: text, path: ./RuleSet/SteamCN.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/SteamCN/SteamCN.list", interval: 21600, proxy: 香港节点}
-  # 自定义的两个分组看自己需求修改
-  Myself_Direct: {type: http, behavior: classical, format: text, path: ./RuleSet/Myself_Direct.list, url: "https://raw.githubusercontent.com/baozaodetudou/singbox/refs/heads/main/mihomo/direct.list", interval: 21600, proxy: 香港节点}
-  Myself_Proxy: {type: http, behavior: classical, format: text, path: ./RuleSet/Myself_Proxy.list, url: "https://raw.githubusercontent.com/baozaodetudou/singbox/refs/heads/main/mihomo/proxy.list", interval: 21600, proxy: 香港节点}
-#  Tailscale-Derp: {type: http, behavior: classical, format: text, path: ./RuleSet/Tailscale-Derp.list, url: "**自定义", interval: 21600}
-  Private: {type: http, behavior: classical, format: text, path: ./RuleSet/Lan.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Lan/Lan.list", interval: 21600, proxy: 香港节点}
-  Direct: {type: http, behavior: classical, format: text, path: ./RuleSet/Direct.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Direct/Direct.list", interval: 21600, proxy: 香港节点}
-  PT: {type: http, behavior: classical, format: text, path: ./RuleSet/PT.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/PrivateTracker/PrivateTracker.list", interval: 21600, proxy: 香港节点}
-  Applications: {type: http, behavior: classical, format: text, path: ./RuleSet/Applications.list, url: "https://cdn.jsdelivr.net/gh/DustinWin/ruleset_geodata@clash-ruleset/applications.list", interval: 21600, proxy: 香港节点}
-  Speedtest: {type: http, behavior: classical, format: text, path: ./RuleSet/Speedtest.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/Speedtest/Speedtest.list", interval: 21600, proxy: 香港节点}
-  Apple: {type: http, behavior: classical, format: text, path: ./RuleSet/Apple.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.list", interval: 21600, proxy: 香港节点}
-  OpenAI: {type: http, behavior: classical, format: text, path: ./RuleSet/OpenAI.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/OpenAI/OpenAI.list", interval: 21600, proxy: 香港节点}
-  Bing: {type: http, behavior: classical, format: text, path: ./RuleSet/Bing.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Bing/Bing.list", interval: 21600, proxy: 香港节点}
-  Gemini: {type: http, behavior: classical, format: text, path: ./RuleSet/Gemini.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Gemini/Gemini.list", interval: 21600, proxy: 香港节点}
-  Claude: {type: http, behavior: classical, format: text, path: ./RuleSet/Claude.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Claude/Claude.list", interval: 21600, proxy: 香港节点}
-  Copilot: {type: http, behavior: classical, format: text, path: ./RuleSet/Copilot.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/Copilot/Copilot.list", interval: 21600, proxy: 香港节点}
-  AmazonCN: {type: http, behavior: classical, format: text, path: ./RuleSet/AmazonCN.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AmazonCN/AmazonCN.list", interval: 21600, proxy: 香港节点}
-#  Cloudflarecn: {type: http, behavior: classical, format: text, path: ./RuleSet/Cloudflarecn.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Cloudflarecn/Cloudflarecn.list", interval: 21600}
-#  OneDrive: {type: http, behavior: classical, format: text, path: ./RuleSet/OneDrive.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/OneDrive/OneDrive.list", interval: 21600}
-  Microsoft: {type: http, behavior: classical, format: text, path: ./RuleSet/Microsoft.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.list", interval: 21600, proxy: 香港节点}
-  Amazon: {type: http, behavior: classical, format: text, path: ./RuleSet/Amazon.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Amazon/Amazon.list", interval: 21600, proxy: 香港节点}
-  Telegram: {type: http, behavior: classical, format: text, path: ./RuleSet/Telegram.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.list", interval: 21600, proxy: 香港节点}
-  Epic: {type: http, behavior: classical, format: text, path: ./RuleSet/Epic.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Epic/Epic.list", interval: 21600, proxy: 香港节点}
-  Sony: {type: http, behavior: classical, format: text, path: ./RuleSet/Sony.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Sony/Sony.list", interval: 21600, proxy: 香港节点}
-  Steam: {type: http, behavior: classical, format: text, path: ./RuleSet/Steam.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Steam/Steam.list", interval: 21600, proxy: 香港节点}
-  Nintendo: {type: http, behavior: classical, format: text, path: ./RuleSet/Nintendo.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Nintendo/Nintendo.list", interval: 21600, proxy: 香港节点}
-#  Cloudflare: {type: http, behavior: classical, format: text, path: ./RuleSet/Cloudflare.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Cloudflare/Cloudflare.list", interval: 21600}
-#  YouTube: {type: http, behavior: classical, format: text, path: ./RuleSet/YouTube.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/YouTube/YouTube.list", interval: 21600}
-#  Netflix: {type: http, behavior: classical, format: text, path: ./RuleSet/Netflix.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Netflix/Netflix.list", interval: 21600}
-#  Disney: {type: http, behavior: classical, format: text, path: ./RuleSet/Disney.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Disney/Disney.list", interval: 21600}
-  ChinaMedia: {type: http, behavior: classical, format: text, path: ./RuleSet/ChinaMedia.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMedia/ChinaMedia.list", interval: 21600, proxy: 香港节点}
-  TikTok: {type: http, behavior: classical, format: text, path: ./RuleSet/TikTok.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TikTok/TikTok.list", interval: 21600, proxy: 香港节点}
-  GlobalMedia: {type: http, behavior: classical, format: text, path: ./RuleSet/GlobalMedia.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GlobalMedia/GlobalMedia.list", interval: 21600, proxy: 香港节点}
-  Docker: {type: http, behavior: classical, format: text, path: ./RuleSet/Docker.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Docker/Docker.list", interval: 21600, proxy: 香港节点}
-  GitHub: {type: http, behavior: classical, format: text, path: ./RuleSet/GitHub.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GitHub/GitHub.list", interval: 21600, proxy: 香港节点}
-  Proxy: {type: http, behavior: classical, format: text, path: ./RuleSet/Proxy.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.list", interval: 21600, proxy: 香港节点}
-#  ChinaMaxNoIP: {type: http, behavior: classical, format: text, path: ./RuleSet/ChinaMax.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMaxNoIP/ChinaMaxNoIP.list", interval: 21600, proxy: 香港节点}
-#  ChinaASN: {type: http, behavior: classical, format: text, path: ./RuleSet/ChinaASN.list, url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/ChinaASN/ChinaASN_Resolve.list", interval: 21600, proxy: 香港节点}
-  ChinaMaxNoIP: {type: http, behavior: domain, format: mrs, url: "https://github.com/666OS/YYDS/raw/main/mihomo/rules/cn.mrs", interval: 21600, proxy: 香港节点}
+  # 域名规则
+  Spotify: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/spotify.mrs}
+  Docker: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/docker.mrs}
+  Telegram: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/telegram.mrs}
+  OpenAI: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/openai.mrs}
+  Gemini: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/google-deepmind.mrs}
+  AIChat: { <<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ai-chat-!cn.mrs}
+  AIChatCN: { <<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ai-cn.mrs}
+  YouTube: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/youtube.mrs}
+  Google: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/google.mrs}
+  GitHub: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/github.mrs}
+  Apple: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/apple.mrs}
+  AppleCN: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/apple-cn.mrs}
+  Microsoft: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/microsoft.mrs}
+  TikTok: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/tiktok.mrs}
+  China: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/cn.mrs}
+  Foreign: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/geolocation-!cn.mrs}
+  PT: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-pt.mrs}
+  ChinaSpeedtest: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-speedtest@cn.mrs}
+  ForeignSpeedtest: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-speedtest.mrs}
+  SteamCN: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/steam@cn.mrs}
+  Steam: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/steam.mrs}
+  Private: {<<: *DomainMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/private.mrs}
+  # IP规则
+  NetflixIP: {<<: *IPcidrMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/netflix.mrs}
+  TelegramIP: {<<: *IPcidrMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/telegram.mrs}
+  ChinaIP: {<<: *IPcidrMrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs}
 
 rules:
-  - RULE-SET,Direct,全球直连
-  - DOMAIN-SUFFIX,fx168news.com,节点选择
+  # 常用必备
+  - DST-PORT,123,DIRECT
+  # 自定义域名
   - DOMAIN-SUFFIX,test-ipv6.com,全球直连
   - DOMAIN-SUFFIX,ipv6ready.me,全球直连
+  # IPTV
   - DOMAIN-SUFFIX,dnsany.com,全球直连
   - DOMAIN-SUFFIX,cmvideo.cn,全球直连
   - DOMAIN-SUFFIX,chinamobile.com,全球直连
@@ -203,45 +181,48 @@ rules:
   - DOMAIN-SUFFIX,gitv.tv,全球直连
   - DOMAIN-SUFFIX,cctv.cn,全球直连
   - DOMAIN-SUFFIX,yangshipin.cn,全球直连
+  # 8.8.8.8
   - IP-CIDR,8.8.8.8/32,节点选择
   - IP-CIDR,1.1.1.1/32,节点选择
-
-  - RULE-SET,Speedtest,网络测试
-  - RULE-SET,PT,PT下载
-  #PT 站点补全
-  - DOMAIN-SUFFIX,piggo.me,PT下载
-  - DOMAIN-SUFFIX,agsvpt.com,PT下载
-  - DOMAIN-SUFFIX,azusa.wiki,PT下载
-  - DOMAIN-SUFFIX,discfan.net,PT下载
-  - DOMAIN-SUFFIX,playletpt.xyz,PT下载
-  - RULE-SET,Myself_Direct,全球直连
-  - RULE-SET,Myself_Proxy,节点选择
-  - RULE-SET,SteamCN,全球直连
-  - RULE-SET,Private,全球直连
-  - RULE-SET,Applications,直连软件
-  - RULE-SET,Apple,苹果服务
-  - RULE-SET,OpenAI,人工智能
-#  - RULE-SET,Bing,人工智能
-  - RULE-SET,Gemini,人工智能
-  - RULE-SET,Claude,人工智能
-  - RULE-SET,Copilot,人工智能
-  - RULE-SET,AmazonCN,全球直连
-  - RULE-SET,Microsoft,微软服务
-  - RULE-SET,Amazon,亚马逊
-  - RULE-SET,Telegram,Telegram
-  - RULE-SET,Epic,游戏平台
-  - RULE-SET,Sony,游戏平台
-  - RULE-SET,Steam,游戏平台
-  - RULE-SET,Nintendo,游戏平台
-#  - RULE-SET,YouTube,📹 油管视频
-#  - RULE-SET,Netflix,🎥 奈飞视频
-#  - RULE-SET,Disney,📽️ 迪士尼+
-  - RULE-SET,ChinaMedia,国内媒体
-  - RULE-SET,TikTok,TikTok
-  - RULE-SET,GlobalMedia,国外媒体
+  # 域名路由
+  - RULE-SET,Spotify,Spotify
   - RULE-SET,Docker,节点选择
-  - RULE-SET,GitHub,节点选择
-  - RULE-SET,Proxy,节点选择
-  - RULE-SET,ChinaMaxNoIP,全球直连
-  - GEOIP,CN,全球直连
+  - RULE-SET,Telegram,Telegram
+  - RULE-SET,OpenAI,人工智能
+  - RULE-SET,Gemini,人工智能
+  - RULE-SET,AIChat,人工智能
+  - RULE-SET,AIChatCN,全球直连
+  - RULE-SET,YouTube,YouTube
+  - RULE-SET,Google,Google
+  - RULE-SET,GitHub,GitHub
+  - RULE-SET,AppleCN,全球直连
+  - RULE-SET,Apple,苹果服务
+  - RULE-SET,Microsoft,微软服务
+  - RULE-SET,TikTok,TikTok
+  - RULE-SET,China,全球直连
+  - RULE-SET,ChinaSpeedtest,全球直连
+  - RULE-SET,Foreign,节点选择
+  - RULE-SET,ForeignSpeedtest,网络测试
+  - RULE-SET,PT,PT站点
+  - RULE-SET,SteamCN,全球直连
+  - RULE-SET,Steam,游戏平台
+  - RULE-SET,Private,全球直连
+  # IP 路由
+  - RULE-SET,NetflixIP,Netflix,no-resolve
+  - RULE-SET,TelegramIP,Telegram,no-resolve
+  - RULE-SET,ChinaIP,全球直连,no-resolve
+  # tracker都走直连
+  - DOMAIN-KEYWORD,tracker,DIRECT
   - MATCH,漏网之鱼
+
+# 节点订阅
+proxy-providers:
+  机场名称1:
+    url: '机场订阅'
+    type: http
+    interval: 3600
+    health-check:
+      enable: true
+      url: http://detectportal.firefox.com/success.txt
+      interval: 6
+    path: './proxy_providers/sub.yaml'
