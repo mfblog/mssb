@@ -615,18 +615,21 @@ check_interfaces() {
     echo -e "\n${green_text}=== 网卡选择 ===${reset}"
     ip_map=()
     ip_interfaces=()
-    # 只查找UP的en/eth开头的物理网卡
-    while read -r line; do
-        iface=$(echo "$line" | awk -F': ' '{print $2}' | awk -F'@' '{print $1}')
-        state=$(echo "$line" | grep -o 'state [A-Z]*' | awk '{print $2}')
-        if [[ $iface =~ ^(en|eth).* ]] && [[ $state == "UP" ]]; then
-            ip_addr=$(ip -4 addr show "$iface" | grep -oP '(?<=inet\\s)\\d+(\\.\\d+){3}')
-            if [ -n "$ip_addr" ]; then
-                ip_map+=("$iface:$ip_addr")
-                ip_interfaces+=("$iface")
+    # 只查找UP且有IPv4的en/eth开头的物理网卡
+    while read -r iface; do
+        if [[ $iface =~ ^(en|eth).* ]]; then
+            # 判断是否UP
+            state=$(ip -o link show "$iface" | grep -o 'state [A-Z]*' | awk '{print $2}')
+            if [[ $state == "UP" ]]; then
+                # 查找IPv4
+                ip_addr=$(ip addr show "$iface" | awk '/inet /{print $2}' | cut -d/ -f1)
+                if [ -n "$ip_addr" ]; then
+                    ip_map+=("$iface:$ip_addr")
+                    ip_interfaces+=("$iface")
+                fi
             fi
         fi
-    done < <(ip -o link show)
+    done < <(ip -o link show | awk -F': ' '{print $2}')
 
     count=${#ip_interfaces[@]}
     if [ "$count" -eq 0 ]; then
