@@ -613,25 +613,47 @@ EOF
 # 网卡检测或者手动输入
 check_interfaces() {
     echo -e "\n${green_text}=== 网卡选择 ===${reset}"
-    interfaces=$(ip -o link show | awk -F': ' '{print $2}')
-    # 输出物理网卡名称
-    for interface in $interfaces; do
-        if [[ $interface =~ ^(en|eth).* ]]; then
-            interface_name=$(echo "$interface" | awk -F'@' '{print $1}')
-            echo "您的网卡是：$interface_name"
+    ip_map=()
+    ip_interfaces=()
+    # 只查找UP的en/eth开头的物理网卡
+    while read -r line; do
+        iface=$(echo "$line" | awk -F': ' '{print $2}' | awk -F'@' '{print $1}')
+        state=$(echo "$line" | grep -o 'state [A-Z]*' | awk '{print $2}')
+        if [[ $iface =~ ^(en|eth).* ]] && [[ $state == "UP" ]]; then
+            ip_addr=$(ip -4 addr show "$iface" | grep -oP '(?<=inet\\s)\\d+(\\.\\d+){3}')
+            if [ -n "$ip_addr" ]; then
+                ip_map+=("$iface:$ip_addr")
+                ip_interfaces+=("$iface")
+            fi
         fi
-    done
-    read -p "脚本自行检测的是否是您要的网卡？(y/n): " confirm_interface
-    if [ "$confirm_interface" = "y" ]; then
-        selected_interface="$interface_name"
-        log "您选择的网卡是: $selected_interface"
-    elif [ "$confirm_interface" = "n" ]; then
+    done < <(ip -o link show)
+
+    count=${#ip_interfaces[@]}
+    if [ "$count" -eq 0 ]; then
+        echo -e "${red}未检测到UP且有IP的物理网卡，请手动输入网卡名称。${reset}"
         read -p "请自行输入您的网卡名称: " selected_interface
         log "您输入的网卡名称是: $selected_interface"
+    elif [ "$count" -eq 1 ]; then
+        iface="${ip_interfaces[0]}"
+        ip_addr=$(echo "${ip_map[0]}" | cut -d: -f2)
+        echo "检测到唯一UP且有IP的物理网卡: $iface, IP: $ip_addr"
+        read -p "是否使用该网卡？(y/n): " confirm
+        if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+            selected_interface="$iface"
+            log "您选择的网卡是: $selected_interface"
+        else
+            read -p "请自行输入您的网卡名称: " selected_interface
+            log "您输入的网卡名称是: $selected_interface"
+        fi
     else
-        log "默认y继续进行"
-        selected_interface="$interface_name"
-        log "您选择的网卡是: $selected_interface"
+        echo -e "${yellow}检测到多个UP且有IP的物理网卡，无法自动判断，请手动输入。${reset}"
+        for item in "${ip_map[@]}"; do
+            iface="${item%%:*}"
+            ip="${item#*:}"
+            echo "网卡: $iface, IP: $ip"
+        done
+        read -p "请自行输入您的网卡名称: " selected_interface
+        log "您输入的网卡名称是: $selected_interface"
     fi
 }
 
