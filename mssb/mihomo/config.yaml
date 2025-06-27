@@ -155,7 +155,7 @@ rule-providers:
   Microsoft: {<<: *DomainMrs, path: ./rules/microsoft.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/microsoft.mrs}
   TikTok: {<<: *DomainMrs, path: ./rules/tiktok.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/tiktok.mrs}
 #  China: {<<: *DomainMrs, path: ./rules/cn.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/cn.mrs}
-  Foreign: {<<: *DomainMrs, path: ./rules/geolocation-!cn.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/geolocation-!cn.mrs}
+#  Foreign: {<<: *DomainMrs, path: ./rules/geolocation-!cn.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/geolocation-!cn.mrs}
   PT: {<<: *DomainMrs, path: ./rules/category-pt.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-pt.mrs}
   ChinaSpeedtest: {<<: *DomainMrs, path: ./rules/category-speedtest@cn.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-speedtest@cn.mrs}
   ForeignSpeedtest: {<<: *DomainMrs, path: ./rules/category-speedtest.mrs, url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-speedtest.mrs}
@@ -201,7 +201,7 @@ rules:
   - RULE-SET,TikTok,TikTok
 #  - RULE-SET,China,全球直连
   - RULE-SET,ChinaSpeedtest,全球直连
-  - RULE-SET,Foreign,节点选择
+#  - RULE-SET,Foreign,节点选择
   - RULE-SET,ForeignSpeedtest,网络测试
   - RULE-SET,PT,PT站点
   - RULE-SET,SteamCN,全球直连
