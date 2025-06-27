@@ -684,6 +684,9 @@ mosdns_configure_files() {
             log "未设置代理设备列表，未写入 /mssb/mosdns/client_ip.txt 文件"
         fi
     fi
+    if [ -d "/mssb/mosdns.bak" ]; then
+      rm -rf /mssb/mosdns.bak
+    fi
 }
 
 copy_fb_folder() {
