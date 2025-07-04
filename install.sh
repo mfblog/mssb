@@ -1934,6 +1934,8 @@ install_update_server() {
     #check_ui
     sleep 1
     check_ui
+    sleep 1
+    supervisorctl restart all
     # 显示路由规则提示
     format_route_rules
 
