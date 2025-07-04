@@ -1,4 +1,11 @@
 plugins:
+#域名排行
+  - tag: top_domains
+    type: domain_output
+    args:
+      file_stat: /mssb/mosdns/gen/top_domains.txt
+      max_entries: 1000
+      dump_interval: 36000
 #列表外域名访问记录
   - tag: my_notinlist
     type: domain_output

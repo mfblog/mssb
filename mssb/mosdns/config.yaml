@@ -42,6 +42,7 @@ plugins:
   - tag: sequence_6666
     type: sequence
     args:
+      - exec: $top_domains
       - matches:    #阻止SOA PTR HTTPS类型的dns查询
         - switch5 'A'
         - "qtype 6 12 65"
@@ -100,10 +101,12 @@ plugins:
     args:
       entry: sequence_6666
       listen: ":53"
+      enable_audit: true
 
   - tag: tcp_all
     type: tcp_server
     args:
       entry: sequence_6666
       listen: ":53"
+      enable_audit: true
       idle_timeout: 720
