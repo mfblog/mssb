@@ -2,8 +2,8 @@ plugins:
   - tag: sequence_not_in_list_noleak
     type: sequence
     args:
-      - matches: "resp_ip 127.0.0.3 ::3"
-        exec: $my_notinlist     
+#      - matches: "resp_ip 127.0.0.3 ::3"
+#        exec: $my_notinlist     
       - exec: drop_resp      #丢弃用于标记的blackhole ip  
       - exec: $sequence_google_node #表外域名先带ecs发到8888
       - matches: "!resp_ip 0.0.0.0/0 2000::/3"   #rcode 235及没有IP等情况
@@ -17,12 +17,12 @@ plugins:
       - matches:
         - "qtype 28"
         - "rcode 3"
-        - "!cname keyword:."
+#        - "!cname keyword:."
         exec: $my_nov6list  #生成域名规则
       - matches:
         - "qtype 1"
         - "rcode 3"
-        - "!cname keyword:."
+#        - "!cname keyword:."
         exec: $my_nov4list  #生成域名规则
       - matches: "rcode 3"   #没有域名
         exec: accept
@@ -56,4 +56,6 @@ plugins:
         exec: $sequence_fakeip
       - matches: mark 89
         exec: $my_fakeiplist
+      - matches: "!mark 89"
+        exec: $my_realiplist
       - exec: accept

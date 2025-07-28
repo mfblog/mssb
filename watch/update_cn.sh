@@ -88,14 +88,26 @@ main() {
     direct_list_url="https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/cn.srs"
     cn_ip_cidr_url="https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs"
 
+    jsonproxy_list_url="https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.json"
+    jsondirect_list_url="https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/cn.json"
+    jsoncn_ip_cidr_url="https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.json"
+
     # 设置本地文件路径
-    geosite_geolocation_noncn_file="/mssb/mosdns/unpack/geolocation-!cn.srs"
-    geosite_cn_file="/mssb/mosdns/unpack/geosite-cn.srs"
-    geoip_cn_file="/mssb/mosdns/unpack/geoip-cn.srs"
+    geosite_geolocation_noncn_file="/mssb/mosdns/srs/geositenocn.srs"
+    geosite_cn_file="/mssb/mosdns/srs/geositecn.srs"
+    geoip_cn_file="/mssb/mosdns/srs/geoipcn.srs"
+
+    jsongeosite_geolocation_noncn_file="/mssb/mosdns/srs/geositenocn.json"
+    jsongeosite_cn_file="/mssb/mosdns/srs/geositecn.json"
+    jsongeoip_cn_file="/mssb/mosdns/srs/geoipcn.json"
     # 确保目录存在
     mkdir -p "$(dirname "$geosite_geolocation_noncn_file")"
 
     # 下载文件
+    download_file "$jsonproxy_list_url" "$jsongeosite_geolocation_noncn_file" "代理列表" || exit 1
+    download_file "$jsondirect_list_url" "$jsongeosite_cn_file" "直连列表" || exit 1
+    download_file "$jsoncn_ip_cidr_url" "$jsongeoip_cn_file" "CN IP CIDR" || exit 1
+
     download_file "$proxy_list_url" "$geosite_geolocation_noncn_file" "代理列表" || exit 1
     download_file "$direct_list_url" "$geosite_cn_file" "直连列表" || exit 1
     download_file "$cn_ip_cidr_url" "$geoip_cn_file" "CN IP CIDR" || exit 1

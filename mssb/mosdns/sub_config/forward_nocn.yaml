@@ -10,7 +10,7 @@ plugins:
           socks5: "127.0.0.1:7891"
         - addr: "https://8.8.8.8/dns-query"
           socks5: "127.0.0.1:7891"
-          upstream_query_timeout: 700
+          upstream_query_timeout: 1000
 
 #国内域名 内部使用
   - tag: sequence_google_in
@@ -23,16 +23,17 @@ plugins:
         - has_resp
         exec: accept
       - exec: $forward_google
+      - exec: cname_remover
 
 #国外
   - tag: udp_google
     type: udp_server
     args:
       entry: sequence_google_in
-      listen: ":3333"
+      listen: 127.0.0.1:3333
 
   - tag: tcp_google
     type: tcp_server
     args:
       entry: sequence_google_in
-      listen: ":3333"
+      listen: 127.0.0.1:3333

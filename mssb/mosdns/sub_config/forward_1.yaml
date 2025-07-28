@@ -6,7 +6,7 @@ plugins:
     args:
       concurrent: 1
       upstreams:
-        - addr: "udp://127.0.0.1:6666"
+        - addr: "udp://127.0.0.1:7874"
 
 #使用内部的国内dns服务器
   - tag: forward_local_in
@@ -29,9 +29,15 @@ plugins:
     type: sequence
     args:
       - exec: drop_resp      #丢弃用于标记的blackhole ip
-      - exec: $forward_local_in
+      - matches: switch4 'A'
+        exec: $cache_cn
+      - matches:
+        - switch4 'A'
+        - has_resp
+        exec: accept
+      - exec: $forward_local
+      - exec: cname_remover
 
-#缓存序列-国内域名
 #单次请求fakeip
   - tag: sequence_fakeip_single
     type: sequence
@@ -39,7 +45,7 @@ plugins:
       - exec: drop_resp      #丢弃用于标记的blackhole ip
       - exec: $forward_fakeip
 
-  #20ms内不回应fakeip，自动再次请求
+#缓存序列-fakeip
   - tag: sequence_fakeip
     type: fallback
     args:
@@ -53,4 +59,11 @@ plugins:
     type: sequence
     args:
       - exec: drop_resp      #丢弃用于标记的blackhole ip
-      - exec: $forward_google_in
+      - matches: switch4 'A'
+        exec: $cache_google
+      - matches:
+        - switch4 'A'
+        - has_resp
+        exec: accept
+      - exec: $forward_google
+      - exec: cname_remover

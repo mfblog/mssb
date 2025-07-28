@@ -30,14 +30,14 @@ plugins:
         - "mark 11"
         - "rcode 0 2 3 5"
         - "!resp_ip 2000::/3"
-        - "!cname keyword:."
+#        - "!cname keyword:."
         exec: $my_nov6list  #生成域名规则
       - matches:
         - "qtype 1"  
         - "mark 11"
         - "rcode 0 2 3 5"
         - "!resp_ip 0.0.0.0/0"
-        - "!cname keyword:."
+#        - "!cname keyword:."
         exec: $my_nov4list  #生成域名规则
       - matches: mark 11  #白名单中域名不往下漏
         exec: accept
@@ -87,7 +87,7 @@ plugins:
         - "rcode 0 2 3 5"
         - "!resp_ip 2000::/3"
         - "!resp_ip ::1 ::2 ::3"
-        - "!cname keyword:."
+#        - "!cname keyword:."
         exec: $my_nov6list  #生成域名规则
       - matches:
         - "qtype 28"  #非A的有realip的情况

@@ -1,0 +1,7 @@
+# 干掉V6请求 这些域名只有v4结果，不需要请求v6
+
+# 腾讯CDN (smtcdns.net - 32-char hex)
+regexp:^[0-9a-f]{32}\.v\.smtcdns\.net$
+
+# 腾讯服务 (ahdohpiechei.com - 9-10 digit number)
+regexp:^(\d{9,10})\.ahdohpiechei\.com$

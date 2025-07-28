@@ -1,4 +1,5 @@
-domain:unraid.net
+domain:vegslb.com
+domain:idouyinvod.com
 domain:tracker.m-team.io
 domain:tracker.hdsky.me
 domain:steamcontent.com

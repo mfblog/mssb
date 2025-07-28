@@ -1,3 +1,5 @@
+domain:google.cn
+domain:piaohua.com
 domain:4d4y.com
 domain:nflxvideo.net
 full:mypikpak.com
@@ -62,3 +64,4 @@ keyword:apiproxy-device-prod-nlb-
 keyword:dualstack.apiproxy-
 keyword:dualstack.ichnaea-web-
 keyword:netflixdnstest
+keyword:browserleak

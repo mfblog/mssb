@@ -1,0 +1,19 @@
+#�ɵ�V4������Щ����ֻ��v6���������Ҫ����v4
+#雾出云 pcdn (smtcdns.com & smtcdns.net - 48-char hex)
+regexp:^[0-9a-f]{48}\.v\.smtcdns\.com$
+regexp:^[0-9a-f]{48}\.v\.smtcdns\.net$
+
+# ��ѶP2P (ahdohpiechei.com - 32-char hex)
+regexp:^[0-9a-f]{32}\.ahdohpiechei\.com$
+
+# ��ѶP2P (homeborn.cn - IP-as-hostname)
+regexp:^([0-9a-f]{1,4}-){7}[0-9a-f]{1,4}-[0-9a-f]+\.erer\.homeborn\.cn$
+
+# �ֽ�����CDN (bsgslb.cn - long string)
+regexp:^[a-z0-9]{50,}\.tt\.x\.bsgslb\.cn$
+
+# С��CDN (siomxity.net - long string)
+regexp:^[a-z0-9]{50,}\.siomxity\.(net|com)$
+
+# ����Ͱ�CDN (sealaly.net - long string)
+regexp:^[a-z0-9]{50,}\.sealaly\.net$

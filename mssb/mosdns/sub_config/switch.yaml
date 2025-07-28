@@ -37,3 +37,17 @@ plugins:
     args:
       initial_value: "/mssb/mosdns/rule/switch5.txt"
 
+#按需打开
+#是否阻止AAAA类型的dns查询  'A'-打开  'B'-关闭  
+  - tag: switch6
+    type: switch6
+    args:
+      initial_value: "/mssb/mosdns/rule/switch6.txt"
+
+#按需打开
+#是否打开adguard去广告功能  'A'-打开  'B'-关闭  
+  - tag: switch7
+    type: switch7
+    args:
+      initial_value: "/mssb/mosdns/rule/switch7.txt"
+

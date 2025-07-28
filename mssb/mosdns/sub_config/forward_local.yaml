@@ -4,12 +4,28 @@ plugins:
   - tag: forward_local
     type: forward
     args:
-      concurrent: 3
+      concurrent: 2
       upstreams:
         - addr: "223.5.5.5"
-        - addr: "quic://223.5.5.5"
-        - addr: "221.130.33.60"
+        - addr: "202.102.128.68"
           upstream_query_timeout: 500
+
+##阿里私有doh使用示例
+#  - tag: forward_local
+#    type: aliapi
+#    args:
+#      concurrent: 2
+#      account_id: ""
+#      access_key_id: ""
+#      access_key_secret: ""
+#      server_addr: "223.5.5.5"
+##      ecs_client_ip: "123.233.176.139"
+##      ecs_client_mask: 24
+#      upstreams:
+#        - tag: alidns
+#          type: aliapi  
+#        - addr: "202.102.128.68"
+#          upstream_query_timeout: 300
 
 #国内域名 内部使用
   - tag: sequence_local_in
@@ -22,16 +38,17 @@ plugins:
         - has_resp
         exec: accept
       - exec: $forward_local
+      - exec: cname_remover
 
 #国内
   - tag: udp_local
     type: udp_server
     args:
       entry: sequence_local_in
-      listen: ":2222"
+      listen: 127.0.0.1:2222
 
   - tag: tcp_local
     type: tcp_server
     args:
       entry: sequence_local_in
-      listen: ":2222"
+      listen: 127.0.0.1:2222

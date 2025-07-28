@@ -31,6 +31,9 @@ plugins:
     args:
       file_stat: /mssb/mosdns/gen/fakeiplist.txt
       file_rule: /mssb/mosdns/gen/fakeiprule.txt
+#      gen_rule: /mssb/AdGuardHome/data/userfilters/fakeip.txt
+#      pattern: "[/DOMAIN/]127.0.0.1:7874"
+#      appended_string: "udp://127.0.0.1:6666"
       max_entries: 1000
       dump_interval: 36010
       domain_set_url: "http://127.0.0.1:9099/plugins/my_fakeiprule/post"
@@ -41,6 +44,8 @@ plugins:
     args:
       file_stat: /mssb/mosdns/gen/nov6list.txt
       file_rule: /mssb/mosdns/gen/nov6rule.txt
+#      gen_rule: /mssb/AdGuardHome/data/userfilters/nov6.txt
+#      pattern: "|DOMAIN^$dnstype=AAAA,dnsrewrite=NOERROR"
       max_entries: 100
       dump_interval: 36040
       domain_set_url: "http://127.0.0.1:9099/plugins/my_nov6rule/post"
@@ -51,6 +56,8 @@ plugins:
     args:
       file_stat: /mssb/mosdns/gen/nov4list.txt
       file_rule: /mssb/mosdns/gen/nov4rule.txt
+#      gen_rule: /mssb/AdGuardHome/data/userfilters/nov4.txt
+#      pattern: "|DOMAIN^$dnstype=A,dnsrewrite=NOERROR"
       max_entries: 3
       dump_interval: 36030
       domain_set_url: "http://127.0.0.1:9099/plugins/my_nov4rule/post"
