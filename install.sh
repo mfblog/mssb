@@ -917,9 +917,6 @@ add_cron_jobs() {
     if [[ "$enable_mosdns_cron" =~ ^[Yy]$ ]]; then
         cron_jobs+=("0 4 * * 1 /watch/update_mosdns.sh # update_mosdns")
     fi
-    if [[ "$enable_cn_cron" =~ ^[Yy]$ ]]; then
-        cron_jobs+=("15 4 * * 1 /watch/update_cn.sh # update_cn")
-    fi
     if [[ "$enable_core_cron" =~ ^[Yy]$ ]]; then
         if [ "$core_name" = "sing-box" ]; then
             cron_jobs+=("10 4 * * 1 /watch/update_sb.sh # update_sb")
@@ -1791,10 +1788,6 @@ update_cores_menu() {
                 echo -e "${red}Mihomo 未安装，无法更新${reset}"
             fi
             ;;
-        4)
-            echo -e "${green_text}正在更新 CN域名数据...${reset}"
-            /watch/update_cn.sh
-            ;;
         5)
             echo -e "${green_text}正在更新所有已安装的组件...${reset}"
             if $mosdns_installed; then
@@ -1809,8 +1802,6 @@ update_cores_menu() {
                 echo -e "${green_text}更新 Mihomo...${reset}"
                 /watch/update_mihomo.sh
             fi
-            echo -e "${green_text}更新 CN域名数据...${reset}"
-            /watch/update_cn.sh
             ;;
         0)
             echo -e "${yellow}返回主菜单${reset}"
@@ -2037,8 +2028,6 @@ load_or_init_env() {
     # 定时任务细分
     read -p "是否启用 MosDNS 自动更新？(y/n, 默认y): " enable_mosdns_cron
     enable_mosdns_cron=${enable_mosdns_cron:-y}
-    read -p "是否启用 MosDNS CN 域名IP数据库自动更新？(y/n, 默认y): " enable_cn_cron
-    enable_cn_cron=${enable_cn_cron:-y}
     read -p "是否启用singbo/mihomo核心自动更新？(y/n, 默认y): " enable_core_cron
     enable_core_cron=${enable_core_cron:-y}
 
@@ -2096,8 +2085,6 @@ fb_login_mode=$fb_login_mode
 sub_urls="$sub_urls"
 # 是否启用MosDNS自动更新（y/n）
 enable_mosdns_cron=$enable_mosdns_cron
-# 是否启用MosDNS CN域名IP数据库自动更新（y/n）
-enable_cn_cron=$enable_cn_cron
 # 是否启用核心自动更新（y/n）
 enable_core_cron=$enable_core_cron
 # 需要代理的设备IP列表
