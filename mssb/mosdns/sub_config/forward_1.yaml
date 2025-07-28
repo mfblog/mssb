@@ -6,7 +6,7 @@ plugins:
     args:
       concurrent: 1
       upstreams:
-        - addr: "udp://127.0.0.1:7874"
+        - addr: "udp://127.0.0.1:6666"
 
 #使用内部的国内dns服务器
   - tag: forward_local_in
