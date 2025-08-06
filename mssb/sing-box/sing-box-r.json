@@ -132,7 +132,7 @@
             "default": "🇭🇰 香港节点-urltest"
         },
         {
-            "tag": "自定义规则",
+            "tag": "自定义直连",
             "type": "selector",
             "outbounds": [
                 "direct",
@@ -154,11 +154,35 @@
             "default": "direct"
         },
         {
+            "tag": "自定义代理",
+            "type": "selector",
+            "outbounds": [
+                "direct",
+                "🚀 节点选择",
+                "♻️ 手动选择",
+                "🇭🇰 香港节点-urltest",
+                "🇸🇬 狮城节点-urltest",
+                "🇰🇷 韩国节点-urltest",
+                "✨台湾节点-urltest",
+                "🇯🇵 日本节点-urltest",
+                "🇺🇲 美国节点-urltest",
+                "🇭🇰 香港节点",
+                "🇸🇬 狮城节点",
+                "🇰🇷 韩国节点",
+                "✨台湾节点",
+                "🇯🇵 日本节点",
+                "🇺🇲 美国节点"
+            ],
+            "default": "🇭🇰 香港节点-urltest"
+        },
+        {
             "tag": "🎬 PT站点",
             "type": "selector",
             "outbounds": [
                 "direct",
                 "🚀 节点选择",
+                "🇭🇰 香港节点-urltest",
+                "🇭🇰 香港节点",
                 "♻️ 手动选择"
             ],
             "exclude": "Premium",
@@ -492,9 +516,19 @@
                 "domain_suffix": [
                     "test-ipv6.com",
                     "test-ipv6.com",
-                    "ipv6-test.com"
+                    "ipv6-test.com",
+                    "ifconfig.me",
+                    "api64.ipify.orab",
+                    "myexternalip.com",
+                    "api64.ipify.org"
                 ],
-                "outbound": "自定义规则"
+                "outbound": "自定义直连"
+            },
+            {
+                "domain_suffix": [
+                    "u2.dmhy.org"
+                ],
+                "outbound": "自定义代理"
             },
             {
                 "rule_set": "geosite-speedtest@cn",
@@ -548,7 +582,8 @@
                     "agsvpt.com",
                     "azusa.wiki",
                     "discfan.net",
-                    "playletpt.xyz"
+                    "playletpt.xyz",
+                    "hdsky.my"
                 ],
                 "outbound": "🎬 PT站点"
             },
