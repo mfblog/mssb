@@ -226,12 +226,6 @@ jobs:
           mkdir -p ./tmp-sing-box/compress/
           archs=(amd64 amd64-v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-hardfloat mipsle-softfloat)
           new_name=(amd64 amd64v3 armv5 armv6 armv7 arm64 mips-softfloat mipsle-hardfloat mipsle-softfloat)
-          # `YelNoo` cores
-          for ((i = 0; i < 9; i++)); do
-            mv -f "./tmp-sing-box/sing-box-yelnoo-linux-${archs[i]}/sing-box" ./tmp-sing-box/sing-box
-            chmod +x ./tmp-sing-box/sing-box
-            tar --no-same-owner -czf "./tmp-sing-box/compress/sing-box-yelnoo-linux-${new_name[i]}.tar.gz" -C ./tmp-sing-box/ ./sing-box
-          done
           # `YelNoo-dev` cores
           for ((i = 0; i < 9; i++)); do
             mv -f "./tmp-sing-box/sing-box-yelnoo-dev-linux-${archs[i]}/sing-box" ./tmp-sing-box/sing-box
@@ -243,10 +237,6 @@ jobs:
         run: |
           mkdir -p ./sing-box/
           mv -f ./tmp-sing-box/compress/* ./sing-box/
-          # `YelNoo` cores for Windows
-          # mv -f ./tmp-sing-box/sing-box-yelnoo-windows-amd64/sing-box.exe ./sing-box/sing-box-yelnoo-windows-amd64.exe
-          # mv -f ./tmp-sing-box/sing-box-yelnoo-windows-amd64-v3/sing-box.exe ./sing-box/sing-box-yelnoo-windows-amd64v3.exe
-          # mv -f ./tmp-sing-box/sing-box-yelnoo-windows-arm64/sing-box.exe ./sing-box/sing-box-yelnoo-windows-arm64.exe
           # `YelNoo-dev` cores for Windows
           mv -f ./tmp-sing-box/sing-box-yelnoo-dev-windows-amd64/sing-box.exe ./sing-box/sing-box-yelnoo-dev-windows-amd64.exe
           mv -f ./tmp-sing-box/sing-box-yelnoo-dev-windows-amd64-v3/sing-box.exe ./sing-box/sing-box-yelnoo-dev-windows-amd64v3.exe
