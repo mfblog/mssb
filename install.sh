@@ -2126,6 +2126,24 @@ load_or_init_env() {
             fi
         fi
     fi
+    # AMD64 v3 支持检测和配置
+    echo -e "\n${green_text}=== AMD64 v3 指令集支持检测 ===${reset}"
+    if check_amd64_v3_support; then
+        echo -e "${green_text}✓ 检测到系统支持 AMD64 v3 指令集${reset}"
+        echo -e "${yellow}启用 v3 优化可以提升性能，但需要较新的 CPU 支持${reset}"
+        read -p "是否启用 AMD64 v3 优化？(y/n, 默认y): " enable_amd64v3
+        enable_amd64v3=${enable_amd64v3:-y}
+        if [ "$enable_amd64v3" = "y" ]; then
+            amd64v3_enabled="true"
+            echo -e "${green_text}✓ 已启用 AMD64 v3 优化${reset}"
+        else
+            amd64v3_enabled="false"
+            echo -e "${yellow}已禁用 AMD64 v3 优化${reset}"
+        fi
+    else
+        echo -e "${red}✗ 系统不支持 AMD64 v3 指令集，将使用标准版本${reset}"
+        amd64v3_enabled="false"
+    fi
 
     # 检查并选择网卡
     check_interfaces
@@ -2193,25 +2211,6 @@ load_or_init_env() {
         client_ip_list="$scanned_ip_list"
     else
         read -p "请输入需要代理的设备IP（多个用空格分隔）: " client_ip_list
-    fi
-
-    # AMD64 v3 支持检测和配置
-    echo -e "\n${green_text}=== AMD64 v3 指令集支持检测 ===${reset}"
-    if check_amd64_v3_support; then
-        echo -e "${green_text}✓ 检测到系统支持 AMD64 v3 指令集${reset}"
-        echo -e "${yellow}启用 v3 优化可以提升性能，但需要较新的 CPU 支持${reset}"
-        read -p "是否启用 AMD64 v3 优化？(y/n, 默认y): " enable_amd64v3
-        enable_amd64v3=${enable_amd64v3:-y}
-        if [ "$enable_amd64v3" = "y" ]; then
-            amd64v3_enabled="true"
-            echo -e "${green_text}✓ 已启用 AMD64 v3 优化${reset}"
-        else
-            amd64v3_enabled="false"
-            echo -e "${yellow}已禁用 AMD64 v3 优化${reset}"
-        fi
-    else
-        echo -e "${red}✗ 系统不支持 AMD64 v3 指令集，将使用标准版本${reset}"
-        amd64v3_enabled="false"
     fi
 
     # 安装/更新模式（分功能）
