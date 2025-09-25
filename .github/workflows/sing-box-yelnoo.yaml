@@ -244,9 +244,9 @@ jobs:
           mkdir -p ./sing-box/
           mv -f ./tmp-sing-box/compress/* ./sing-box/
           # `YelNoo` cores for Windows
-          mv -f ./tmp-sing-box/sing-box-yelnoo-windows-amd64/sing-box.exe ./sing-box/sing-box-yelnoo-windows-amd64.exe
-          mv -f ./tmp-sing-box/sing-box-yelnoo-windows-amd64-v3/sing-box.exe ./sing-box/sing-box-yelnoo-windows-amd64v3.exe
-          mv -f ./tmp-sing-box/sing-box-yelnoo-windows-arm64/sing-box.exe ./sing-box/sing-box-yelnoo-windows-arm64.exe
+          # mv -f ./tmp-sing-box/sing-box-yelnoo-windows-amd64/sing-box.exe ./sing-box/sing-box-yelnoo-windows-amd64.exe
+          # mv -f ./tmp-sing-box/sing-box-yelnoo-windows-amd64-v3/sing-box.exe ./sing-box/sing-box-yelnoo-windows-amd64v3.exe
+          # mv -f ./tmp-sing-box/sing-box-yelnoo-windows-arm64/sing-box.exe ./sing-box/sing-box-yelnoo-windows-arm64.exe
           # `YelNoo-dev` cores for Windows
           mv -f ./tmp-sing-box/sing-box-yelnoo-dev-windows-amd64/sing-box.exe ./sing-box/sing-box-yelnoo-dev-windows-amd64.exe
           mv -f ./tmp-sing-box/sing-box-yelnoo-dev-windows-amd64-v3/sing-box.exe ./sing-box/sing-box-yelnoo-dev-windows-amd64v3.exe
