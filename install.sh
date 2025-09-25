@@ -232,9 +232,11 @@ install_mosdns() {
     log "开始下载 MosDNS..."
     arch=$(detect_architecture)
     log "系统架构是：$arch"
-#  LATEST_MOSDNS_VERSION=$(curl -sL -o /dev/null -w %{url_effective} https://github.com/IrineSistiana/mosdns/releases/latest | awk -F '/' '{print $NF}')
-#  MOSDNS_URL="https://github.com/IrineSistiana/mosdns/releases/download/${LATEST_MOSDNS_VERSION}/mosdns-linux-$arch.zip"
-    MOSDNS_URL="https://github.com/herozmy/StoreHouse/releases/download/mosdns/mosdns-linux-$arch.zip"
+    #  LATEST_MOSDNS_VERSION=$(curl -sL -o /dev/null -w %{url_effective} https://github.com/IrineSistiana/mosdns/releases/latest | awk -F '/' '{print $NF}')
+    #  MOSDNS_URL="https://github.com/IrineSistiana/mosdns/releases/download/${LATEST_MOSDNS_VERSION}/mosdns-linux-$arch.zip"
+    # https://github.com/baozaodetudou/mssb/releases/download/mosdns/mosdns-linux-amd64.zip
+    # https://github.com/baozaodetudou/mssb/releases/download/mosdns/mosdns-linux-amd64-v3.zip
+    MOSDNS_URL="https://github.com/baozaodetudou/mssb/releases/download/mosdns/mosdns-linux-$arch.zip"
 
     log "从 $MOSDNS_URL 下载 MosDNS..."
     if curl -L -o /tmp/mosdns.zip "$MOSDNS_URL"; then
@@ -343,7 +345,8 @@ install_mihomo() {
 
     # 下载并安装 Mihomo
     arch=$(detect_architecture)
-    download_url="https://github.com/herozmy/StoreHouse/releases/download/mihomo/mihomo-meta-linux-${arch}.tar.gz"
+    # https://github.com/baozaodetudou/mssb/releases/download/mihomo/mihomo-meta-linux-amd64.tar.gz
+    download_url="https://github.com/baozaodetudou/mssb/releases/download/mihomo/mihomo-meta-linux-${arch}.tar.gz"
     log "开始下载 Mihomo 核心..."
 
     if ! wget -O /tmp/mihomo.tar.gz "$download_url"; then
@@ -1132,7 +1135,9 @@ singbox_r_install() {
 
     # 下载并安装 reF1nd R核心
     arch=$(detect_architecture)
-    download_url="https://github.com/herozmy/StoreHouse/releases/download/sing-box-reF1nd/sing-box-reF1nd-dev-linux-${arch}.tar.gz"
+    # https://github.com/baozaodetudou/mssb/releases/download/sing-box-reF1nd/sing-box-reF1nd-dev-linux-amd64.tar.gz
+    # https://github.com/baozaodetudou/mssb/releases/download/sing-box-reF1nd/sing-box-reF1nd-dev-linux-amd64v3.tar.gz
+    download_url="https://github.com/baozaodetudou/mssb/releases/download/sing-box-reF1nd/sing-box-reF1nd-dev-linux-${arch}.tar.gz"
 
     log "开始下载 reF1nd佬 R核心..."
     if ! wget -O sing-box.tar.gz "$download_url"; then
@@ -1169,7 +1174,9 @@ singbox_y_install() {
 
     # 下载并安装 S佬Y核心
     arch=$(detect_architecture)
-    download_url="https://github.com/herozmy/StoreHouse/releases/download/sing-box-yelnoo/sing-box-yelnoo-linux-${arch}.tar.gz"
+    # https://github.com/baozaodetudou/mssb/releases/download/sing-box-yelnoo/sing-box-yelnoo-dev-linux-amd64.tar.gz
+    # https://github.com/baozaodetudou/mssb/releases/download/sing-box-yelnoo/sing-box-yelnoo-dev-linux-amd64v3.tar.gz
+    download_url="https://github.com/baozaodetudou/mssb/releases/download/sing-box-yelnoo/sing-box-yelnoo-dev-linux-${arch}.tar.gz"
 
     log "开始下载 S佬Y核心..."
     if ! wget -O sing-box.tar.gz "$download_url"; then
