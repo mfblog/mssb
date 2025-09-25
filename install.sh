@@ -346,6 +346,7 @@ install_mihomo() {
     # 下载并安装 Mihomo
     arch=$(detect_architecture)
     # https://github.com/baozaodetudou/mssb/releases/download/mihomo/mihomo-meta-linux-amd64.tar.gz
+    # https://github.com/baozaodetudou/mssb/releases/download/mihomo/mihomo-alpha-linux-amd64v3.tar.gz
     download_url="https://github.com/baozaodetudou/mssb/releases/download/mihomo/mihomo-meta-linux-${arch}.tar.gz"
     log "开始下载 Mihomo 核心..."
 
