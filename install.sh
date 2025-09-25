@@ -222,11 +222,11 @@ check_amd64_v3_support() {
     fi
 
     # v3 要求的指令集
-    local required_flags=("sse4_2" "avx" "avx2" "bmi1" "bmi2" "fma" "lzcnt")
+    local required_flags=("sse4_2" "avx" "avx2" "bmi1" "bmi2" "fma" "abm")
 
     # 获取 CPU flags
     local cpu_flags
-    cpu_flags=$(grep -m1 -o -E 'sse4_2|avx2|avx|bmi1|bmi2|fma|lzcnt' /proc/cpuinfo | sort -u)
+    cpu_flags=$(grep -m1 -o -E 'sse4_2|avx2|avx|bmi1|bmi2|fma|abm' /proc/cpuinfo | sort -u)
 
     # 检查每一个必须的指令集
     for flag in "${required_flags[@]}"; do
@@ -275,7 +275,7 @@ check_cpu_instructions() {
     
     # 基础指令集
     local basic_instructions=("sse" "sse2" "sse3" "ssse3" "sse4_1" "sse4_2" "avx" "avx2" "avx512f")
-    local advanced_instructions=("bmi1" "bmi2" "fma" "lzcnt" "popcnt" "aes" "pclmulqdq")
+    local advanced_instructions=("bmi1" "bmi2" "fma" "abm" "popcnt" "aes" "pclmulqdq")
     
     echo -e "\n${green_text}基础指令集：${reset}"
     for instruction in "${basic_instructions[@]}"; do
@@ -1560,7 +1560,7 @@ edit_mihomo_proxy_providers() {
         if [ $yq_no_escape -eq 0 ]; then
             yq -i --no-escape ".proxy-providers.\"$tag\".url = \"$url\"" "$config_file"
             yq -i --no-escape ".proxy-providers.\"$tag\".type = \"http\"" "$config_file"
-            yq -i --no-escape ".proxy-providers.\"$tag\".interval = 3600" "$config_file"
+            yq -i --no-escape ".proxy-providers.\"$tag\".interval = 300" "$config_file"
             yq -i --no-escape ".proxy-providers.\"$tag\".health-check.enable = true" "$config_file"
             yq -i --no-escape ".proxy-providers.\"$tag\".health-check.url = \"http://detectportal.firefox.com/success.txt\"" "$config_file"
             yq -i --no-escape ".proxy-providers.\"$tag\".health-check.interval = 6" "$config_file"
@@ -1568,7 +1568,7 @@ edit_mihomo_proxy_providers() {
         else
             yq -i ".proxy-providers.\"$tag\".url = \"$url\"" "$config_file"
             yq -i ".proxy-providers.\"$tag\".type = \"http\"" "$config_file"
-            yq -i ".proxy-providers.\"$tag\".interval = 3600" "$config_file"
+            yq -i ".proxy-providers.\"$tag\".interval = 300" "$config_file"
             yq -i ".proxy-providers.\"$tag\".health-check.enable = true" "$config_file"
             yq -i ".proxy-providers.\"$tag\".health-check.url = \"http://detectportal.firefox.com/success.txt\"" "$config_file"
             yq -i ".proxy-providers.\"$tag\".health-check.interval = 6" "$config_file"

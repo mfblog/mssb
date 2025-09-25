@@ -56,7 +56,7 @@ if __name__ == "__main__":
             "type": "remote",
             "tag": tag,
             "url": url,
-            "update_interval": "7h",
+            "update_interval": "1h",
             "download_detour": "direct"
         })
     # 修改 outbound_providers
