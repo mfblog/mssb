@@ -1,4 +1,6 @@
 name: Update sing-box-reF1nd
+permissions:
+  contents: write
 on:
   workflow_dispatch:  # 保留手动触发
   schedule:
