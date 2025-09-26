@@ -106,7 +106,7 @@
             "type": "remote",
             "tag": "🛫 机场",
             "url": "机场订阅",
-            "update_interval": "7h",
+            "update_interval": "1h",
             "download_detour": "direct"
         }
     ],

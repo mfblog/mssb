@@ -11,7 +11,7 @@ local_ip=$(hostname -I | awk '{print $1}')
 
 # 日志输出函数
 log() {
-    echo "[$(date +"%F %T")] $1"
+    echo -e "[$(date +"%F %T")] $1"
 }
 
 # 系统更新和安装必要软件
@@ -211,6 +211,121 @@ detect_architecture() {
     esac
 }
 
+# 检查 AMD64 架构是否支持 v3 指令集 (x86-64-v3)
+check_amd64_v3_support() {
+    local arch
+    arch=$(detect_architecture)
+
+    # 只有 AMD64 架构才需要检查 v3 支持
+    if [ "$arch" != "amd64" ]; then
+        return 1
+    fi
+
+    # v3 要求的指令集
+    local required_flags=("sse4_2" "avx" "avx2" "bmi1" "bmi2" "fma" "abm")
+
+    # 获取 CPU flags
+    local cpu_flags
+    cpu_flags=$(grep -m1 -o -E 'sse4_2|avx2|avx|bmi1|bmi2|fma|abm' /proc/cpuinfo | sort -u)
+
+    # 检查每一个必须的指令集
+    for flag in "${required_flags[@]}"; do
+        if ! grep -qw "$flag" <<< "$cpu_flags"; then
+            log "${red}AMD64 架构缺少指令集: $flag → 不支持 v3${reset}"
+            return 1
+        fi
+    done
+
+    log "${green_text}检测到 AMD64 架构支持完整 v3 指令集${reset}"
+    return 0
+}
+
+# 检查CPU指令集和v3支持的详细函数
+check_cpu_instructions() {
+    echo -e "\n${green_text}=== CPU指令集和v3支持检查 ===${reset}"
+    
+    # 显示系统基本信息
+    echo -e "\n${yellow}系统信息：${reset}"
+    echo -e "操作系统: $(uname -s)"
+    echo -e "内核版本: $(uname -r)"
+    echo -e "CPU架构: $(uname -m)"
+    echo -e "检测到的架构: $(detect_architecture)"
+    
+    # 检查是否为Linux系统
+    if [ ! -f "/proc/cpuinfo" ]; then
+        echo -e "\n${red}错误：此功能仅支持Linux系统${reset}"
+        echo -e "${yellow}当前系统无法读取 /proc/cpuinfo 文件${reset}"
+        return 1
+    fi
+    
+    # 显示CPU基本信息
+    echo -e "\n${yellow}CPU信息：${reset}"
+    local cpu_model=$(grep "model name" /proc/cpuinfo | head -n1 | cut -d: -f2 | sed 's/^[ \t]*//')
+    local cpu_cores=$(grep -c "processor" /proc/cpuinfo)
+    local cpu_family=$(grep "cpu family" /proc/cpuinfo | head -n1 | cut -d: -f2 | sed 's/^[ \t]*//')
+    local cpu_model_num=$(grep "model" /proc/cpuinfo | head -n1 | cut -d: -f2 | sed 's/^[ \t]*//')
+    
+    echo -e "CPU型号: ${green_text}$cpu_model${reset}"
+    echo -e "CPU核心数: ${green_text}$cpu_cores${reset}"
+    echo -e "CPU系列: ${green_text}$cpu_family${reset}"
+    echo -e "CPU型号编号: ${green_text}$cpu_model_num${reset}"
+    
+    # 检查指令集支持
+    echo -e "\n${yellow}指令集支持检查：${reset}"
+    
+    # 基础指令集
+    local basic_instructions=("sse" "sse2" "sse3" "ssse3" "sse4_1" "sse4_2" "avx" "avx2" "avx512f")
+    local advanced_instructions=("bmi1" "bmi2" "fma" "abm" "popcnt" "aes" "pclmulqdq")
+    
+    echo -e "\n${green_text}基础指令集：${reset}"
+    for instruction in "${basic_instructions[@]}"; do
+        if grep -q "$instruction" /proc/cpuinfo; then
+            echo -e "  ✓ $instruction: ${green_text}支持${reset}"
+        else
+            echo -e "  ✗ $instruction: ${red}不支持${reset}"
+        fi
+    done
+    
+    echo -e "\n${green_text}高级指令集：${reset}"
+    for instruction in "${advanced_instructions[@]}"; do
+        if grep -q "$instruction" /proc/cpuinfo; then
+            echo -e "  ✓ $instruction: ${green_text}支持${reset}"
+        else
+            echo -e "  ✗ $instruction: ${red}不支持${reset}"
+        fi
+    done
+    
+    # 检查v3支持
+    echo -e "\n${yellow}AMD64 v3支持检查：${reset}"
+    if check_amd64_v3_support; then
+        echo -e "${green_text}✓ 系统完全支持 AMD64 v3 指令集${reset}"
+        echo -e "${green_text}  可以使用v3优化的二进制文件以获得更好性能${reset}"
+    else
+        echo -e "${red}✗ 系统不支持完整的 AMD64 v3 指令集${reset}"
+        echo -e "${yellow}  将使用标准版本的二进制文件${reset}"
+    fi
+    
+    # 显示当前配置
+    echo -e "\n${yellow}当前配置：${reset}"
+    if [ -f "/mssb/mssb.env" ]; then
+        if grep -q "^amd64v3_enabled=" /mssb/mssb.env; then
+            local current_setting=$(grep "^amd64v3_enabled=" /mssb/mssb.env | cut -d= -f2)
+            echo -e "AMD64 v3优化设置: ${green_text}$current_setting${reset}"
+        else
+            echo -e "AMD64 v3优化设置: ${yellow}未配置${reset}"
+        fi
+    else
+        echo -e "AMD64 v3优化设置: ${yellow}配置文件不存在${reset}"
+    fi
+    
+    # 显示所有CPU flags
+    echo -e "\n${yellow}所有CPU特性标志：${reset}"
+    local all_flags=$(grep "flags" /proc/cpuinfo | head -n1 | cut -d: -f2 | sed 's/^[ \t]*//')
+    echo -e "${green_text}$all_flags${reset}"
+    
+    echo -e "\n${green_text}检查完成！${reset}"
+}
+
 # 安装mosdns
 install_mosdns() {
     # 检查是否已安装 MosDNS
@@ -232,9 +347,15 @@ install_mosdns() {
     log "开始下载 MosDNS..."
     arch=$(detect_architecture)
     log "系统架构是：$arch"
-#  LATEST_MOSDNS_VERSION=$(curl -sL -o /dev/null -w %{url_effective} https://github.com/IrineSistiana/mosdns/releases/latest | awk -F '/' '{print $NF}')
-#  MOSDNS_URL="https://github.com/IrineSistiana/mosdns/releases/download/${LATEST_MOSDNS_VERSION}/mosdns-linux-$arch.zip"
-    MOSDNS_URL="https://github.com/herozmy/StoreHouse/releases/download/mosdns/mosdns-linux-$arch.zip"
+    #  LATEST_MOSDNS_VERSION=$(curl -sL -o /dev/null -w %{url_effective} https://github.com/IrineSistiana/mosdns/releases/latest | awk -F '/' '{print $NF}')
+    #  MOSDNS_URL="https://github.com/IrineSistiana/mosdns/releases/download/${LATEST_MOSDNS_VERSION}/mosdns-linux-$arch.zip"
+    # https://github.com/baozaodetudou/mssb/releases/download/mosdns/mosdns-linux-amd64.zip
+    # https://github.com/baozaodetudou/mssb/releases/download/mosdns/mosdns-linux-amd64-v3.zip
+    if [ "$amd64v3_enabled" = "true" ] && check_amd64_v3_support; then
+        MOSDNS_URL="https://github.com/baozaodetudou/mssb/releases/download/mosdns/mosdns-linux-amd64-v3.zip"
+    else
+        MOSDNS_URL="https://github.com/baozaodetudou/mssb/releases/download/mosdns/mosdns-linux-$arch.zip"
+    fi
 
     log "从 $MOSDNS_URL 下载 MosDNS..."
     if curl -L -o /tmp/mosdns.zip "$MOSDNS_URL"; then
@@ -343,7 +464,13 @@ install_mihomo() {
 
     # 下载并安装 Mihomo
     arch=$(detect_architecture)
-    download_url="https://github.com/herozmy/StoreHouse/releases/download/mihomo/mihomo-meta-linux-${arch}.tar.gz"
+    # https://github.com/baozaodetudou/mssb/releases/download/mihomo/mihomo-meta-linux-amd64.tar.gz
+    # https://github.com/baozaodetudou/mssb/releases/download/mihomo/mihomo-alpha-linux-amd64v3.tar.gz
+    if [ "$amd64v3_enabled" = "true" ] && check_amd64_v3_support; then
+        download_url="https://github.com/baozaodetudou/mssb/releases/download/mihomo/mihomo-meta-linux-amd64v3.tar.gz"
+    else
+        download_url="https://github.com/baozaodetudou/mssb/releases/download/mihomo/mihomo-meta-linux-${arch}.tar.gz"
+    fi
     log "开始下载 Mihomo 核心..."
 
     if ! wget -O /tmp/mihomo.tar.gz "$download_url"; then
@@ -758,8 +885,14 @@ choose_filebrowser_login() {
         filebrowser config set --auth.method=noauth -c /mssb/fb/fb.json -d /mssb/fb/fb.db
         log "Filebrowser 已配置为无密码登录模式"
     else
-        log "使用默认的密码登录模式..."
         filebrowser config set --auth.method=json -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+        if [ -n "$fb_pass" ]; then
+            log "使用自定义的密码登录模式...密码$fb_pass"
+            filebrowser users update admin --password "$fb_pass" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+        else
+            log "使用默认的密码登录模式...密码admin123456789QAQ"
+            filebrowser users update admin --password "admin123456789QAQ" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+        fi
         log "Filebrowser 已配置为密码登录模式"
     fi
 }
@@ -1132,7 +1265,14 @@ singbox_r_install() {
 
     # 下载并安装 reF1nd R核心
     arch=$(detect_architecture)
-    download_url="https://github.com/herozmy/StoreHouse/releases/download/sing-box-reF1nd/sing-box-reF1nd-dev-linux-${arch}.tar.gz"
+    # https://github.com/baozaodetudou/mssb/releases/download/sing-box-reF1nd/sing-box-reF1nd-dev-linux-amd64.tar.gz
+    # https://github.com/baozaodetudou/mssb/releases/download/sing-box-reF1nd/sing-box-reF1nd-dev-linux-amd64v3.tar.gz
+    if [ "$amd64v3_enabled" = "true" ] && check_amd64_v3_support; then
+        download_url="https://github.com/baozaodetudou/mssb/releases/download/sing-box-reF1nd/sing-box-reF1nd-dev-linux-amd64v3.tar.gz"
+    else
+        download_url="https://github.com/baozaodetudou/mssb/releases/download/sing-box-reF1nd/sing-box-reF1nd-dev-linux-${arch}.tar.gz"
+    fi
+    
 
     log "开始下载 reF1nd佬 R核心..."
     if ! wget -O sing-box.tar.gz "$download_url"; then
@@ -1169,7 +1309,13 @@ singbox_y_install() {
 
     # 下载并安装 S佬Y核心
     arch=$(detect_architecture)
-    download_url="https://github.com/herozmy/StoreHouse/releases/download/sing-box-yelnoo/sing-box-yelnoo-linux-${arch}.tar.gz"
+    # https://github.com/baozaodetudou/mssb/releases/download/sing-box-yelnoo/sing-box-yelnoo-dev-linux-amd64.tar.gz
+    # https://github.com/baozaodetudou/mssb/releases/download/sing-box-yelnoo/sing-box-yelnoo-dev-linux-amd64v3.tar.gz
+    if [ "$amd64v3_enabled" = "true" ] && check_amd64_v3_support; then
+        download_url="https://github.com/baozaodetudou/mssb/releases/download/sing-box-yelnoo/sing-box-yelnoo-dev-linux-amd64v3.tar.gz"
+    else
+        download_url="https://github.com/baozaodetudou/mssb/releases/download/sing-box-yelnoo/sing-box-yelnoo-dev-linux-${arch}.tar.gz"
+    fi
 
     log "开始下载 S佬Y核心..."
     if ! wget -O sing-box.tar.gz "$download_url"; then
@@ -1267,8 +1413,8 @@ modify_filebrowser_config() {
             # 使用密码登录
             if [ -f "/mssb/fb/fb.db" ]; then
                 echo -e "\n${green_text}请选择密码设置方式：${reset}"
-                echo -e "${green_text}1) 使用默认密码（admin/admin）${reset}"
-                echo -e "${green_text}2) 自定义密码${reset}"
+                echo -e "${green_text}1) 使用默认密码（admin123456789QAQ）${reset}"
+                echo -e "${green_text}2) 自定义密码（密码长度不能小于16位不然会设置失败,就得打开supervisor查看日志获取）${reset}"
                 echo -e "${green_text}-------------------------------------------------${reset}"
                 read -p "请输入选项 (1/2): " password_choice
 
@@ -1278,23 +1424,23 @@ modify_filebrowser_config() {
                 case $password_choice in
                     1)
                         # 使用默认密码
-                        filebrowser users update admin --password "admin" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
-                        echo -e "${green_text}Filebrowser 已设置为使用默认密码（admin/admin）${reset}"
+                        filebrowser users update admin --password "admin123456789QAQ" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+                        echo -e "${green_text}Filebrowser 已设置为使用默认密码（admin/admin123456789QAQ）${reset}"
                         ;;
                     2)
                         # 自定义密码
-                        read -p "请输入新密码（输入时可见）: " new_password
+                        read -p "请输入新密码（密码长度不能小于16位不然会设置失败,就得打开supervisor查看日志获取）（输入时可见）: " new_password
                         if [ -n "$new_password" ]; then
                             filebrowser users update admin --password "$new_password" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
                             echo -e "${green_text}Filebrowser 密码已更新${reset}"
                         else
                             echo -e "${red}密码不能为空，将使用默认密码${reset}"
-                            filebrowser users update admin --password "admin" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+                            filebrowser users update admin --password "admin123456789QAQ" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
                         fi
                         ;;
                     *)
                         echo -e "${red}无效的选项，将使用默认密码${reset}"
-                        filebrowser users update admin --password "admin" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
+                        filebrowser users update admin --password "admin123456789QAQ" -c /mssb/fb/fb.json -d /mssb/fb/fb.db
                         ;;
                 esac
 
@@ -1414,7 +1560,7 @@ edit_mihomo_proxy_providers() {
         if [ $yq_no_escape -eq 0 ]; then
             yq -i --no-escape ".proxy-providers.\"$tag\".url = \"$url\"" "$config_file"
             yq -i --no-escape ".proxy-providers.\"$tag\".type = \"http\"" "$config_file"
-            yq -i --no-escape ".proxy-providers.\"$tag\".interval = 3600" "$config_file"
+            yq -i --no-escape ".proxy-providers.\"$tag\".interval = 300" "$config_file"
             yq -i --no-escape ".proxy-providers.\"$tag\".health-check.enable = true" "$config_file"
             yq -i --no-escape ".proxy-providers.\"$tag\".health-check.url = \"http://detectportal.firefox.com/success.txt\"" "$config_file"
             yq -i --no-escape ".proxy-providers.\"$tag\".health-check.interval = 6" "$config_file"
@@ -1422,7 +1568,7 @@ edit_mihomo_proxy_providers() {
         else
             yq -i ".proxy-providers.\"$tag\".url = \"$url\"" "$config_file"
             yq -i ".proxy-providers.\"$tag\".type = \"http\"" "$config_file"
-            yq -i ".proxy-providers.\"$tag\".interval = 3600" "$config_file"
+            yq -i ".proxy-providers.\"$tag\".interval = 300" "$config_file"
             yq -i ".proxy-providers.\"$tag\".health-check.enable = true" "$config_file"
             yq -i ".proxy-providers.\"$tag\".health-check.url = \"http://detectportal.firefox.com/success.txt\"" "$config_file"
             yq -i ".proxy-providers.\"$tag\".health-check.interval = 6" "$config_file"
@@ -1943,7 +2089,7 @@ install_update_server() {
         echo -e "   - 无需登录"
     else
         echo -e "   - 用户名：admin"
-        echo -e "   - 密码：admin"
+        echo -e "   - 密码：admin123456789QAQ 或者自己手动设置，如不对请打开supervisor查看日志获取"
     fi
     echo
     echo -e "🕸️  Sing-box/Mihomo 面板 UI：${green_text}http://${local_ip}:9090/ui${reset}"
@@ -1980,6 +2126,24 @@ load_or_init_env() {
             fi
         fi
     fi
+    # AMD64 v3 支持检测和配置
+    echo -e "\n${green_text}=== AMD64 v3 指令集支持检测 ===${reset}"
+    if check_amd64_v3_support; then
+        echo -e "${green_text}✓ 检测到系统支持 AMD64 v3 指令集${reset}"
+        echo -e "${yellow}启用 v3 优化可以提升性能，但需要较新的 CPU 支持${reset}"
+        read -p "是否启用 AMD64 v3 优化？(y/n, 默认y): " enable_amd64v3
+        enable_amd64v3=${enable_amd64v3:-y}
+        if [ "$enable_amd64v3" = "y" ]; then
+            amd64v3_enabled="true"
+            echo -e "${green_text}✓ 已启用 AMD64 v3 优化${reset}"
+        else
+            amd64v3_enabled="false"
+            echo -e "${yellow}已禁用 AMD64 v3 优化${reset}"
+        fi
+    else
+        echo -e "${red}✗ 系统不支持 AMD64 v3 指令集，将使用标准版本${reset}"
+        amd64v3_enabled="false"
+    fi
 
     # 检查并选择网卡
     check_interfaces
@@ -2008,8 +2172,12 @@ load_or_init_env() {
     # 不再设置默认值
     read -p "Supervisor密码（留空不需要登录）: " supervisor_pass
     # 不再设置默认值
-    read -p "Filebrowser登录方式（1-密码(admin/admin) 2-免密，默认1）: " fb_login
+    read -p "Filebrowser登录方式（1-密码(admin/admin123456789QAQ) 2-免密，默认1）: " fb_login
     fb_login_mode=$([ "$fb_login" = "2" ] && echo "noauth" || echo "auth")
+    if [ "$fb_login_mode" = "auth" ]; then
+        read -p "请输入Filebrowser密码【不输入默认为admin123456789QAQ 】（必须16位以上,不然会失败，然后自动生成密码需要打开supervisor查看日志获取）: " fb_pass
+        fb_pass=${fb_pass:-admin123456789QAQ}
+    fi
 
     # 订阅链接
     echo -e "${yellow}机场订阅支持两种格式：${reset}"
@@ -2067,6 +2235,8 @@ load_or_init_env() {
 
     # 保存到env文件（带注释）
     cat > "$env_file" <<EOF
+# 是否启用AMD64 v3优化（true/false）
+amd64v3_enabled=$amd64v3_enabled
 # 选中的物理网卡
 selected_interface=$selected_interface
 # 代理核心名称（sing-box或mihomo）
@@ -2160,8 +2330,9 @@ main() {
     echo -e "${red}11) 删除全局 mssb 命令${reset}"
     echo -e "${green_text}12) 更新项目${reset}"
     echo -e "${green_text}13) 更新内核版本(mosdns/singbox/mihomo)${reset}"
+    echo -e "${green_text}14) 检查CPU指令集和v3支持${reset}"
     echo -e "${green_text}-------------------------------------------------${reset}"
-    read -p "请输入选项 (1/2/3/4/5/6/7/8/9/10/11/12/13/00): " main_choice
+    read -p "请输入选项 (1/2/3/4/5/6/7/8/9/10/11/12/13/14/00): " main_choice
 
     case "$main_choice" in
         2)
@@ -2250,6 +2421,13 @@ main() {
         13)
             echo -e "${green_text}手动更新内核版本(mosdns/singbox/mihomo)${reset}"
             update_cores_menu
+            echo -e "\n${yellow}(按键 Ctrl + C 终止运行脚本, 键入任意值返回主菜单)${reset}"
+            read -n 1
+            main
+            ;;
+        14)
+            echo -e "${green_text}检查CPU指令集和v3支持${reset}"
+            check_cpu_instructions
             echo -e "\n${yellow}(按键 Ctrl + C 终止运行脚本, 键入任意值返回主菜单)${reset}"
             read -n 1
             main

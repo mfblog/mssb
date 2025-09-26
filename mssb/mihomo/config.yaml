@@ -232,7 +232,7 @@ proxy-providers:
   机场名称1:
     url: '机场订阅'
     type: http
-    interval: 3600
+    interval: 300
     health-check:
       enable: true
       url: http://detectportal.firefox.com/success.txt
