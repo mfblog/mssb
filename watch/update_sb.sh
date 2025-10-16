@@ -164,7 +164,6 @@ main() {
     # 更新 UI
     log "准备更新 UI..."
     mkdir -p /mssb/sing-box/ui/
-    rm -rf /tmp/ui
     if git clone --depth=1 https://github.com/Zephyruso/zashboard.git -b gh-pages /tmp/ui; then
         cp -r /tmp/ui/* /mssb/sing-box/ui/
         log "UI 文件克隆并复制成功。"

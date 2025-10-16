@@ -526,25 +526,37 @@ git_ui(){
     if git clone --depth=1 https://github.com/Zephyruso/zashboard.git -b gh-pages "$temp_ui_path"; then
         echo -e "UI 源码下载${green_text}成功${reset}，正在替换..."
 
-        # 下载成功，删除现有UI（如果存在）
+        # 直接覆盖复制新UI到目标位置(如果目录存在则覆盖)
         if [ -d "$ui_path" ]; then
-            echo "删除现有 UI..."
-            rm -rf "$ui_path"
-        fi
-
-        # 创建目标目录
-        mkdir -p "$(dirname "$ui_path")"
-
-        # 移动新UI到目标位置
-        if mv "$temp_ui_path" "$ui_path"; then
-            echo -e "UI 更新${green_text}成功${reset}。"
+            echo "覆盖现有 UI..."
+            # 使用 cp -rf 强制覆盖
+            if cp -rf "$temp_ui_path/." "$ui_path/"; then
+                echo -e "UI 更新${green_text}成功${reset}。"
+                # 清理临时文件
+                rm -rf "$temp_ui_path" 2>/dev/null
+                echo "临时文件已清理"
+            else
+                echo -e "${red}UI 复制失败${reset}"
+                echo "请检查磁盘空间和权限"
+                # 复制失败也清理临时文件
+                rm -rf "$temp_ui_path" 2>/dev/null
+                return 1
+            fi
         else
-            echo -e "${red}UI 替换失败${reset}"
-            echo "请检查磁盘空间和权限"
+            # 目录不存在,直接复制整个目录
+            if cp -r "$temp_ui_path" "$ui_path"; then
+                echo -e "UI 安装${green_text}成功${reset}。"
+                # 清理临时文件
+                rm -rf "$temp_ui_path" 2>/dev/null
+                echo "临时文件已清理"
+            else
+                echo -e "${red}UI 复制失败${reset}"
+                echo "请检查磁盘空间和权限"
+                # 复制失败也清理临时文件
+                rm -rf "$temp_ui_path" 2>/dev/null
+                return 1
+            fi
         fi
-
-        # 清理临时文件
-        rm -rf "$temp_ui_path" 2>/dev/null
     else
         echo -e "${red}UI 源码下载失败${reset}，保持现有 UI 不变"
         echo "请检查网络连接或手动下载源码并解压至 $ui_path"
