@@ -876,7 +876,7 @@ copy_mosdns_folder() {
             log "警告：复制 mssb/mosdns 目录失败，将尝试继续执行"
         fi
     fi
-    chmod -R 777 /mssb/mosdns/webinfo
+    #chmod -R 777 /mssb/mosdns/webinfo
 }
 
 init_filebrowser_db() {
