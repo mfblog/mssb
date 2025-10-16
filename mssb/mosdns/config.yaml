@@ -23,6 +23,7 @@ include:
   - "/mssb/mosdns/sub_config/main.yaml"                         #主分流序列
   - "/mssb/mosdns/sub_config/for_singbox.yaml"              #专供sing-box使用
   - "/mssb/mosdns/sub_config/forward_2.yaml"                 #打包主分流逻辑供调用
+  - "/mssb/mosdns/sub_config/webinfo.yaml"                 #前端信息与配置存储
   - "/mssb/mosdns/sub_config/requery.yaml"                 #分流与缓存刷新功能
 
 

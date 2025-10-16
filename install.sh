@@ -997,12 +997,22 @@ singbox_configure_files() {
 # mihomo配置文件复制
 mihomo_configure_files() {
     # 复制 mssb/mihomo 目录
-    # 判断 /mssb/mihomo 是否存在，存在则删除
+    # 判断 /mssb/mihomo 是否存在，存在则备份ui文件夹后删除
     if [ -d "/mssb/mihomo" ]; then
+        # 如果存在ui文件夹，先备份
+        if [ -d "/mssb/mihomo/ui" ]; then
+            log "备份 ui 文件夹..."
+            mv /mssb/mihomo/ui /tmp/mihomo_ui_backup
+        fi
         rm -rf /mssb/mihomo
     fi
     log "复制 mssb/mihomo 目录..."
     check_and_copy_folder "mihomo"
+    # 恢复ui文件夹
+    if [ -d "/tmp/mihomo_ui_backup" ]; then
+        log "恢复 ui 文件夹..."
+        mv /tmp/mihomo_ui_backup /mssb/mihomo/ui
+    fi
 }
 
 # 服务启动和重载
