@@ -23,6 +23,8 @@ include:
   - "/mssb/mosdns/sub_config/main.yaml"                         #主分流序列
   - "/mssb/mosdns/sub_config/for_singbox.yaml"              #专供sing-box使用
   - "/mssb/mosdns/sub_config/forward_2.yaml"                 #打包主分流逻辑供调用
+  - "/mssb/mosdns/sub_config/requery.yaml"                 #分流与缓存刷新功能
+
 
 plugins:
 #缓存序列-all 直面客户端的缓存 不包含fakeip（被强制排除）
@@ -134,3 +136,15 @@ plugins:
 #      listen: 127.0.0.1:6666
       enable_audit: true
       idle_timeout: 720
+  #刷新服务器
+  - tag: udp_requery
+    type: udp_server
+    args:
+      entry: sequence_6666
+      listen: ":66"
+
+  - tag: tcp_requery
+    type: tcp_server
+    args:
+      entry: sequence_6666
+      listen: ":66"
